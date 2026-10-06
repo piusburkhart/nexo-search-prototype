@@ -6,7 +6,7 @@ import { ActionPill, RecordingCard, TranscriptCard, UnfoldLink } from '../compon
 import { SearchBar, TagCard, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
 import { CalendarIcon, CheckCircleIcon, MicIcon, ChatIcon, WaveIcon } from '../components/Icons'
 import { navigate, useRoute } from '../router'
-import { answerQuestion } from '../ai'
+import { synthesize } from '../ai'
 import { dateCompletions, dateCount, emptyResults, everything, groupByMeeting, parseQuery, recordingScore, search } from '../search'
 import type { Recording } from '../data'
 
@@ -48,6 +48,7 @@ export default function Search() {
   const idle = !hasTerms && !type // nothing to search yet
   const show = { meetings: !type || type === 'meetings', memos: !type || type === 'memos', actions: !type || type === 'actions', transcript: !type || type === 'transcript' }
   const shown = idle ? emptyResults : {
+    ...pool,
     meetings: show.meetings ? pool.meetings : emptyResults.meetings,
     memos: show.memos ? pool.memos : emptyResults.memos,
     actions: show.actions ? pool.actions : emptyResults.actions,
@@ -63,7 +64,7 @@ export default function Search() {
   const recs: Recording[] = [
     ...shown.meetings.map((item): Recording => ({ kind: 'meeting', item, date: item.startsAt })),
     ...shown.memos.map((item): Recording => ({ kind: 'memo', item, date: item.createdAt })),
-  ].sort((a, b) => recordingScore(b, query.terms) - recordingScore(a, query.terms) || b.date.localeCompare(a.date))
+  ].sort((a, b) => recordingScore(b) - recordingScore(a) || b.date.localeCompare(a.date))
   const groups = groupByMeeting(shown.transcript)
   const hiddenHits = groups.slice(LIMIT).reduce((n, g) => n + g.hits.length, 0)
   const hasText = !!q.trim()
@@ -123,9 +124,9 @@ export default function Search() {
     const t = setTimeout(() => setThinking(false), 1100)
     return () => clearTimeout(t)
   }, [ai, q])
-  const answer = useMemo(() => (ai ? answerQuestion(q) : undefined), [ai, q])
+  // AI Synthesis summarises exactly what is on screen (D69): never other sources.
+  const answer = useMemo(() => (ai ? synthesize(shown, pool, q) : undefined), [ai, q, shown, pool])
   const aiState: AiState = ai ? (thinking ? 'thinking' : 'done') : sufficient ? 'ready' : 'disabled'
-  const sourceGroups = answer && aiState === 'done' ? groupByMeeting(answer.sources) : []
 
   return (
     <Screen
@@ -152,27 +153,21 @@ export default function Search() {
           <AiSynthesis state={aiState} answer={answer}
             onRun={() => { blurSearch(); set({ ai: '1' }) }} onReset={() => set({ ai: undefined })} />
         </div>
-        {sourceGroups.length > 0 && (
-          <section className="mb-4 flex flex-col gap-2" data-testid="ai-sources">
-            <SectionLabel>Sources</SectionLabel>
-            {sourceGroups.map((g) => <TranscriptCard key={g.meeting.id} group={g} terms={[]} />)}
-          </section>
-        )}
         {idle ? null : noResults ? (ai ? null : <EmptyState query={q.trim()} />) : (
           <div className="flex flex-col gap-6">
             {recs.length > 0 && <section className="flex flex-col gap-2" data-testid="group-recordings">
               <SectionLabel>Recordings</SectionLabel>
-              {(unfolded.rec ? recs : recs.slice(0, LIMIT)).map((r) => <RecordingCard key={r.item.id} rec={r} terms={query.terms} withSnippet />)}
+              {(unfolded.rec ? recs : recs.slice(0, LIMIT)).map((r) => <RecordingCard key={r.item.id} rec={r} terms={pool.highlight} withSnippet />)}
               {recs.length > LIMIT && <UnfoldLink open={!!unfolded.rec} label={`${recs.length - LIMIT} more recordings might also be relevant`} onClick={() => toggle('rec')} />}
             </section>}
             {shown.actions.length > 0 && <section className="flex flex-col gap-2" data-testid="group-actions">
               <SectionLabel>Actions</SectionLabel>
-              {(unfolded.act ? shown.actions : shown.actions.slice(0, LIMIT)).map((a) => <ActionPill key={a.id} action={a} terms={query.terms} />)}
+              {(unfolded.act ? shown.actions : shown.actions.slice(0, LIMIT)).map((a) => <ActionPill key={a.id} action={a} terms={pool.highlight} />)}
               {shown.actions.length > LIMIT && <UnfoldLink open={!!unfolded.act} label="Show all actions" onClick={() => toggle('act')} />}
             </section>}
             {groups.length > 0 && <section className="flex flex-col gap-2" data-testid="group-transcript">
               <SectionLabel>Summary &amp; Transcription</SectionLabel>
-              {(unfolded.tr ? groups : groups.slice(0, LIMIT)).map((g) => <TranscriptCard key={g.meeting.id} group={g} terms={query.terms} />)}
+              {(unfolded.tr ? groups : groups.slice(0, LIMIT)).map((g) => <TranscriptCard key={g.meeting.id} group={g} terms={pool.highlight} />)}
               {groups.length > LIMIT && <UnfoldLink open={!!unfolded.tr} label={`${hiddenHits} more content might also be relevant`} onClick={() => toggle('tr')} />}
             </section>}
           </div>

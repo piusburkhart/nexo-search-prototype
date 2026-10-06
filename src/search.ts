@@ -1,4 +1,5 @@
-import { actionDate, data, dayOf, getMeeting, MONTH_NAMES, firstName, type Recording } from './data'
+import { actionDate, data, dayOf, getMeeting, MONTH_NAMES, type Recording } from './data'
+import { coversAll, inProject, matchText, namedMeeting, noteFits, NOTES_AT, rankNotes, showsIntent, understand, type Note } from './semantic'
 import type { Action, Meeting, Memo, Segment, Transcript } from './data/types'
 
 export interface DateFilter { kind: 'day' | 'month' | 'year'; key: string; label: string; text: string }
@@ -44,106 +45,125 @@ export function parseQuery(raw: string, tagWords: string[] = []): Query {
   return { raw, terms, date }
 }
 
-export const matchesAll = (text: string, terms: string[]) => {
-  const t = text.toLowerCase()
-  return terms.every((w) => t.includes(w))
-}
 
 export interface TranscriptHit {
   transcript: Transcript; meeting: Meeting; segIndex: number; segment: Segment
+  /** Relevance, for ordering the meetings in the transcript section. */
+  score?: number
 }
-export interface Results { meetings: Meeting[]; memos: Memo[]; actions: Action[]; transcript: TranscriptHit[] }
-export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [] }
-export const total = (r: Results) => r.meetings.length + r.memos.length + r.actions.length + r.transcript.length
-
-const occurrences = (text: string, terms: string[]) => {
-  const t = text.toLowerCase()
-  return terms.reduce((n, w) => n + (w ? t.split(w).length - 1 : 0), 0)
+/**
+ * What a search found. `notes` are the meeting notes behind the transcript results (their moments are in
+ * `transcript`); AI Synthesis summarises only these, so it can never add sources (D69). `highlight` are the
+ * literal words to mark in the results.
+ */
+export interface Results {
+  meetings: Meeting[]; memos: Memo[]; actions: Action[]; transcript: TranscriptHit[]
+  notes: Note[]; summaryOf: Meeting | null; highlight: string[]
 }
-/** How relevant a recording is to the terms: a title match counts most, then each mention in the body. */
-export const recordingScore = (rec: Recording, terms: string[]) =>
-  rec.kind === 'meeting'
-    ? occurrences(rec.item.title, terms) * 3 + occurrences(rec.item.summary, terms)
-    : occurrences(rec.item.content, terms)
-const actionScore = (a: Action, terms: string[]) => occurrences(a.title, terms) * 3 + occurrences(getMeeting(a.meetingId)!.title, terms)
+export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [], notes: [], summaryOf: null, highlight: [] }
+export const total = (r: Pick<Results, 'meetings' | 'memos' | 'actions' | 'transcript'>) => r.meetings.length + r.memos.length + r.actions.length + r.transcript.length
 
-/** Transcript hits grouped by meeting, the meetings with the most relevant moments first (Figma 77:4717). */
+/** Transcript hits grouped by meeting, the most relevant meetings first (Figma 77:4717). */
 export interface TranscriptGroup { meeting: Meeting; hits: TranscriptHit[] }
 export function groupByMeeting(hits: TranscriptHit[]): TranscriptGroup[] {
-  const by = new Map<string, TranscriptGroup>()
+  const by = new Map<string, TranscriptGroup & { score: number }>()
   for (const h of hits) {
-    const g = by.get(h.meeting.id) ?? { meeting: h.meeting, hits: [] }
+    const g = by.get(h.meeting.id) ?? { meeting: h.meeting, hits: [], score: 0 }
     g.hits.push(h)
+    g.score += h.score ?? 1
     by.set(h.meeting.id, g)
   }
-  return [...by.values()].sort((a, b) => b.hits.length - a.hits.length || b.meeting.startsAt.localeCompare(a.meeting.startsAt))
+  for (const g of by.values()) g.hits.sort((a, b) => a.segment.start - b.segment.start)
+  return [...by.values()].sort((a, b) => b.score - a.score || b.meeting.startsAt.localeCompare(a.meeting.startsAt))
 }
 
-/** Every meeting, memo and transcript segment: the pool for tag-only queries and tag counts. */
-export const everything = (): Results => ({
-  meetings: data.meetings,
-  memos: data.memos,
-  actions: data.actions,
-  transcript: data.transcripts.flatMap((transcript) => {
-    const meeting = getMeeting(transcript.meetingId)!
-    return transcript.segments.map((segment, segIndex) => ({ transcript, meeting, segIndex, segment }))
-  }),
+// Index of everything searchable, read once.
+const SEGMENTS: TranscriptHit[] = data.transcripts.flatMap((transcript) => {
+  const meeting = getMeeting(transcript.meetingId)!
+  return transcript.segments.map((segment, segIndex) => ({ transcript, meeting, segIndex, segment }))
 })
 
-/** Strict search: every word must appear (case-insensitive substring). */
+/** Every meeting, memo, action and transcript segment: the pool for tag-only queries and tag counts. */
+export const everything = (): Results => ({
+  ...emptyResults, meetings: data.meetings, memos: data.memos, actions: data.actions, transcript: SEGMENTS,
+})
+
+const meetingText = (m: Meeting) => `${m.title} ${m.summary}`
+const recScores = new WeakMap<object, number>()
+/** How relevant a recording was to the last search (higher first). */
+export const recordingScore = (rec: Recording) => recScores.get(rec.item) ?? 0
+
+/**
+ * Semantic search (D69). An item is found when it covers every query concept (synonyms, stems, typo
+ * corrections), belongs to Project Lantern if the project was named, and shows the kind of finding asked for
+ * (decision, deadline, risk...). On top, the meeting notes that answer the query best bring in their
+ * transcript moments and meetings, so "lantern decision" finds the moments where decisions were made even
+ * where the word "decision" is never said.
+ */
 export function search(q: Query, applyDate = false): Results {
   const key = applyDate ? q.date?.key ?? null : null
-  if (!q.terms.length && !key) return emptyResults
+  const u = understand(q.terms.join(' '), q.raw)
+  const hasQuery = u.terms.length > 0 || u.asksKind || u.project
+  if (u.blocked || (!hasQuery && !key)) return emptyResults
   const inDay = (iso: string) => !key || dayOf(iso).startsWith(key)
-  const fileMatch = (m: Meeting) => inDay(m.startsAt) && matchesAll(`${m.title} ${m.summary}`, q.terms)
-  // Memos have no headline in the UI, so only their body is searched (D41).
-  const memos = data.memos.filter((m) => inDay(m.createdAt) && matchesAll(m.content, q.terms))
-  const transcript: TranscriptHit[] = []
-  if (q.terms.length) {
-    for (const t of data.transcripts) {
-      const meeting = getMeeting(t.meetingId)!
-      if (!inDay(meeting.startsAt)) continue
-      t.segments.forEach((segment, segIndex) => {
-        if (matchesAll(segment.text, q.terms)) transcript.push({ transcript: t, meeting, segIndex, segment })
-      })
+
+  // Date only: everything from that day, month or year.
+  if (!hasQuery) {
+    return {
+      ...emptyResults,
+      meetings: data.meetings.filter((m) => inDay(m.startsAt)),
+      memos: data.memos.filter((m) => inDay(m.createdAt)),
+      actions: data.actions.filter((a) => inDay(actionDate(a))),
     }
   }
-  const meetings = data.meetings.filter(fileMatch)
-    .sort((a, b) => occurrences(b.title, q.terms) * 3 + occurrences(b.summary, q.terms) - (occurrences(a.title, q.terms) * 3 + occurrences(a.summary, q.terms)))
-  memos.sort((a, b) => occurrences(b.content, q.terms) - occurrences(a.content, q.terms))
-  const actions = data.actions
-    .filter((a) => inDay(actionDate(a)) && matchesAll(a.title, q.terms))
-    .sort((a, b) => actionScore(b, q.terms) - actionScore(a, q.terms))
-  return { meetings, memos, actions, transcript }
+
+  const fits = (text: string, projectId: string | null, fullText = text) =>
+    (!u.project || inProject(projectId, fullText)) && (!u.terms.length || coversAll(text, u))
+  const notes = rankNotes(u, (m) => inDay(m.startsAt))
+  const noteAt = new Map(notes.map((n) => [`${n.meeting.id}@${n.at}`, n]))
+
+  // Transcript moments: direct matches, plus the moments behind the best notes.
+  const transcript: TranscriptHit[] = []
+  for (const h of SEGMENTS) {
+    if (!inDay(h.meeting.startsAt)) continue
+    const k = `${h.meeting.id}@${h.segment.start}`
+    const picked = noteAt.get(k)
+    const backed = NOTES_AT.get(k) ?? []
+    // With only the project named ("Lantern"), the moments that mention it by name.
+    const direct = u.terms.length > 0 || u.asksKind
+      ? fits(h.segment.text, h.meeting.projectId, `${h.meeting.title} ${h.segment.text}`) && (showsIntent(h.segment.text, u) || backed.some((n) => noteFits(n, u)))
+      : /\blantern\b/i.test(h.segment.text)
+    if (picked || direct) transcript.push({ ...h, score: (picked ? 6 + picked.score : 0) + (direct ? 1 + matchText(h.segment.text, u).score : 0) })
+  }
+
+  // Meetings: their own title and summary, or a note of theirs among the best.
+  const meetings = data.meetings.filter((m) => {
+    if (!inDay(m.startsAt)) return false
+    const mine = notes.filter((n) => n.meeting.id === m.id).length
+    const direct = fits(meetingText(m), m.projectId) && (u.terms.length > 0 || !u.asksKind || showsIntent(m.summary, u) || m.keyPoints.some((k) => noteFits(k, u)))
+    if (!mine && !direct) return false
+    recScores.set(m, mine * 4 + (direct ? 1 + matchText(m.title, u).score * 3 + matchText(m.summary, u).score : 0))
+    return true
+  })
+  const memos = data.memos.filter((m) => {
+    if (!inDay(m.createdAt) || !fits(m.content, m.projectId) || (u.asksKind && !showsIntent(m.content, u))) return false
+    recScores.set(m, 1 + matchText(m.content, u).score)
+    return true
+  })
+  const actions = data.actions.filter((a) => {
+    const m = getMeeting(a.meetingId)!
+    if (!inDay(actionDate(a)) || (u.asksKind && !u.terms.length)) return false
+    return fits(a.title, m.projectId, `${m.title} ${a.title}`)
+  }).sort((a, b) => matchText(b.title, u).score - matchText(a.title, u).score)
+
+  return { meetings, memos, actions, transcript, notes, summaryOf: namedMeeting(u), highlight: u.highlight }
 }
 
 /** Count of date-matching recordings for the date tag. */
-export const dateCount = (q: Query) => (q.date ? total({ ...search(q, true), transcript: [] }) : 0)
-
-const STOP = new Set('the a an in on of to and for is are was what why how did do does about we with it be any who when'.split(' '))
-
-/**
- * Last-resort answer: transcript moments that mention the given words. Null when no moment matches.
- * The summary is short prose; the moments themselves are returned as sources for the results list.
- */
-export function synthesizeFromMoments(terms: string[]): { parts: { text: string; time?: string }[]; sources: TranscriptHit[] } | null {
-  const useful = terms.filter((w) => !STOP.has(w) && w.length > 2)
-  const scored: (TranscriptHit & { score: number })[] = []
-  for (const t of data.transcripts) {
-    const meeting = getMeeting(t.meetingId)!
-    t.segments.forEach((segment, segIndex) => {
-      const score = useful.filter((w) => segment.text.toLowerCase().includes(w)).length
-      if (score) scored.push({ transcript: t, meeting, segIndex, segment, score })
-    })
-  }
-  scored.sort((a, b) => b.score - a.score)
-  const sources = scored.slice(0, 4)
-  if (!sources.length) return null
-  const first = sources[0]
-  return {
-    sources,
-    parts: [{ text: `The closest mention is from ${firstName(first.segment.speakerId)} in “${first.meeting.title}”: ${first.segment.text}`, time: first.segment.time }],
-  }
+export const dateCount = (q: Query) => {
+  if (!q.date) return 0
+  const r = search(q, true)
+  return r.meetings.length + r.memos.length + r.actions.length
 }
 
 /** Short excerpt around the first matching term, for result snippets. */

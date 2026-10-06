@@ -140,13 +140,13 @@ test.describe('navigation flow', () => {
     await openSearch(page)
     await type(page, 'csv')
     const groups = page.getByTestId('transcript-group')
-    const many = groups.filter({ has: page.locator('[data-testid="transcript-hit"] ~ [data-testid="transcript-hit"]') }).first()
-    await expect(many).toContainText('Lantern Design Review: Onboarding Flow') // meeting name
+    const many = groups.filter({ hasText: 'Lantern Design Review: Onboarding Flow' }) // meeting name
+    await expect(many).toHaveCount(1)
     await expect(many).toContainText('24 Sep 2026') // metadata
     expect(await many.getByTestId('transcript-hit').count()).toBeGreaterThan(1)
     await type(page, 'pricing')
     const brightside = page.getByTestId('transcript-group').filter({ hasText: 'Customer Interview: Brightside Dental' })
-    await expect(brightside.getByTestId('transcript-hit')).toHaveCount(2)
+    expect(await brightside.getByTestId('transcript-hit').count()).toBeGreaterThanOrEqual(2) // 02:58, 03:10 (+ "pay a bit extra")
     await type(page, 'patient')
     const single = page.getByTestId('transcript-group')
     await expect(single).toHaveCount(1)
@@ -302,8 +302,10 @@ test.describe('navigation flow', () => {
     await tag.click()
     await expect(tag).toHaveCount(0)
     await expect(page.getByTestId('tag-word')).toHaveText('02.10.26')
+    await page.getByTestId('group-recordings').getByTestId('unfold').click()
     await expect(page.getByTestId('meeting-card')).toHaveCount(2) // m07, m08 on 2 Oct
-    await expect(page.getByTestId('memo-card')).toHaveCount(0)
+    // "Lantern" means the project: memos of Project Lantern from that day count too
+    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.filter((m) => m.createdAt.startsWith('2026-10-02') && m.projectId === 'proj-lantern').length)
   })
 
   test('a partly typed year or month completes to a date tag, and only that is suggested', async ({ page }) => {
@@ -380,8 +382,8 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('ai-result')).toContainText('SSO')
     await expect(firstResult).toBeVisible() // results stay, now lower
     expect((await firstResult.boundingBox())!.y).toBeGreaterThan(before)
-    // the answer is a summary; its quotes are search results below it (D63)
-    await expect(page.getByTestId('ai-sources').getByTestId('transcript-hit').first()).toBeVisible()
+    // the answer summarises the results; no extra sources section appears (D69)
+    await expect(page.getByTestId('ai-sources')).toHaveCount(0)
     await page.getByTestId('ai-synthesis').click() // tapping again hides the answer
     await expect(ai).toHaveAttribute('data-state', 'ready')
   })
@@ -458,7 +460,7 @@ test.describe('AI synthesis answers', () => {
     }
   })
 
-  test('the answer is a summary, never a list of meetings with quotes; quotes are results below', async ({ page }) => {
+  test('the answer is a summary, never a list of meetings with quotes', async ({ page }) => {
     await openSearch(page)
     await type(page, 'What did we agree about the feature?')
     await page.getByTestId('ai-synthesis').click()
@@ -467,9 +469,39 @@ test.describe('AI synthesis answers', () => {
     const text = (await answer.textContent()) ?? ''
     for (const m of mock.meetings) expect(text, `answer names meeting ${m.title}`).not.toContain(m.title)
     expect(await answer.locator('[class*="block"]').count()).toBe(0) // one paragraph, no list
-    const sources = page.getByTestId('ai-sources')
-    await expect(sources.getByTestId('transcript-group').first()).toContainText('Lantern Design Review')
-    expect(await sources.getByTestId('transcript-hit').count()).toBeGreaterThanOrEqual(3)
+  })
+
+  for (const query of ['lanrtern decision', 'lantern decision', 'pricing', 'What did we agree about the feature?', 'When is the deadline we decided to?', 'kestrel']) {
+    test(`AI never brings in other sources than the search: "${query}"`, async ({ page }) => {
+      await openSearch(page)
+      await type(page, query)
+      const unfoldAll = async () => { for (const u of await page.getByTestId('unfold').all()) if ((await u.getAttribute('aria-expanded')) === 'false') await u.click() }
+      const snapshot = () => page.evaluate(() => ({
+        moments: [...document.querySelectorAll('[data-testid=transcript-group]')].flatMap((g) =>
+          [...g.querySelectorAll('[data-testid=transcript-hit]')].map((h) => `${g.getAttribute('data-meeting')}@${h.getAttribute('data-time')}`)),
+        recordings: [...document.querySelectorAll('[data-testid=meeting-card],[data-testid=memo-card]')].map((c) => c.getAttribute('data-id')),
+        actions: [...document.querySelectorAll('[data-testid=action-item]')].map((a) => a.textContent),
+      }))
+      await unfoldAll()
+      const before = await snapshot()
+      expect(before.moments.length + before.recordings.length, 'the search finds something').toBeGreaterThan(0)
+      await page.getByTestId('ai-synthesis').click()
+      await expect(page.getByTestId('ai-result')).toBeVisible()
+      await unfoldAll()
+      expect(await snapshot(), 'results are the same after pressing AI').toEqual(before)
+      // every time chip in the answer is a moment shown in the results
+      const times = new Set(before.moments.map((m) => m.split('@')[1]))
+      for (const chip of await page.getByTestId('time-chip').allTextContents()) expect(times.has(chip.trim()), `chip ${chip}`).toBe(true)
+    })
+  }
+
+  test('typos are corrected: "lanrtern decision" finds what "lantern decision" finds', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'lantern decision')
+    const right = await page.getByTestId('transcript-hit').count()
+    await type(page, 'lanrtern decision')
+    await expect(page.getByTestId('transcript-hit')).toHaveCount(right)
+    expect(right).toBeGreaterThan(0)
   })
 
   test('says it cannot help when the meetings do not know', async ({ page }) => {

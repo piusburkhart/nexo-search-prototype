@@ -37,3 +37,6 @@ AI Synthesis is a permanent control at the top of the search results (Figma 75:3
 
 ## Update: board 77:4178
 Actions (a third file type, with an Actions tab), three-item sections with unfold links, and transcript cards that carry their meeting. The meeting, memo and transcript pages are gone. AI answers are a short summary with the supporting quotes listed as results below (D63).
+
+## Update: one semantic engine (D69)
+Search and AI Synthesis share one reading of the query (`src/semantic.ts`): synonyms, typo correction, the project as membership, and question intent. Search decides the results; AI Synthesis only summarises what is on screen and never adds sources.

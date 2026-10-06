@@ -1,6 +1,6 @@
 # Demo prompts for AI Synthesis
 
-Type a question in the search bar, then tap the sparkle button. Every sentence in the answer ends with the transcript time it came from. All of these are checked by `tests/acceptance.spec.ts` ("AI synthesis answers").
+Type a question in the search bar: the results below are what the search found. Tap the sparkle button for a short summary of exactly those results; every sentence ends with the time of a transcript moment shown below. Typos are fine ("lanrtern decision"). All of these are checked by `tests/acceptance.spec.ts` ("AI synthesis answers").
 
 | Ask | You get |
 |---|---|
