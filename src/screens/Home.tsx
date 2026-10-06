@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Screen, anticipateKeyboard } from '../components/Chrome'
 import { Chip, SectionLabel } from '../components/Atoms'
 import { RecordingCard } from '../components/Cards'
@@ -5,11 +6,17 @@ import { TabBar } from '../components/Dock'
 import { initials, data, isNew, recordings } from '../data'
 import { navigate } from '../router'
 
-const CHIPS = [{ id: 'all', label: 'All' }, { id: 'folders', label: 'Folders' }, { id: 'people', label: 'People' }]
+type Filter = 'all' | 'meeting' | 'memo'
+const CHIPS: { id: Filter | 'folders' | 'people'; label: string }[] = [
+  { id: 'all', label: 'All' }, { id: 'meeting', label: 'Meetings' }, { id: 'memo', label: 'Memos' },
+  { id: 'folders', label: 'Folders' }, { id: 'people', label: 'People' },
+]
 
 export default function Home() {
-  const fresh = recordings.filter((r) => isNew(r.date))
-  const earlier = recordings.filter((r) => !isNew(r.date))
+  const [filter, setFilter] = useState<Filter>('all')
+  const list = recordings.filter((r) => filter === 'all' || r.kind === filter)
+  const fresh = list.filter((r) => isNew(r.date))
+  const earlier = list.filter((r) => !isNew(r.date))
 
   return (
     <Screen dock={<TabBar active="recordings" onSearch={() => { anticipateKeyboard(); document.getElementById('kb-proxy')?.focus(); navigate('/search') }} />}>
@@ -21,8 +28,13 @@ export default function Home() {
           </span>
         </div>
         <div className="flex items-end gap-1" role="tablist">
-          {/* Folders and People are placeholders, as in Figma. */}
-          {CHIPS.map((c) => <Chip key={c.id} label={c.label} selected={c.id === 'all'} dot={c.id === 'all' && fresh.length > 0} />)}
+          {CHIPS.map((c) => {
+            const live = c.id === 'all' || c.id === 'meeting' || c.id === 'memo'
+            return (
+              <Chip key={c.id} label={c.label} selected={c.id === filter}
+                onClick={live ? () => setFilter(c.id as Filter) : undefined} />
+            )
+          })}
         </div>
       </header>
       <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-[130px]">
