@@ -5,6 +5,7 @@
   --color-gray-50: #f5f4f2;
   --color-gray-100: #f3f1ed;
   --color-gray-200: #e5e2e0;
+  --color-gray-300: #d9d6d4;
   --color-gray-600: #a19f9a;
   --color-gray-700: #7e7c78;
   --color-gray-800: #555451;
@@ -45,6 +46,8 @@
 /* Search bar bottom padding: safe area normally, tight when the keyboard is up (set via data-kb). */
 :root { --bar-pb: max(env(safe-area-inset-bottom), 24px); }
 html[data-kb='open'], html[data-kb='pending'] { --bar-pb: 2px; }
+
+@keyframes think { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
 @layer base {
   html, body, #root { height: 100%; overscroll-behavior: none; }

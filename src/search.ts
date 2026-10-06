@@ -96,8 +96,14 @@ export const dateCount = (q: Query) => (q.date ? total({ ...search(q, true), tra
 
 const STOP = new Set('the a an in on of to and for is are was what why how did do does about we with it be any who when'.split(' '))
 
-/** Extractive "synthesis": loose (any-word) ranking over transcript segments. */
-export function synthesize(raw: string): { text: string; hits: TranscriptHit[] } {
+/** A piece of the synthesized answer: prose, optionally followed by a transcript time chip (Figma 76:4043). */
+export interface AnswerPart { text: string; time?: string }
+
+/**
+ * Extractive "synthesis" (D9): loose (any-word) ranking over transcript segments, written as prose
+ * where each sentence is followed by the transcript time it came from. Null when nothing is relevant.
+ */
+export function synthesize(raw: string): AnswerPart[] | null {
   const terms = parseQuery(raw.replace(/[?!.,]/g, ' ')).terms.filter((w) => !STOP.has(w))
   const scored: (TranscriptHit & { score: number })[] = []
   for (const t of data.transcripts) {
@@ -108,16 +114,18 @@ export function synthesize(raw: string): { text: string; hits: TranscriptHit[] }
     })
   }
   scored.sort((a, b) => b.score - a.score)
-  const hits = scored.slice(0, 5)
-  if (!hits.length) return { text: '', hits: [] }
-  const meetingCount = new Set(hits.map((h) => h.meeting.id)).size
-  const lines = hits.slice(0, 3).map(
-    (h) => `${firstName(h.segment.speakerId)} in “${h.meeting.title}” (${h.segment.time})`,
-  )
-  return {
-    text: `${hits.length} relevant moments across ${meetingCount} meeting${meetingCount > 1 ? 's' : ''}, including ${lines.join('; ')}.`,
-    hits,
-  }
+  const hits = scored.slice(0, 3)
+  if (!hits.length) return null
+  const meetings = new Set(hits.map((h) => h.meeting.id)).size
+  const one = meetings === 1
+  const where = one ? `in “${hits[0].meeting.title}”` : `across ${meetings} meetings`
+  return [
+    { text: `${hits.length} relevant moment${hits.length > 1 ? 's' : ''} ${where}.` },
+    ...hits.map((h) => ({
+      text: `${firstName(h.segment.speakerId)}${one ? '' : ` in “${h.meeting.title}”`}: ${h.segment.text}`,
+      time: h.segment.time,
+    })),
+  ]
 }
 
 /** Short excerpt around the first matching term, for result snippets. */
@@ -128,13 +136,6 @@ export function snippet(text: string, terms: string[], max = 140) {
   let start = Math.max(0, first - 40)
   if (start > 0) { const sp = text.indexOf(' ', start); if (sp >= 0 && sp < first) start = sp + 1 }
   return (start > 0 ? '…' : '') + text.slice(start, start + max) + (start + max < text.length ? '…' : '')
-}
-
-const ASK = new Set('what why how who when where which did does do is are was can could should would will summarize summarise explain compare tell list find give show'.split(' '))
-/** True when the query reads like a question or request a keyword search cannot answer. */
-export const looksLikeQuestion = (raw: string) => {
-  const words = raw.trim().toLowerCase().split(/\s+/).filter(Boolean)
-  return raw.trim().endsWith('?') || words.length >= 4 || (words.length >= 2 && ASK.has(words[0]))
 }
 
 /** Every day that has a recording, for date autocompletion. */

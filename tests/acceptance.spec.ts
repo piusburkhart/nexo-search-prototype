@@ -142,15 +142,18 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('meeting-card').first()).toBeVisible()
   })
 
-  test('AI synthesis is offered only for question-like queries or when keyword search finds nothing', async ({ page }) => {
+  test('AI synthesis button is always there; disabled until enough is typed', async ({ page }) => {
     await openSearch(page)
+    const ai = page.getByTestId('ai-synthesis')
+    await expect(ai).toBeVisible()
+    await expect(ai).toBeDisabled() // nothing typed
+    await type(page, 'De')
+    await expect(ai).toBeDisabled() // not sufficient yet (Figma 76:3991)
     await type(page, 'Lantern')
-    await expect(page.getByTestId('meeting-card').first()).toBeVisible()
-    await expect(page.getByTestId('ai-synthesis')).toHaveCount(0)
-    await type(page, 'What did we decide about SSO?')
-    await expect(page.getByTestId('ai-synthesis')).toBeVisible()
+    await expect(ai).toBeEnabled()
+    await expect(page.getByTestId('meeting-card').first()).toBeVisible() // results are there too
     await type(page, 'budget')
-    await expect(page.getByTestId('ai-synthesis')).toBeVisible() // no keyword results
+    await expect(ai).toBeEnabled() // even with no keyword results
   })
 
   test('clear button appears with text and empties the field and filters', async ({ page }) => {
@@ -171,8 +174,8 @@ test.describe('navigation flow', () => {
     await type(page, 'budget')
     await page.getByTestId('ai-synthesis').click()
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).not.toBeFocused()
-    await expect(page.getByTestId('ai-result')).toHaveCount(0)
-    await expect(page.getByText('Can’t help you with that.')).toBeVisible()
+    await expect(page.getByTestId('ai-result')).toHaveText('Can’t help you with that.')
+    await expect(page.getByTestId('empty-state')).toBeVisible() // results area still below
   })
 
   test('filter tags: one type at a time; picked tag becomes a highlighted word', async ({ page }) => {
@@ -234,7 +237,6 @@ test.describe('navigation flow', () => {
     await type(page, '20')
     await expect(page.getByTestId('tag-date')).toContainText('2026')
     for (const t of ['meetings', 'memos', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
-    await expect(page.getByTestId('ai-synthesis')).toHaveCount(0)
     await page.getByTestId('tag-date').click()
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('2026 ')
     await expect(page.getByTestId('tag-word')).toHaveText('2026')
@@ -268,7 +270,6 @@ test.describe('navigation flow', () => {
     await type(page, 'lantern project ')
     await expect(page.getByTestId('meeting-card')).toHaveCount(1)
     for (const t of ['meetings', 'memos', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
-    await expect(page.getByTestId('ai-synthesis')).toBeVisible()
   })
 
   test('typing a year or month suggests it as a tag', async ({ page }) => {
@@ -289,15 +290,25 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('tag-date')).toHaveCount(0)
   })
 
-  test('AI search: offer -> synthesizing -> result -> content cards', async ({ page }) => {
+  test('AI search: ready -> thinking dots -> answer with time chips, pushing the results down', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'Decisions in project lantern?')
+    await type(page, 'defer SSO')
+    const ai = page.getByTestId('ai-section')
+    await expect(ai).toHaveAttribute('data-state', 'ready')
+    const firstResult = page.getByTestId('meeting-card').first()
+    const before = (await firstResult.boundingBox())!.y
     await page.getByTestId('ai-synthesis').click()
-    await expect(page.getByTestId('synthesizing')).toBeVisible()
-    await expect(page.getByTestId('ai-result')).toBeVisible()
-    await expect(page.getByTestId('transcript-hit').first()).toBeVisible()
+    await expect(ai).toHaveAttribute('data-state', 'thinking')
+    await expect(page.getByTestId('synthesizing')).toHaveText('Synthesizing your answer…')
+    await expect(ai).toHaveAttribute('data-state', 'done')
+    await expect(page.getByTestId('time-chip').first()).toHaveText(/\d\d:\d\d/)
+    await expect(page.getByTestId('ai-result')).toContainText('SSO')
+    await expect(firstResult).toBeVisible() // results stay, now lower
+    expect((await firstResult.boundingBox())!.y).toBeGreaterThan(before)
     await page.getByTestId('transcript-hit').first().click()
-    await expect(page).toHaveURL(/#\/search/) // content cards do not navigate (D26)
+    await expect(page).toHaveURL(/#\/search/) // cards do not navigate (D26)
+    await page.getByTestId('ai-synthesis').click() // tapping again hides the answer
+    await expect(ai).toHaveAttribute('data-state', 'ready')
   })
 
   test('memo detail links to related meeting', async ({ page }) => {

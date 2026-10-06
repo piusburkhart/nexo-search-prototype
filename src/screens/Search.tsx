@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Screen } from '../components/Chrome'
 import { EmptyState, SectionLabel } from '../components/Atoms'
+import { AiSynthesis, type AiState } from '../components/AiSynthesis'
 import { HitCard, RecordingCard } from '../components/Cards'
-import { SearchBar, TagCard, keepFocus, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
-import { CalendarIcon, MicIcon, ChatIcon, SparkleIcon, WaveIcon } from '../components/Icons'
+import { SearchBar, TagCard, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
+import { CalendarIcon, MicIcon, ChatIcon, WaveIcon } from '../components/Icons'
 import { navigate, useRoute } from '../router'
-import { dateCompletions, dateCount, emptyResults, everything, looksLikeQuestion, parseQuery, search, synthesize } from '../search'
+import { dateCompletions, dateCount, emptyResults, everything, parseQuery, search, synthesize } from '../search'
 
 type Tag = 'meetings' | 'memos' | 'transcript'
 const LABEL: Record<Tag, string> = { meetings: 'Meetings', memos: 'Memos', transcript: 'Transcript' }
@@ -98,33 +99,25 @@ export default function Search() {
     return () => { document.removeEventListener('focusin', on); document.removeEventListener('focusout', off) }
   }, [])
 
-  // AI synthesis: simulated "thinking" delay, then the result (Figma 72:2695 -> 72:2651)
+  // AI Synthesis is always there (Figma 75:3668): disabled until enough is typed, then it can run.
+  const sufficient = query.terms.join(' ').length >= 3 || dateOn || !!type
   const [thinking, setThinking] = useState(false)
   useEffect(() => {
     if (!ai) return
     setThinking(true)
-    const t = setTimeout(() => setThinking(false), 900)
+    const t = setTimeout(() => setThinking(false), 1100)
     return () => clearTimeout(t)
   }, [ai, q])
-  const synth = useMemo(() => (ai ? synthesize(q) : null), [ai, q])
-
-  // AI is the fallback suggestion (D33): offered whenever there is nothing else to suggest, when
-  // keyword search finds nothing, or when the query reads like a question.
-  const showAiPill = hasText && !ai && (rows.length === 0 || noResults || (hasTerms && looksLikeQuestion(q)))
+  const answer = useMemo(() => (ai ? synthesize(q) : undefined), [ai, q])
+  const aiState: AiState = ai ? (thinking ? 'thinking' : 'done') : sufficient ? 'ready' : 'disabled'
   const momentsOf = (id: string) => shown.transcript.length ? [] : pool.transcript.filter((h) => h.meeting.id === id)
 
   return (
     <Screen
       dock={
         <div style={{ bottom: 'var(--kb, 0px)' }} className="pointer-events-none absolute inset-x-0 [&_button]:pointer-events-auto [&_label]:pointer-events-auto [&_ul]:pointer-events-auto [&_button]:touch-none [&_label]:touch-none [&_ul]:touch-none">
-          {focused && hasText && !ai && (showAiPill || rows.length > 0) && (
+          {focused && hasText && rows.length > 0 && (
             <div className="flex flex-col items-start gap-2 px-5 pb-3">
-              {showAiPill && (
-                <button onClick={() => { blurSearch(); set({ ai: '1' }) }} onMouseDown={keepFocus} data-testid="ai-synthesis"
-                  className="flex h-[46px] items-center gap-2 rounded-pill border border-gray-200 bg-white px-4 text-body-m shadow-bar">
-                  <SparkleIcon />AI Synthesis
-                </button>
-              )}
               {rows.length > 0 && <TagCard rows={rows} onPick={pick} />}
             </div>
           )}
@@ -139,32 +132,17 @@ export default function Search() {
           bar and suggestions simply hover over it (D44). */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[380px]" data-testid="search-body"
         onPointerDown={() => blurSearch()}>
-        {ai ? (
-          <section className="pt-4" aria-label="AI synthesis">
-            {thinking ? (
-              <p className="flex items-center gap-3 px-2 text-body-m" role="status" data-testid="synthesizing">
-                <span className="flex gap-[3px]">{[0, 1, 2].map((i) => <span key={i} className="size-[5px] animate-pulse rounded-pill bg-gray-975" style={{ animationDelay: `${i * 150}ms` }} />)}</span>
-                Synthesizing for you
-              </p>
-            ) : (
-              <div className="px-2"><SparkleIcon />
-                {synth?.text ? <p data-testid="ai-result" className="mt-3 text-heading-xs leading-[1.2] tracking-heading">{synth.text}</p>
-                  : <p className="mt-3 text-heading-xs">Can’t help you with that.</p>}
-              </div>
-            )}
-            <div className="mt-8 flex flex-col gap-2">
-              {synth && synth.hits.length > 0 && <SectionLabel>Content</SectionLabel>}
-              {synth?.hits.map((h) => (
-                <HitCard key={h.transcript.id + h.segment.start} hit={h} terms={parseQuery(q.replace(/[?!.,]/g, ' ')).terms} />
-              ))}
-            </div>
-          </section>
-        ) : idle ? (
-          <p className="px-2 pt-3.5 text-heading-xs tracking-heading text-gray-700">Ask about anything.</p>
+        <div className="pt-6 pb-4 sm:pt-[44px]">
+          <AiSynthesis state={aiState} answer={answer}
+            onRun={() => { blurSearch(); set({ ai: '1' }) }} onReset={() => set({ ai: undefined })} />
+        </div>
+        {idle ? (
+
+          <p className="px-2 text-heading-xs tracking-heading text-gray-700">Ask about anything.</p>
         ) : noResults ? (
           <EmptyState query={q.trim()} />
         ) : (
-          <div className="flex flex-col gap-2 pt-4">
+          <div className="flex flex-col gap-2">
             {shown.meetings.length > 0 && <section className="flex flex-col gap-2" data-testid="group-meetings">
               <SectionLabel>Meetings · {shown.meetings.length}</SectionLabel>
               {shown.meetings.map((m) => (
