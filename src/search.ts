@@ -63,8 +63,12 @@ export interface Results {
   notes: Note[]; summaryOf: Meeting | null; highlight: string[]
   /** Set when the query asks about a day, month or year only ("what happened on 21.09.26"). */
   period: DateFilter | null
+  /** Per section, the share of typed words its best item contains literally: the most direct section goes first. */
+  directness: Record<Section, number>
 }
-export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [], folders: [], notes: [], summaryOf: null, highlight: [], period: null }
+export type Section = 'folders' | 'recordings' | 'actions' | 'transcript'
+export const SECTION_ORDER: Section[] = ['folders', 'recordings', 'actions', 'transcript']
+export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [], folders: [], notes: [], summaryOf: null, highlight: [], period: null, directness: { folders: 0, recordings: 0, actions: 0, transcript: 0 } }
 export const total = (r: Pick<Results, 'meetings' | 'memos' | 'actions' | 'transcript' | 'folders'>) => r.meetings.length + r.memos.length + r.actions.length + r.transcript.length + r.folders.length
 
 /** Transcript hits grouped by meeting, the most relevant meetings first (Figma 77:4717). */
@@ -173,7 +177,14 @@ export function search(q: Query, applyDate = false): Results {
   // deadline, so queries asking for a kind of finding leave folders out.
   const folders = u.asksKind || key ? [] : data.folders.filter((f) => fits(`${f.name} ${f.description}`, f.projectId))
 
-  return { meetings, memos, actions, transcript, folders, notes, summaryOf: namedMeeting(u), highlight: u.highlight, period: null }
+  const best = (texts: string[]) => Math.max(0, ...texts.map((t) => literalHits(t, u))) / Math.max(1, u.literal.length)
+  const directness = {
+    folders: best(folders.map((f) => f.name)),
+    recordings: best([...meetings.map((m) => m.title), ...memos.map((m) => m.content)]),
+    actions: best(actions.map((a) => a.title)),
+    transcript: best(transcript.map((h) => h.segment.text)),
+  }
+  return { meetings, memos, actions, transcript, folders, notes, summaryOf: namedMeeting(u), highlight: u.highlight, period: null, directness }
 }
 
 /** Count of date-matching recordings for the date tag. */

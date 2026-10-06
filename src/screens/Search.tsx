@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Screen } from '../components/Chrome'
 import { EmptyState, SectionLabel } from '../components/Atoms'
 import { AiSynthesis, type AiState } from '../components/AiSynthesis'
@@ -7,7 +7,7 @@ import { SearchBar, TagCard, refocusSearch, blurSearch, type TagRow } from '../c
 import { CalendarIcon, CheckCircleIcon, FolderIcon, MicIcon, ChatIcon, WaveIcon } from '../components/Icons'
 import { navigate, useRoute } from '../router'
 import { synthesize } from '../ai'
-import { total, dateCompletions, dateCount, emptyResults, everything, groupByMeeting, parseQuery, recordingScore, search } from '../search'
+import { SECTION_ORDER, total, type Section, dateCompletions, dateCount, emptyResults, everything, groupByMeeting, parseQuery, recordingScore, search } from '../search'
 import { understand } from '../semantic'
 import type { Recording } from '../data'
 
@@ -134,6 +134,31 @@ export default function Search() {
   const answer = useMemo(() => (ai ? synthesize(shown, pool, q) : undefined), [ai, q, shown, pool])
   const aiState: AiState = ai ? (thinking ? 'thinking' : 'done') : sufficient ? 'ready' : 'disabled'
 
+  // Sections in the Figma order, except that the one whose best item says the typed words most directly comes
+  // first: "nexo design review" puts the Design Review meeting above the Nexo folder (D78).
+  const SECTIONS: Record<Section, ReactNode> = {
+    folders: shown.folders.length > 0 && <section className="flex flex-col gap-2" data-testid="group-folders">
+        <SectionLabel>Folders</SectionLabel>
+        <div className="grid grid-cols-2 gap-2">{shown.folders.map((f) => <FolderCard key={f.id} folder={f} terms={pool.highlight} />)}</div>
+      </section>,
+    recordings: recs.length > 0 && <section className="flex flex-col gap-2" data-testid="group-recordings">
+        <SectionLabel>Recordings</SectionLabel>
+        {(unfolded.rec ? recs : recs.slice(0, LIMIT)).map((r) => <RecordingCard key={r.item.id} rec={r} terms={pool.highlight} withSnippet />)}
+        {recs.length > LIMIT && <UnfoldLink open={!!unfolded.rec} label={`${recs.length - LIMIT} more recordings might also be relevant`} onClick={() => toggle('rec')} />}
+      </section>,
+    actions: shown.actions.length > 0 && <section className="flex flex-col gap-2" data-testid="group-actions">
+        <SectionLabel>Actions</SectionLabel>
+        {(unfolded.act ? shown.actions : shown.actions.slice(0, LIMIT)).map((a) => <ActionPill key={a.id} action={a} terms={pool.highlight} />)}
+        {shown.actions.length > LIMIT && <UnfoldLink open={!!unfolded.act} label="Show all actions" onClick={() => toggle('act')} />}
+      </section>,
+    transcript: groups.length > 0 && <section className="flex flex-col gap-2" data-testid="group-transcript">
+        <SectionLabel>Summary &amp; Transcription</SectionLabel>
+        {(unfolded.tr ? groups : groups.slice(0, LIMIT)).map((g) => <TranscriptCard key={g.meeting.id} group={g} terms={pool.highlight} />)}
+        {groups.length > LIMIT && <UnfoldLink open={!!unfolded.tr} label={`${hiddenHits} more content might also be relevant`} onClick={() => toggle('tr')} />}
+      </section>,
+  }
+  const order = [...SECTION_ORDER].sort((a, b) => pool.directness[b] - pool.directness[a])
+
   return (
     <Screen
       dock={
@@ -161,25 +186,7 @@ export default function Search() {
         </div>
         {idle ? null : noResults ? (ai ? null : <EmptyState query={q.trim()} />) : (
           <div className="flex flex-col gap-6">
-            {shown.folders.length > 0 && <section className="flex flex-col gap-2" data-testid="group-folders">
-              <SectionLabel>Folders</SectionLabel>
-              <div className="grid grid-cols-2 gap-2">{shown.folders.map((f) => <FolderCard key={f.id} folder={f} terms={pool.highlight} />)}</div>
-            </section>}
-            {recs.length > 0 && <section className="flex flex-col gap-2" data-testid="group-recordings">
-              <SectionLabel>Recordings</SectionLabel>
-              {(unfolded.rec ? recs : recs.slice(0, LIMIT)).map((r) => <RecordingCard key={r.item.id} rec={r} terms={pool.highlight} withSnippet />)}
-              {recs.length > LIMIT && <UnfoldLink open={!!unfolded.rec} label={`${recs.length - LIMIT} more recordings might also be relevant`} onClick={() => toggle('rec')} />}
-            </section>}
-            {shown.actions.length > 0 && <section className="flex flex-col gap-2" data-testid="group-actions">
-              <SectionLabel>Actions</SectionLabel>
-              {(unfolded.act ? shown.actions : shown.actions.slice(0, LIMIT)).map((a) => <ActionPill key={a.id} action={a} terms={pool.highlight} />)}
-              {shown.actions.length > LIMIT && <UnfoldLink open={!!unfolded.act} label="Show all actions" onClick={() => toggle('act')} />}
-            </section>}
-            {groups.length > 0 && <section className="flex flex-col gap-2" data-testid="group-transcript">
-              <SectionLabel>Summary &amp; Transcription</SectionLabel>
-              {(unfolded.tr ? groups : groups.slice(0, LIMIT)).map((g) => <TranscriptCard key={g.meeting.id} group={g} terms={pool.highlight} />)}
-              {groups.length > LIMIT && <UnfoldLink open={!!unfolded.tr} label={`${hiddenHits} more content might also be relevant`} onClick={() => toggle('tr')} />}
-            </section>}
+            {order.map((k) => <Fragment key={k}>{SECTIONS[k]}</Fragment>)}
           </div>
         )}
       </div>

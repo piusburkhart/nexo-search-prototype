@@ -403,6 +403,16 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('transcript-group').first().locator('mark').first()).toBeVisible()
   })
 
+  test('"nexo design review": the Design Review meeting is the first result, above the Nexo folder', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'nexo design review')
+    const first = page.locator('section[data-testid^="group-"]').first()
+    await expect(first).toHaveAttribute('data-testid', 'group-recordings')
+    await expect(first.getByTestId('meeting-card').first()).toContainText('Nexo Design Review')
+    await type(page, 'nexo')
+    await expect(page.locator('section[data-testid^="group-"]').first()).toHaveAttribute('data-testid', 'group-folders') // the folder is the direct hit
+  })
+
   test('actions highlight the word in their meeting name too', async ({ page }) => {
     await openSearch(page)
     await type(page, 'Nexo')
