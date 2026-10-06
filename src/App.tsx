@@ -4,6 +4,8 @@ import Search from './screens/Search'
 import Transcript from './screens/Transcript'
 import { MeetingDetail, MemoDetail } from './screens/Details'
 import { useRoute } from './router'
+import Gate, { isUnlocked } from './screens/Gate'
+import { useState } from 'react'
 
 function Routes() {
   const [screen, id] = useRoute().segments
@@ -17,6 +19,8 @@ function Routes() {
 }
 
 export default function App() {
+  const [unlocked, setUnlocked] = useState(isUnlocked)
+  if (!unlocked) return <PhoneFrame><Gate onUnlock={() => setUnlocked(true)} /></PhoneFrame>
   return (
     <PhoneFrame>
       {/* iOS only opens the keyboard for focus() called inside a tap. The Search screen mounts later

@@ -2,11 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Screen } from '../components/Chrome'
 import { EmptyState, SectionLabel } from '../components/Atoms'
 import { HitCard, RecordingCard } from '../components/Cards'
-import { DatePill, SearchBar, TagCard, keepFocus, refocusSearch, type TagRow } from '../components/Dock'
+import { DatePill, SearchBar, TagCard, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
 import { MicIcon, ChatIcon, SparkleIcon, WaveIcon } from '../components/Icons'
-import { data, folderName, recordings } from '../data'
 import { navigate, useRoute } from '../router'
-import { dateCount, emptyResults, everything, parseQuery, search, synthesize, total, wantsAi } from '../search'
+import { dateCount, emptyResults, everything, parseQuery, search, synthesize, total } from '../search'
 
 type Tag = 'meetings' | 'memos' | 'transcript'
 
@@ -65,9 +64,8 @@ export default function Search() {
   }, [ai, q])
   const synth = useMemo(() => (ai ? synthesize(q) : null), [ai, q])
 
-  const folderCount = recordings.filter((r) => r.item.projectId === data.project.id).length
   const noResults = !idle && total(results) === 0
-  const showAiPill = hasText && !ai && wantsAi(q)
+  const showAiPill = hasText && !ai // always offered as a last resort (D33)
 
   return (
     <Screen
@@ -76,7 +74,7 @@ export default function Search() {
           {hasText && !ai && (showAiPill || showDate || rows.length > 0) && (
             <div className="flex flex-col items-start gap-2 px-5 pb-3">
               {showAiPill && (
-                <button onClick={() => set({ ai: '1' })} onMouseDown={keepFocus} data-testid="ai-synthesis"
+                <button onClick={() => { blurSearch(); set({ ai: '1' }) }} data-testid="ai-synthesis"
                   className="flex h-[46px] items-center gap-2 rounded-pill bg-white px-4 text-body-m shadow-pill">
                   <SparkleIcon />AI Synthesis
                 </button>
@@ -103,7 +101,7 @@ export default function Search() {
               <div className="flex flex-col gap-4">
                 <div className="px-2"><SparkleIcon />
                   {synth?.text ? <p data-testid="ai-result" className="mt-3 text-heading-xs leading-[1.2] tracking-heading">{synth.text}</p>
-                    : <p className="mt-3 text-heading-xs">Nothing to synthesize for this question.</p>}
+                    : <p className="mt-3 text-heading-xs">Can’t help you with that.</p>}
                 </div>
               </div>
             )}
@@ -116,22 +114,7 @@ export default function Search() {
             </div>
           </section>
         ) : idle ? (
-          <>
-            <p className="px-2 pt-3.5 pb-[50px] text-heading-xs tracking-heading text-gray-975">Ask about anything.</p>
-            <div className="flex flex-col gap-2">
-              <SectionLabel>Folders</SectionLabel>
-              <button onClick={() => set({ q: data.project.name.replace(/^Project /, '') })} data-testid="folder-card"
-                className="flex h-[202px] w-[195px] flex-col justify-end rounded-hit bg-white pb-4 pl-4 pr-3">
-                <span className="text-heading-xl leading-[1.2] tracking-heading">{folderName(data.project.id)}</span>
-                <span className="mt-1 flex items-center gap-1 text-heading-s tracking-heading text-gray-800"><WaveIcon className="size-4" />{folderCount}</span>
-              </button>
-              <div className="h-[51px]" />
-              <SectionLabel>Recordings</SectionLabel>
-              {recordings.slice(0, 3).map((r) => (
-                <RecordingCard key={r.item.id} rec={r} />
-              ))}
-            </div>
-          </>
+          <p className="px-2 pt-3.5 text-heading-xs tracking-heading text-gray-975">Ask about anything.</p>
         ) : noResults ? (
           <EmptyState query={q.trim()} />
         ) : (

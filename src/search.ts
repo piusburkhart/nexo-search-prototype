@@ -97,9 +97,6 @@ export const dateCount = (q: Query) =>
 
 const STOP = new Set('the a an in on of to and for is are was what why how did do does about we with it be any who when'.split(' '))
 
-/** AI search is offered when the query reads like a question (D9). */
-export const wantsAi = (raw: string) => raw.trim().endsWith('?') || raw.trim().split(/\s+/).length >= 3
-
 /** Extractive "synthesis": loose (any-word) ranking over transcript segments. */
 export function synthesize(raw: string): { text: string; hits: TranscriptHit[] } {
   const terms = parseQuery(raw.replace(/[?!.,]/g, ' ')).terms.filter((w) => !STOP.has(w))

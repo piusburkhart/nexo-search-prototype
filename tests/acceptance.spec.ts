@@ -1,5 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
 
+// The password gate is covered in gate.spec.ts; here we start unlocked.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('nexo-auth', '88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527'))
+})
+
 const openSearch = async (page: Page) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Search', exact: true }).click()
@@ -117,11 +122,22 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('memo-card')).toHaveCount(10)
   })
 
-  test('search idle shows folder and recordings; folder opens project results', async ({ page }) => {
+  test('search default view is empty until you type', async ({ page }) => {
     await openSearch(page)
-    await expect(page.getByText('Folders')).toBeVisible()
-    await page.getByTestId('folder-card').click()
-    await expect(page.getByTestId('group-meetings')).toBeVisible()
+    await expect(page.getByTestId('folder-card')).toHaveCount(0)
+    await expect(page.getByTestId('meeting-card')).toHaveCount(0)
+    await expect(page.getByTestId('memo-card')).toHaveCount(0)
+    await type(page, 'Lantern')
+    await expect(page.getByTestId('meeting-card').first()).toBeVisible()
+  })
+
+  test('AI synthesis is always offered and says so when it cannot help; it closes the keyboard', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'budget')
+    await page.getByTestId('ai-synthesis').click()
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).not.toBeFocused()
+    await expect(page.getByTestId('ai-result')).toHaveCount(0)
+    await expect(page.getByText('Can’t help you with that.')).toBeVisible()
   })
 
   test('filter tags: stacked card; picked tag becomes a highlighted word in the text', async ({ page }) => {

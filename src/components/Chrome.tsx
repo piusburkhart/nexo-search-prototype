@@ -59,12 +59,20 @@ export function Screen({ children, dock, tone = 'gray-50' }: { children: ReactNo
   // The browser's status bar takes this colour so it blends into the screen (theme-color).
   useEffect(() => {
     const color = getComputedStyle(document.documentElement).getPropertyValue(`--color-${tone}`).trim()
-    document.querySelector('meta[name=theme-color]')?.setAttribute('content', color)
+    // Replace the tag rather than edit it: Safari re-reads a fresh theme-color more reliably.
+    document.querySelectorAll('meta[name=theme-color]').forEach((m) => m.remove())
+    const meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    meta.content = color
+    document.head.appendChild(meta)
     document.documentElement.style.background = color
     document.body.style.background = color
   }, [tone])
+  const bg = tone === 'gray-200' ? 'bg-gray-200' : 'bg-gray-50'
   return (
-    <div className={`absolute inset-0 flex flex-col pt-[max(env(safe-area-inset-top),12px)] sm:pt-0 ${tone === 'gray-200' ? 'bg-gray-200' : 'bg-gray-50'}`}>
+    <div className={`absolute inset-0 flex flex-col pt-[max(env(safe-area-inset-top),12px)] sm:pt-0 ${bg}`}>
+      {/* iOS tints the status bar from the fixed element at the top edge, so give it the screen's colour */}
+      <div aria-hidden="true" className={`fixed inset-x-0 top-0 z-50 h-[env(safe-area-inset-top)] sm:hidden ${bg}`} />
       <StatusBar />
       {children}
       {dock}

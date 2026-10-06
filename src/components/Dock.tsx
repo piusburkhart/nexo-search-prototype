@@ -25,6 +25,8 @@ export function TabBar({ onSearch }: { onSearch: () => void }) {
 export const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault()
 export const refocusSearch = () => document.querySelector<HTMLInputElement>('input[aria-label="Search"]')?.focus()
 
+export const blurSearch = () => { const a = document.activeElement; if (a instanceof HTMLInputElement) a.blur() }
+
 const escRe = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
