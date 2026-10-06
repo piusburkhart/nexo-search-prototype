@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { CalendarIcon, ChecklistIcon, CloseIcon, RecordIcon, SearchIcon } from './Icons'
+import { ChecklistIcon, CloseIcon, RecordIcon, SearchIcon } from './Icons'
 
 /** Home bottom bar (Figma 72:1749): tabs pill + search button. */
 export function TabBar({ onSearch }: { onSearch: () => void }) {
@@ -44,7 +44,7 @@ export function SearchBar({ value, onChange, onClose, onClear, tagWords = [], pl
   const text = 'text-heading-xs tracking-heading leading-[24px] whitespace-pre'
   return (
     <div className="flex items-center gap-3 px-5 pb-[var(--bar-pb)]">
-      <label className="flex h-12 min-w-0 flex-1 items-center rounded-pill bg-white px-[19px] shadow-bar">
+      <label className="flex h-12 min-w-0 flex-1 items-center rounded-pill border border-gray-200 bg-white px-[19px] shadow-bar">
         <SearchIcon className={`mr-2 size-4 shrink-0 text-gray-600 ${value ? 'hidden' : ''}`} />
         {/* padded, clipping box: tag backgrounds may extend past the text without being cut off */}
         <span className="relative -mx-1.5 -my-2 h-10 min-w-0 flex-1 overflow-hidden">
@@ -71,17 +71,17 @@ export function SearchBar({ value, onChange, onClose, onClear, tagWords = [], pl
         )}
       </label>
       <button onClick={onClose} aria-label="Close search"
-        className="flex size-12 shrink-0 items-center justify-center rounded-pill bg-white shadow-bar"><CloseIcon /></button>
+        className="flex size-12 shrink-0 items-center justify-center rounded-pill border border-gray-200 bg-white shadow-bar"><CloseIcon /></button>
     </div>
   )
 }
 
 export interface TagRow { id: string; label: string; count: number; icon: ReactNode }
 
-/** Stacked tag suggestions in one white card (Figma 72:1957). Selected tags are removed from it. */
+/** Stacked suggestions in one white card (Figma 72:1957): type tags and a date. Selected ones are removed from it. */
 export function TagCard({ rows, onPick }: { rows: TagRow[]; onPick: (id: string) => void }) {
   return (
-    <ul className="w-[145px] rounded-hit bg-white px-4 py-2 shadow-bar" aria-label="Filter tags">
+    <ul className="w-[145px] rounded-hit border border-gray-200 bg-white px-4 py-2 shadow-bar" aria-label="Filter tags">
       {rows.map((r) => (
         <li key={r.id}>
           <button onClick={() => onPick(r.id)} onMouseDown={keepFocus} data-testid={`tag-${r.id}`}
@@ -91,15 +91,5 @@ export function TagCard({ rows, onPick }: { rows: TagRow[]; onPick: (id: string)
         </li>
       ))}
     </ul>
-  )
-}
-
-/** Date suggestion pill (Figma 72:2345): calendar, date text, count. */
-export function DatePill({ label, count, onClick }: { label: string; count: number; onClick: () => void }) {
-  return (
-    <button onClick={onClick} onMouseDown={keepFocus} data-testid="date-tag"
-      className="flex h-[46px] items-center gap-3 rounded-pill bg-white px-4 text-body-m shadow-bar">
-      <CalendarIcon />{label}<span className="ml-2">{count}</span>
-    </button>
   )
 }

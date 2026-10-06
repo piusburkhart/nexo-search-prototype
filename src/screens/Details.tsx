@@ -33,7 +33,7 @@ export function MeetingDetail({ id }: { id: string }) {
           <>
             <div className="mt-4" /><SectionLabel>Related memos</SectionLabel>
             {related.map((x) => (
-              <button key={x.id} onClick={() => navigate(`/memo/${x.id}`)} className="rounded-hit border border-gray-200 bg-white px-5 py-4 text-heading-xs tracking-heading">{x.title}</button>
+              <button key={x.id} onClick={() => navigate(`/memo/${x.id}`)} className="line-clamp-2 rounded-hit border border-gray-200 bg-white px-5 py-4 text-left font-serif text-heading-xs tracking-heading">{x.content}</button>
             ))}
           </>
         )}
@@ -48,7 +48,7 @@ export function MemoDetail({ id }: { id: string }) {
   const folder = folderName(m.projectId)
   const mm = `${Math.floor(m.durationSec / 60)}:${String(m.durationSec % 60).padStart(2, '0')}`
   return (
-    <DetailScreen title={m.title} meta={`${formatDay(m.createdAt)} · ${mm}${folder ? ` · ${folder}` : ''}`}>
+    <DetailScreen meta={`Memo · ${formatDay(m.createdAt)} · ${mm}${folder ? ` · ${folder}` : ''}`}>
       <div className="flex flex-col gap-2">
         <p className="rounded-card bg-white p-6 font-serif text-heading-m leading-[1.5] tracking-heading text-gray-950">{m.content}</p>
         <ul className="flex flex-wrap gap-2 px-2 pt-2 text-body-s text-gray-800">

@@ -1,20 +1,20 @@
 import { data, dayOf, getMeeting, MONTH_NAMES, firstName } from './data'
 import type { Meeting, Memo, Segment, Transcript } from './data/types'
 
-export interface DateFilter { kind: 'day' | 'month' | 'year'; key: string; label: string }
+export interface DateFilter { kind: 'day' | 'month' | 'year'; key: string; label: string; text: string }
 export interface Query { raw: string; terms: string[]; date: DateFilter | null }
 
 const FULL = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
 const MONTH_RE = FULL.map((m) => `${m.slice(0, 3)}(?:${m.slice(3)})?`).join('|')
 const monthIdx = (name: string) => FULL.findIndex((m) => m.startsWith(name.toLowerCase().slice(0, 3))) + 1
 const pad = (n: number) => String(n).padStart(2, '0')
-const day = (y: number, m: number, d: number): DateFilter => ({ kind: 'day', key: `${y}-${pad(m)}-${pad(d)}`, label: `${d} ${MONTH_NAMES[m - 1]} ${y}` })
-const month = (y: number, m: number): DateFilter => ({ kind: 'month', key: `${y}-${pad(m)}`, label: `${FULL[m - 1][0].toUpperCase()}${FULL[m - 1].slice(1)} ${y}` })
-const year = (y: number): DateFilter => ({ kind: 'year', key: String(y), label: String(y) })
+const day = (y: number, m: number, d: number): Omit<DateFilter, 'text'> => ({ kind: 'day', key: `${y}-${pad(m)}-${pad(d)}`, label: `${d} ${MONTH_NAMES[m - 1]} ${y}` })
+const month = (y: number, m: number): Omit<DateFilter, 'text'> => ({ kind: 'month', key: `${y}-${pad(m)}`, label: `${FULL[m - 1][0].toUpperCase()}${FULL[m - 1].slice(1)} ${y}` })
+const year = (y: number): Omit<DateFilter, 'text'> => ({ kind: 'year', key: String(y), label: String(y) })
 /** Year assumed when only a month is typed (D8): the newest year in the data. */
 const DATA_YEAR = Number(data.meetings.map((m) => m.startsAt).sort().at(-1)!.slice(0, 4))
 
-const DATE_RES: [RegExp, (m: RegExpMatchArray) => DateFilter][] = [
+const DATE_RES: [RegExp, (m: RegExpMatchArray) => Omit<DateFilter, 'text'>][] = [
   [/\b(\d{4})-(\d{2})-(\d{2})\b/, (m) => day(+m[1], +m[2], +m[3])],
   [/\b(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})\b/, (m) => day(m[3].length === 2 ? 2000 + +m[3] : +m[3], +m[2], +m[1])],
   [new RegExp(`\\b(\\d{1,2}) (${MONTH_RE}) (\\d{4})\\b`, 'i'), (m) => day(+m[3], monthIdx(m[2]), +m[1])],
@@ -25,18 +25,17 @@ const DATE_RES: [RegExp, (m: RegExpMatchArray) => DateFilter][] = [
 ]
 
 /**
- * Splits a raw query into lowercase terms and an optional recognised date.
- * Exact days are always removed from the terms; months and years only once the
- * date filter is applied, so "october" / "2026" still work as plain words.
+ * Splits a raw query into lowercase terms and an optional recognised date (day, month or year).
+ * The date text is never a search term: it is offered as a tag and, once selected, applied as a filter.
  */
-export function parseQuery(raw: string, applyDate = false, tagWords: string[] = []): Query {
+export function parseQuery(raw: string, tagWords: string[] = []): Query {
   let rest = raw
   let date: DateFilter | null = null
   for (const [re, f] of DATE_RES) {
     const m = rest.match(re)
     if (m) {
-      date = f(m)
-      if (date.kind === 'day' || applyDate) rest = rest.replace(m[0], ' ')
+      date = { ...f(m), text: m[0] }
+      rest = rest.replace(m[0], ' ')
       break
     }
   }
@@ -72,12 +71,9 @@ export function search(q: Query, applyDate = false): Results {
   const key = applyDate ? q.date?.key ?? null : null
   if (!q.terms.length && !key) return emptyResults
   const inDay = (iso: string) => !key || dayOf(iso).startsWith(key)
-  const meetings = data.meetings.filter(
-    (m) => inDay(m.startsAt) && matchesAll(`${m.title} ${m.summary}`, q.terms),
-  )
-  const memos = data.memos.filter(
-    (m) => inDay(m.createdAt) && matchesAll(`${m.title} ${m.content}`, q.terms),
-  )
+  const fileMatch = (m: Meeting) => inDay(m.startsAt) && matchesAll(`${m.title} ${m.summary}`, q.terms)
+  // Memos have no headline in the UI, so only their body is searched (D41).
+  const memos = data.memos.filter((m) => inDay(m.createdAt) && matchesAll(m.content, q.terms))
   const transcript: TranscriptHit[] = []
   if (q.terms.length) {
     for (const t of data.transcripts) {
@@ -88,12 +84,15 @@ export function search(q: Query, applyDate = false): Results {
       })
     }
   }
+  // A meeting and its transcript are one thing (D42): a meeting is a hit if its title/summary or any
+  // moment in its transcript matches.
+  const withMoments = new Set(transcript.map((h) => h.meeting.id))
+  const meetings = data.meetings.filter((m) => fileMatch(m) || withMoments.has(m.id))
   return { meetings, memos, transcript }
 }
 
 /** Count of date-matching recordings for the date tag. */
-export const dateCount = (q: Query) =>
-  q.date ? total({ ...search(parseQuery(q.raw, true), true), transcript: [] }) : 0
+export const dateCount = (q: Query) => (q.date ? total({ ...search(q, true), transcript: [] }) : 0)
 
 const STOP = new Set('the a an in on of to and for is are was what why how did do does about we with it be any who when'.split(' '))
 

@@ -13,12 +13,14 @@ const openSearch = async (page: Page) => {
 const type = async (page: Page, q: string) => page.getByRole('searchbox', { name: 'Search', exact: true }).fill(q)
 const hits = (page: Page) => page.getByTestId('transcript-hit')
 
-test('1. "Lantern" returns meetings, memos and transcript hits', async ({ page }) => {
+test('1. "Lantern" returns meetings, memos and transcript moments', async ({ page }) => {
   await openSearch(page)
   await type(page, 'Lantern')
-  for (const g of ['group-meetings', 'group-memos', 'group-transcript']) await expect(page.getByTestId(g)).toBeVisible()
   await expect(page.getByTestId('group-meetings')).toContainText('Meetings · ')
-  await expect(page.getByTestId('group-transcript').locator('mark').first()).toBeVisible()
+  await expect(page.getByTestId('group-memos')).toBeVisible()
+  // a meeting is its transcript: matching moments are nested under the meeting
+  await expect(page.getByTestId('group-meetings').getByTestId('transcript-hit').first()).toBeVisible()
+  await expect(page.getByTestId('group-meetings').locator('mark').first()).toBeVisible()
 })
 
 test('2. "CSV" finds where it was discussed (speaker, time, text); results do not navigate', async ({ page }) => {
@@ -52,8 +54,12 @@ test('3. the reason SSO was postponed is findable', async ({ page }) => {
 test('4. "pricing" hits Brightside Dental and Kestrel', async ({ page }) => {
   await openSearch(page)
   await type(page, 'pricing')
-  await expect(hits(page).filter({ hasText: 'Customer Interview: Brightside Dental' })).toHaveCount(2) // 02:58, 03:10
-  await expect(hits(page).filter({ hasText: 'Vendor Call: Kestrel Analytics' })).toHaveCount(1)
+  await expect(hits(page)).toHaveCount(3)
+  await expect(hits(page).filter({ hasText: 'Is that a dealbreaker for pricing' })).toHaveCount(1) // Brightside 02:58
+  await expect(hits(page).filter({ hasText: 'but pricing matters' })).toHaveCount(1) // Brightside 03:10
+  await expect(hits(page).filter({ hasText: 'What about pricing?' })).toHaveCount(1) // Kestrel
+  for (const title of ['Customer Interview: Brightside Dental', 'Vendor Call: Kestrel Analytics'])
+    await expect(page.getByTestId('meeting-card').filter({ hasText: title })).toHaveCount(1)
 })
 
 test('5. Kestrel signing deadline (16 October) is findable', async ({ page }) => {
@@ -68,6 +74,7 @@ test('6. "swim" finds the personal swim pickup memo', async ({ page }) => {
   const memo = page.getByTestId('group-memos').getByTestId('memo-card')
   await expect(memo).toHaveCount(1)
   await expect(memo).toContainText('Astrid from swimming')
+  await expect(memo).not.toContainText('Groceries and swim') // memos have no headline
   await memo.click()
   await expect(page).toHaveURL(/#\/search/) // D26
 })
@@ -81,7 +88,11 @@ test('7. "budget" shows the empty state', async ({ page }) => {
 test('search: multi-word is AND, case-insensitive, group counts', async ({ page }) => {
   await openSearch(page)
   await type(page, 'csv IMPORT')
+  await expect(hits(page).first()).toBeVisible()
+  await page.getByTestId('tag-transcript').click()
   await expect(page.getByTestId('group-transcript')).toContainText('Transcript mentions · ')
+  await expect(page.getByTestId('group-meetings')).toHaveCount(0)
+  await page.getByTestId('clear-search').click()
   await type(page, 'csv zzzz')
   await expect(page.getByTestId('empty-state')).toBeVisible()
 })
@@ -164,24 +175,21 @@ test.describe('navigation flow', () => {
     await expect(page.getByText('Can’t help you with that.')).toBeVisible()
   })
 
-  test('filter tags: stacked card; picked tag becomes a highlighted word in the text', async ({ page }) => {
+  test('filter tags: one type at a time; picked tag becomes a highlighted word', async ({ page }) => {
     await openSearch(page)
     await type(page, 'Lantern')
     await expect(page.getByTestId('tag-meetings')).toBeVisible()
     await expect(page.getByTestId('tag-memos')).toBeVisible() // stacked in one card
     await page.getByTestId('tag-memos').click()
-    await expect(page.getByTestId('tag-memos')).toHaveCount(0) // gone from suggestions
     await expect(page.getByTestId('tag-word')).toHaveText('memos') // grey background on the word
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('Lantern memos ')
     await expect(page.getByTestId('group-meetings')).toHaveCount(0)
     await expect(page.getByTestId('group-memos')).toBeVisible()
-    await page.getByTestId('tag-meetings').click() // multiple tags combine
-    await expect(page.getByTestId('tag-word')).toHaveCount(2)
-    await expect(page.getByTestId('group-meetings')).toBeVisible()
-    await expect(page.getByTestId('group-transcript')).toHaveCount(0)
-    await type(page, 'Lantern meetings ') // deleting the word removes the tag
+    // you chose memos: no other type is suggested any more
+    for (const t of ['meetings', 'memos', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
+    await type(page, 'Lantern ') // deleting the word removes the tag
     await expect(page.getByTestId('tag-memos')).toBeVisible()
-    await expect(page.getByTestId('group-memos')).toHaveCount(0)
+    await expect(page.getByTestId('group-meetings')).toBeVisible()
   })
 
   test('autocomplete: "transcr" leaves only Transcript and completes the word', async ({ page }) => {
@@ -207,32 +215,36 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('tag-word')).toHaveText('transcript')
   })
 
-  test('date tag is recognised and filters to that day', async ({ page }) => {
+  test('date tag is suggested in the card, applies as a filter and highlights its text', async ({ page }) => {
     await openSearch(page)
     await type(page, 'Lantern 02.10.26')
-    const tag = page.getByTestId('date-tag')
+    const tag = page.getByTestId('tag-date')
     await expect(tag).toContainText('2 Oct 2026')
+    await expect(page.getByTestId('tag-memos')).toBeVisible() // same card as the type tags
     await expect(page.getByTestId('meeting-card')).not.toHaveCount(2)
     await tag.click()
     await expect(tag).toHaveCount(0)
+    await expect(page.getByTestId('tag-word')).toHaveText('02.10.26')
     await expect(page.getByTestId('meeting-card')).toHaveCount(2) // m07, m08 on 2 Oct
     await expect(page.getByTestId('memo-card')).toHaveCount(0)
   })
 
-  test('typing a year or month offers a date filter', async ({ page }) => {
+  test('typing a year or month suggests it as a tag', async ({ page }) => {
     await openSearch(page)
     await type(page, '2026')
-    await expect(page.getByTestId('date-tag')).toContainText('2026')
-    await page.getByTestId('date-tag').click()
+    await expect(page.getByTestId('empty-state')).toHaveCount(0) // the year is not a search word
+    await expect(page.getByTestId('tag-date')).toContainText('2026')
+    await page.getByTestId('tag-date').click()
+    await expect(page.getByTestId('tag-word')).toHaveText('2026')
     await expect(page.getByTestId('meeting-card')).toHaveCount(10)
     await expect(page.getByTestId('memo-card')).toHaveCount(10)
     await type(page, 'september')
-    await expect(page.getByTestId('date-tag')).toContainText('September 2026')
-    await page.getByTestId('date-tag').click()
+    await expect(page.getByTestId('tag-date')).toContainText('September 2026')
+    await page.getByTestId('tag-date').click()
     await expect(page.getByTestId('meeting-card')).toHaveCount(6) // m01 to m06
     await expect(page.getByTestId('memo-card')).toHaveCount(8)
     await type(page, '16 October') // day + month name stays plain text
-    await expect(page.getByTestId('date-tag')).toHaveCount(0)
+    await expect(page.getByTestId('tag-date')).toHaveCount(0)
   })
 
   test('AI search: offer -> synthesizing -> result -> content cards', async ({ page }) => {

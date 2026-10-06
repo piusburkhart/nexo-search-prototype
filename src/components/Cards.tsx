@@ -44,7 +44,6 @@ export function RecordingCard({ rec, terms = [], onOpen, showNew = false, withSn
         </>
       ) : (
         <>
-          {withSnippet && <span className="text-heading-s leading-[1.24] tracking-heading text-gray-950"><Highlight text={rec.item.title} terms={terms} /></span>}
           <span className={`font-serif text-heading-m tracking-heading text-gray-950 ${withSnippet ? 'line-clamp-3 leading-[1.4]' : 'line-clamp-4 leading-[1.64]'}`}>
             <Highlight text={withSnippet ? snippet(body, terms) : body} terms={terms} />
           </span>
@@ -56,11 +55,11 @@ export function RecordingCard({ rec, terms = [], onOpen, showNew = false, withSn
 }
 
 /** Transcript hit card (Figma "Content" card 72:1901). */
-export function HitCard({ hit, terms, onOpen }: { hit: TranscriptHit; terms: string[]; onOpen?: () => void }) {
+export function HitCard({ hit, terms, onOpen, nested = false }: { hit: TranscriptHit; terms: string[]; onOpen?: () => void; nested?: boolean }) {
   return (
     <Wrap onOpen={onOpen} testId="transcript-hit" time={hit.segment.time}
       className={`relative flex w-full flex-col gap-3 rounded-hit border border-gray-200 bg-white px-[19px] pt-4 pb-4 text-left ${onOpen ? 'pr-[60px]' : ''}`}>
-      <span className="text-body-s text-gray-700">{hit.meeting.title}</span>
+      {!nested && <span className="text-body-s text-gray-700">{hit.meeting.title}</span>}
       <span className="line-clamp-2 font-serif text-heading-xs leading-[1.2] tracking-heading text-gray-975">
         <Highlight text={hit.segment.text} terms={terms} />
       </span>

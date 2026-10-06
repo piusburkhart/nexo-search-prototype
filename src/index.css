@@ -37,9 +37,8 @@
 
   --shadow-card: 0 8px 8px rgba(0, 0, 0, 0.02);
   --shadow-dock: 0 0 12px rgba(0, 0, 0, 0.25);
-  /* Lifted upward with little shadow below: the web view is clipped at the keyboard, so a shadow
-     reaching down would end in a hard line there (D38). */
-  --shadow-bar: 0 -6px 20px -6px rgba(0, 0, 0, 0.22), 0 0 12px -3px rgba(0, 0, 0, 0.14), 0 1px 3px rgba(0, 0, 0, 0.06);
+  /* Hovering elements: very light shadow plus a 1px gray-200 border */
+  --shadow-bar: 0 2px 10px rgba(0, 0, 0, 0.05);
   --shadow-pill: 0 0 32px rgba(0, 0, 0, 0.05);
 }
 
