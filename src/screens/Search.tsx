@@ -6,7 +6,7 @@ import { DatePill, SearchBar, TagCard, keepFocus, refocusSearch, type TagRow } f
 import { MicIcon, ChatIcon, SparkleIcon, WaveIcon } from '../components/Icons'
 import { data, folderName, recordings } from '../data'
 import { navigate, useRoute } from '../router'
-import { dateCount, emptyResults, parseQuery, search, synthesize, total, wantsAi } from '../search'
+import { dateCount, emptyResults, everything, parseQuery, search, synthesize, total, wantsAi } from '../search'
 
 type Tag = 'meetings' | 'memos' | 'transcript'
 
@@ -24,35 +24,36 @@ export default function Search() {
 
   const detected = useMemo(() => parseQuery(q).date, [q])
   const dateOn = !!detected && dateParam === detected.key
-  const tagWords = tags.map((t) => t)
-  const query = useMemo(() => parseQuery(q, dateOn, tagWords), [q, dateOn, tags.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
-  const all = useMemo(() => search(query, dateOn), [query, dateOn])
+  // Autocomplete: the word being typed is "partial" while it is a prefix of an unselected tag word.
+  const lastWord = q.endsWith(' ') ? '' : (q.match(/(\S+)$/)?.[1] ?? '')
+  const partial = lastWord && (Object.keys(LABEL) as Tag[]).some((t) => !tags.includes(t) && t.startsWith(lastWord.toLowerCase())) ? lastWord : ''
+  const skip = [...tags, partial.toLowerCase()].filter(Boolean)
+  const query = useMemo(() => parseQuery(q, dateOn, skip), [q, dateOn, skip.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
+  const hasTerms = query.terms.length > 0 || dateOn
+  const pool = useMemo(() => (hasTerms ? search(query, dateOn) : everything()), [query, dateOn, hasTerms])
   const on = (t: Tag) => !tags.length || tags.includes(t)
-  const results = useMemo(() => ({
-    meetings: on('meetings') ? all.meetings : emptyResults.meetings,
-    memos: on('memos') ? all.memos : emptyResults.memos,
-    transcript: on('transcript') ? all.transcript : emptyResults.transcript,
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [all, tags.join(',')])
+  const idle = !hasTerms && !tags.length // nothing to search yet: show folders and recent recordings
+  const results = idle ? emptyResults : {
+    meetings: on('meetings') ? pool.meetings : emptyResults.meetings,
+    memos: on('memos') ? pool.memos : emptyResults.memos,
+    transcript: on('transcript') ? pool.transcript : emptyResults.transcript,
+  }
   const dCount = dateCount(parseQuery(q))
-  // Picking a tag writes its word into the text (replacing a partly typed word) and selects it.
+  // Picking a tag completes the word being typed (or appends the tag word) and selects it.
   const pickTag = (t: Tag) => {
-    const m = q.match(/(\S+)$/)
-    const partial = m && q.includes(' ') && LABEL[t].toLowerCase().startsWith(m[1].toLowerCase()) ? m[1] : null
     const base = partial ? q.slice(0, q.length - partial.length) : q + (q && !q.endsWith(' ') ? ' ' : '')
     set({ q: `${base}${t} `, tag: [...tags, t].join(',') })
     refocusSearch()
   }
   const TAGS: (TagRow & { id: Tag })[] = [
-    { id: 'meetings', label: 'Meetings', count: all.meetings.length, icon: <MicIcon /> },
-    { id: 'memos', label: 'Memos', count: all.memos.length, icon: <ChatIcon /> },
-    { id: 'transcript', label: 'Transcript', count: all.transcript.length, icon: <WaveIcon /> },
+    { id: 'meetings', label: 'Meetings', count: pool.meetings.length, icon: <MicIcon /> },
+    { id: 'memos', label: 'Memos', count: pool.memos.length, icon: <ChatIcon /> },
+    { id: 'transcript', label: 'Transcript', count: pool.transcript.length, icon: <WaveIcon /> },
   ]
-  const last = q.includes(' ') ? q.split(' ').pop()!.toLowerCase() : ''
-  const prefixed = TAGS.filter((t) => !tags.includes(t.id) && t.count > 0 && last && t.label.toLowerCase().startsWith(last))
-  const rows = prefixed.length ? prefixed : TAGS.filter((t) => !tags.includes(t.id) && t.count > 0)
+  const open = TAGS.filter((t) => !tags.includes(t.id) && t.count > 0)
+  const rows = partial ? open.filter((t) => t.id.startsWith(partial.toLowerCase())) : open
   const showDate = !!detected && !dateOn
-  const idle = !q.trim()
+  const hasText = !!q.trim()
 
   // AI synthesis: simulated "thinking" delay, then the result (Figma 72:2695 -> 72:2651)
   const [thinking, setThinking] = useState(false)
@@ -66,13 +67,13 @@ export default function Search() {
 
   const folderCount = recordings.filter((r) => r.item.projectId === data.project.id).length
   const noResults = !idle && total(results) === 0
-  const showAiPill = !idle && !ai && wantsAi(q)
+  const showAiPill = hasText && !ai && wantsAi(q)
 
   return (
     <Screen
       dock={
         <div style={{ bottom: 'var(--kb, 0px)' }} className="absolute inset-x-0 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent pt-6">
-          {!idle && !ai && (showAiPill || showDate || rows.length > 0) && (
+          {hasText && !ai && (showAiPill || showDate || rows.length > 0) && (
             <div className="flex flex-col items-start gap-2 px-5 pb-3">
               {showAiPill && (
                 <button onClick={() => set({ ai: '1' })} onMouseDown={keepFocus} data-testid="ai-synthesis"

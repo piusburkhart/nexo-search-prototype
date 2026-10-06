@@ -40,6 +40,10 @@
   --shadow-pill: 0 0 32px rgba(0, 0, 0, 0.05);
 }
 
+/* Search bar bottom padding: safe area normally, tight when the keyboard is up (set via data-kb). */
+:root { --bar-pb: max(env(safe-area-inset-bottom), 24px); }
+html[data-kb='open'] { --bar-pb: 8px; }
+
 @layer base {
   html, body, #root { height: 100%; }
   body {

@@ -144,6 +144,19 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('group-memos')).toHaveCount(0)
   })
 
+  test('autocomplete: "transcr" leaves only Transcript and completes the word', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'transcr')
+    await expect(page.getByTestId('tag-transcript')).toBeVisible()
+    await expect(page.getByTestId('tag-meetings')).toHaveCount(0)
+    await expect(page.getByTestId('tag-memos')).toHaveCount(0)
+    await expect(page.getByTestId('empty-state')).toHaveCount(0) // still on the idle view while typing
+    await page.getByTestId('tag-transcript').click()
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('transcript ')
+    await expect(page.getByTestId('tag-word')).toHaveText('transcript')
+    await expect(page.getByTestId('transcript-hit').first()).toBeVisible() // tag-only query lists that type
+  })
+
   test('typing a partial tag word filters suggestions and completes it', async ({ page }) => {
     await openSearch(page)
     await type(page, 'Lantern tr')

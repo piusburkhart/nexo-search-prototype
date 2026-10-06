@@ -57,6 +57,16 @@ export interface Results { meetings: Meeting[]; memos: Memo[]; transcript: Trans
 export const emptyResults: Results = { meetings: [], memos: [], transcript: [] }
 export const total = (r: Results) => r.meetings.length + r.memos.length + r.transcript.length
 
+/** Every meeting, memo and transcript segment: the pool for tag-only queries and tag counts. */
+export const everything = (): Results => ({
+  meetings: data.meetings,
+  memos: data.memos,
+  transcript: data.transcripts.flatMap((transcript) => {
+    const meeting = getMeeting(transcript.meetingId)!
+    return transcript.segments.map((segment, segIndex) => ({ transcript, meeting, segIndex, segment }))
+  }),
+})
+
 /** Strict search: every word must appear (case-insensitive substring). */
 export function search(q: Query, applyDate = false): Results {
   const key = applyDate ? q.date?.key ?? null : null

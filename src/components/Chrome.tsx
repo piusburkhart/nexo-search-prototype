@@ -1,20 +1,26 @@
 import { useEffect, type ReactNode } from 'react'
 
 /**
- * Exposes the on-screen keyboard height as --kb (px) so docked UI can sit right above it.
- * iOS does not resize the layout viewport for the keyboard, so use the visual viewport.
+ * Mobile keyboard handling. iOS does not resize the layout viewport for the keyboard; it pans the
+ * visual viewport instead, which would push the whole page up. So:
+ *  - the frame is translated by the pan offset, so the content stays where it was;
+ *  - --kb is the keyboard height inside the frame, so docked UI can sit right above it.
  */
 function useKeyboardInset() {
   useEffect(() => {
     const vv = window.visualViewport
+    const phone = window.matchMedia('(max-width: 639px)')
     if (!vv) return
     const update = () => {
       const frame = document.getElementById('phone-frame')
-      const bottom = frame ? frame.getBoundingClientRect().bottom : window.innerHeight
-      const inset = Math.max(0, Math.round(bottom - vv.offsetTop - vv.height))
+      const root = document.documentElement
+      if (frame && !phone.matches) frame.style.transform = ''
+      if (!frame || !phone.matches) { root.style.setProperty('--kb', '0px'); root.dataset.kb = 'closed'; return }
+      frame.style.transform = `translateY(${Math.round(vv.offsetTop)}px)`
+      const inset = Math.max(0, Math.round(frame.offsetHeight - vv.height))
       const open = inset > 80
-      document.documentElement.style.setProperty('--kb', `${open ? inset : 0}px`)
-      document.documentElement.dataset.kb = open ? 'open' : 'closed'
+      root.style.setProperty('--kb', `${open ? inset : 0}px`)
+      root.dataset.kb = open ? 'open' : 'closed'
     }
     update()
     vv.addEventListener('resize', update)
@@ -49,9 +55,16 @@ export function StatusBar() {
 }
 
 /** Full-height screen: status bar (framed desktop view only) + scrollable body + optional docked footer. */
-export function Screen({ children, dock, bg = 'bg-gray-50' }: { children: ReactNode; dock?: ReactNode; bg?: string }) {
+export function Screen({ children, dock, tone = 'gray-50' }: { children: ReactNode; dock?: ReactNode; tone?: 'gray-50' | 'gray-200' }) {
+  // The browser's status bar takes this colour so it blends into the screen (theme-color).
+  useEffect(() => {
+    const color = getComputedStyle(document.documentElement).getPropertyValue(`--color-${tone}`).trim()
+    document.querySelector('meta[name=theme-color]')?.setAttribute('content', color)
+    document.documentElement.style.background = color
+    document.body.style.background = color
+  }, [tone])
   return (
-    <div className={`absolute inset-0 flex flex-col pt-[max(env(safe-area-inset-top),12px)] sm:pt-0 ${bg}`}>
+    <div className={`absolute inset-0 flex flex-col pt-[max(env(safe-area-inset-top),12px)] sm:pt-0 ${tone === 'gray-200' ? 'bg-gray-200' : 'bg-gray-50'}`}>
       <StatusBar />
       {children}
       {dock}
