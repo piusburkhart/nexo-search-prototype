@@ -18,7 +18,7 @@ export const firstName = (id: string) => getPerson(id)?.name.split(' ')[0] ?? id
 export const initials = (id: string) =>
   (getPerson(id)?.name ?? '?').split(' ').map((w) => w[0]).join('').slice(0, 2)
 
-/** Folder = project; Figma shows the short name ("Lantern"). */
+/** Folder = project; Figma shows the short name ("Nexo"). */
 export const folderName = (projectId: string | null) =>
   projectId && projectId === data.project.id ? data.project.name.replace(/^Project /, '') : null
 

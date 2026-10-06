@@ -7,19 +7,19 @@
     "timezone": "Europe/Stockholm"
   },
   "project": {
-    "id": "proj-lantern",
-    "name": "Project Lantern",
+    "id": "proj-nexo",
+    "name": "Project Nexo",
     "description": "Redesign of the customer onboarding flow for Fakturo's B2B invoicing app.",
     "launchDate": "2026-11-14",
     "status": "beta"
   },
   "folders": [
     {
-      "id": "f-lantern",
-      "name": "Lantern",
-      "projectId": "proj-lantern",
+      "id": "f-nexo",
+      "name": "Nexo",
+      "projectId": "proj-nexo",
       "createdAt": "2026-09-08T09:00:00+02:00",
-      "description": "Everything about Project Lantern, the redesign of the customer onboarding flow: kickoff, design reviews, beta and launch."
+      "description": "Everything about Project Nexo, the redesign of the customer onboarding flow: kickoff, design reviews, beta and launch."
     }
   ],
   "people": [
@@ -93,7 +93,7 @@
   "meetings": [
     {
       "id": "m01",
-      "title": "Lantern Kickoff",
+      "title": "Nexo Kickoff",
       "startsAt": "2026-09-08T10:00:00+02:00",
       "durationMin": 50,
       "participants": [
@@ -103,18 +103,18 @@
         "p-sofia",
         "p-dev"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "kickoff",
         "onboarding"
       ],
       "transcriptId": "t04",
-      "summary": "Aligned on the goals for Project Lantern: simplify customer onboarding, launch on 14 November, and run a beta with a small group of customers. Roles were assigned across product, design, engineering, customer success and data. Dev measures the baseline and the target is that seventy percent of new customers finish onboarding.",
+      "summary": "Aligned on the goals for Project Nexo: simplify customer onboarding, launch on 14 November, and run a beta with a small group of customers. Roles were assigned across product, design, engineering, customer success and data. Dev measures the baseline and the target is that seventy percent of new customers finish onboarding.",
       "keyPoints": [
         {
           "kind": "decision",
-          "text": "The launch of Project Lantern is on 14 November.",
+          "text": "The launch of Project Nexo is on 14 November.",
           "at": 0,
           "topics": [
             "launch",
@@ -168,7 +168,7 @@
     },
     {
       "id": "m02",
-      "title": "Lantern Weekly Sync",
+      "title": "Nexo Weekly Sync",
       "startsAt": "2026-09-15T09:30:00+02:00",
       "durationMin": 30,
       "participants": [
@@ -177,9 +177,9 @@
         "p-priya",
         "p-sofia"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "weekly",
         "beta"
       ],
@@ -231,9 +231,9 @@
         "p-sofia",
         "p-dev"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "beta",
         "customers"
       ],
@@ -302,15 +302,15 @@
       "tags": [
         "roadmap",
         "planning",
-        "lantern",
+        "nexo",
         "q4"
       ],
       "transcriptId": "t06",
-      "summary": "Agreed Q4 priorities: Lantern first, the reporting dashboard second and automatic invoice reminders third. Marketing asked for a fixed launch date for Lantern as soon as possible. The launch date of 14 November is fixed unless the go or no-go decision says otherwise. Reporting dashboard starts after launch with a first version in early December, reminders follow in late December.",
+      "summary": "Agreed Q4 priorities: Nexo first, the reporting dashboard second and automatic invoice reminders third. Marketing asked for a fixed launch date for Nexo as soon as possible. The launch date of 14 November is fixed unless the go or no-go decision says otherwise. Reporting dashboard starts after launch with a first version in early December, reminders follow in late December.",
       "keyPoints": [
         {
           "kind": "decision",
-          "text": "Q4 priorities in order: Lantern first, the reporting dashboard second, invoice reminders third.",
+          "text": "Q4 priorities in order: Nexo first, the reporting dashboard second, invoice reminders third.",
           "at": 22,
           "topics": [
             "roadmap",
@@ -365,9 +365,9 @@
         "p-priya",
         "p-jonas"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "analytics",
         "baseline"
       ],
@@ -439,7 +439,7 @@
     },
     {
       "id": "m04",
-      "title": "Lantern Design Review: Onboarding Flow",
+      "title": "Nexo Design Review: Onboarding Flow",
       "startsAt": "2026-09-24T14:00:00+02:00",
       "durationMin": 42,
       "participants": [
@@ -447,9 +447,9 @@
         "p-priya",
         "p-jonas"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "design",
         "onboarding",
         "csv",
@@ -563,14 +563,14 @@
         "p-priya",
         "p-anton"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "accessibility",
         "copy"
       ],
       "transcriptId": "t12",
-      "summary": "The teal button is darkened to pass contrast. WCAG AA is the minimum for Lantern. The word workspace is replaced by account everywhere, and CSV error messages will name the problem. An example file and an import preview are added.",
+      "summary": "The teal button is darkened to pass contrast. WCAG AA is the minimum for Nexo. The word workspace is replaced by account everywhere, and CSV error messages will name the problem. An example file and an import preview are added.",
       "keyPoints": [
         {
           "kind": "decision",
@@ -585,7 +585,7 @@
         },
         {
           "kind": "decision",
-          "text": "WCAG AA is the minimum accessibility level for Lantern.",
+          "text": "WCAG AA is the minimum accessibility level for Nexo.",
           "at": 54,
           "topics": [
             "accessibility",
@@ -645,10 +645,10 @@
       "tags": [
         "retro",
         "sprint",
-        "lantern"
+        "nexo"
       ],
       "transcriptId": "t07",
-      "summary": "The team felt stand-ups run too long, Lantern tickets lack acceptance criteria, and mid-sprint changes slow engineering down. Agreed to timebox stand-ups to 10 minutes and add acceptance criteria before tickets enter a sprint.",
+      "summary": "The team felt stand-ups run too long, Nexo tickets lack acceptance criteria, and mid-sprint changes slow engineering down. Agreed to timebox stand-ups to 10 minutes and add acceptance criteria before tickets enter a sprint.",
       "keyPoints": [
         {
           "kind": "decision",
@@ -671,7 +671,7 @@
             "retro",
             "criteria"
           ],
-          "why": "Nobody knew when Lantern tickets were done."
+          "why": "Nobody knew when Nexo tickets were done."
         },
         {
           "kind": "decision",
@@ -696,9 +696,9 @@
         "p-sofia",
         "p-karin"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "customer",
         "interview",
         "csv",
@@ -805,9 +805,9 @@
         "p-lena",
         "p-jonas"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "support",
         "launch"
       ],
@@ -885,9 +885,9 @@
         "p-sofia",
         "p-maja"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "customer",
         "interview"
       ],
@@ -965,20 +965,20 @@
         "p-dev",
         "p-tomas"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "vendor",
         "analytics",
         "pricing",
         "contract"
       ],
       "transcriptId": "t03",
-      "summary": "Kestrel can track the Lantern onboarding funnel with drop-off per step. Setup takes about two weeks, so work should start by 16 October. The growth tier costs 1,200 per month, with 15 percent off for an annual contract. EU hosting is available in Frankfurt. Elin's internal deadline to sign is 16 October.",
+      "summary": "Kestrel can track the Nexo onboarding funnel with drop-off per step. Setup takes about two weeks, so work should start by 16 October. The growth tier costs 1,200 per month, with 15 percent off for an annual contract. EU hosting is available in Frankfurt. Elin's internal deadline to sign is 16 October.",
       "keyPoints": [
         {
           "kind": "decision",
-          "text": "Kestrel Analytics tracks the Lantern onboarding funnel with drop-off per step.",
+          "text": "Kestrel Analytics tracks the Nexo onboarding funnel with drop-off per step.",
           "at": 19,
           "topics": [
             "kestrel",
@@ -1072,12 +1072,12 @@
       "projectId": null,
       "tags": [
         "1on1",
-        "lantern",
+        "nexo",
         "csv",
         "scope"
       ],
       "transcriptId": "t08",
-      "summary": "Jonas estimates the CSV import hardening at about one sprint. He is worried about support capacity around launch. They agreed to freeze Lantern scope after the go/no-go prep. CSV hardening is done by 23 October; the beta on 21 October starts with a limit of five thousand rows.",
+      "summary": "Jonas estimates the CSV import hardening at about one sprint. He is worried about support capacity around launch. They agreed to freeze Nexo scope after the go/no-go prep. CSV hardening is done by 23 October; the beta on 21 October starts with a limit of five thousand rows.",
       "keyPoints": [
         {
           "kind": "metric",
@@ -1129,7 +1129,7 @@
         },
         {
           "kind": "decision",
-          "text": "The Lantern scope is frozen after the go or no-go prep.",
+          "text": "The Nexo scope is frozen after the go or no-go prep.",
           "at": 230,
           "topics": [
             "scope",
@@ -1148,9 +1148,9 @@
         "p-marcus",
         "p-sofia"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "marketing",
         "launch"
       ],
@@ -1243,7 +1243,7 @@
     },
     {
       "id": "m10",
-      "title": "Lantern Go/No-Go Prep",
+      "title": "Nexo Go/No-Go Prep",
       "startsAt": "2026-10-05T14:00:00+02:00",
       "durationMin": 35,
       "participants": [
@@ -1253,9 +1253,9 @@
         "p-sofia",
         "p-dev"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "launch",
         "risks",
         "go-no-go"
@@ -1360,7 +1360,7 @@
         },
         {
           "kind": "deadline",
-          "text": "The Lantern scope is frozen from 6 October.",
+          "text": "The Nexo scope is frozen from 6 October.",
           "at": 240,
           "topics": [
             "scope",
@@ -1382,9 +1382,9 @@
         "p-sofia",
         "p-dev"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "kestrel",
         "privacy"
       ],
@@ -1463,9 +1463,9 @@
         "p-dev",
         "p-anton"
       ],
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "beta",
         "qa"
       ],
@@ -1522,13 +1522,13 @@
   "memos": [
     {
       "id": "memo01",
-      "title": "Lantern: checklist idea",
+      "title": "Nexo: checklist idea",
       "createdAt": "2026-09-09T08:42:00+02:00",
       "type": "voice",
       "durationSec": 38,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "idea",
         "onboarding"
       ],
@@ -1544,9 +1544,9 @@
       "createdAt": "2026-09-17T08:30:00+02:00",
       "type": "voice",
       "durationSec": 44,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "beta",
         "metrics"
       ],
@@ -1565,13 +1565,13 @@
       "projectId": null,
       "tags": [
         "roadmap",
-        "lantern",
+        "nexo",
         "q4"
       ],
       "relatedMeetingIds": [
         "m03"
       ],
-      "content": "Lantern first, reporting dashboard second, invoice reminders third. Keep the pitch to ten minutes."
+      "content": "Nexo first, reporting dashboard second, invoice reminders third. Keep the pitch to ten minutes."
     },
     {
       "id": "memo03",
@@ -1605,13 +1605,13 @@
     },
     {
       "id": "memo05",
-      "title": "Lantern copy ideas",
+      "title": "Nexo copy ideas",
       "createdAt": "2026-09-26T16:30:00+02:00",
       "type": "voice",
       "durationSec": 44,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "copy",
         "onboarding"
       ],
@@ -1627,9 +1627,9 @@
       "createdAt": "2026-09-28T09:10:00+02:00",
       "type": "voice",
       "durationSec": 49,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "vendor",
         "analytics",
         "pricing"
@@ -1637,7 +1637,7 @@
       "relatedMeetingIds": [
         "m07"
       ],
-      "content": "EU data hosting? Pricing per seat or per event? Setup time? Can they show funnel drop-off per Lantern step?"
+      "content": "EU data hosting? Pricing per seat or per event? Setup time? Can they show funnel drop-off per Nexo step?"
     },
     {
       "id": "memo07",
@@ -1649,12 +1649,12 @@
       "tags": [
         "retro",
         "sprint",
-        "lantern"
+        "nexo"
       ],
       "relatedMeetingIds": [
         "m05"
       ],
-      "content": "Stand-ups run too long. Lantern tickets lack acceptance criteria. Jonas wants fewer mid-sprint changes."
+      "content": "Stand-ups run too long. Nexo tickets lack acceptance criteria. Jonas wants fewer mid-sprint changes."
     },
     {
       "id": "memo08",
@@ -1677,9 +1677,9 @@
       "createdAt": "2026-10-01T08:30:00+02:00",
       "type": "voice",
       "durationSec": 36,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "support"
       ],
       "relatedMeetingIds": [
@@ -1693,9 +1693,9 @@
       "createdAt": "2026-10-01T09:00:00+02:00",
       "type": "voice",
       "durationSec": 36,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "customer",
         "follow-up"
       ],
@@ -1706,13 +1706,13 @@
     },
     {
       "id": "memo10",
-      "title": "Lantern launch risks",
+      "title": "Nexo launch risks",
       "createdAt": "2026-10-01T17:40:00+02:00",
       "type": "voice",
       "durationSec": 58,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "risks",
         "launch",
         "csv",
@@ -1731,9 +1731,9 @@
       "createdAt": "2026-10-02T08:30:00+02:00",
       "type": "voice",
       "durationSec": 33,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "onboarding",
         "idea"
       ],
@@ -1749,9 +1749,9 @@
       "createdAt": "2026-10-02T08:30:00+02:00",
       "type": "voice",
       "durationSec": 29,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "import",
         "idea"
       ],
@@ -1794,9 +1794,9 @@
       "createdAt": "2026-10-05T08:30:00+02:00",
       "type": "voice",
       "durationSec": 41,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "launch",
         "marketing"
       ],
@@ -1811,9 +1811,9 @@
       "createdAt": "2026-10-05T08:30:00+02:00",
       "type": "voice",
       "durationSec": 47,
-      "projectId": "proj-lantern",
+      "projectId": "proj-nexo",
       "tags": [
-        "lantern",
+        "nexo",
         "launch",
         "risks"
       ],
@@ -1834,7 +1834,7 @@
           "start": 0,
           "time": "00:00",
           "speakerId": "p-elin",
-          "text": "Thanks for joining. The goal today is to lock the Lantern onboarding flow so Jonas can start building next sprint."
+          "text": "Thanks for joining. The goal today is to lock the Nexo onboarding flow so Jonas can start building next sprint."
         },
         {
           "start": 21,
@@ -1920,7 +1920,7 @@
           "start": 0,
           "time": "00:00",
           "speakerId": "p-elin",
-          "text": "Thanks for making time, Karin. We'd like to watch you go through the new Lantern onboarding and think aloud."
+          "text": "Thanks for making time, Karin. We'd like to watch you go through the new Nexo onboarding and think aloud."
         },
         {
           "start": 25,
@@ -2000,7 +2000,7 @@
           "start": 0,
           "time": "00:00",
           "speakerId": "p-elin",
-          "text": "Thanks, Tomas. Dev and I want to understand how Kestrel could track the Lantern onboarding funnel."
+          "text": "Thanks, Tomas. Dev and I want to understand how Kestrel could track the Nexo onboarding funnel."
         },
         {
           "start": 19,
@@ -2074,7 +2074,7 @@
           "start": 0,
           "time": "00:00",
           "speakerId": "p-elin",
-          "text": "Welcome, everyone. Project Lantern is the redesign of customer onboarding in the Fakturo invoicing app, and we launch on 14 November."
+          "text": "Welcome, everyone. Project Nexo is the redesign of customer onboarding in the Fakturo invoicing app, and we launch on 14 November."
         },
         {
           "start": 24,
@@ -2216,13 +2216,13 @@
           "start": 22,
           "time": "00:22",
           "speakerId": "p-elin",
-          "text": "My proposal is Lantern first, the reporting dashboard second and automatic invoice reminders third."
+          "text": "My proposal is Nexo first, the reporting dashboard second and automatic invoice reminders third."
         },
         {
           "start": 50,
           "time": "00:50",
           "speakerId": "p-jonas",
-          "text": "That order works for engineering. Lantern takes most of October and the first half of November."
+          "text": "That order works for engineering. Nexo takes most of October and the first half of November."
         },
         {
           "start": 78,
@@ -2264,7 +2264,7 @@
           "start": 242,
           "time": "04:02",
           "speakerId": "p-elin",
-          "text": "Great. So Lantern first, the dashboard second and reminders third."
+          "text": "Great. So Nexo first, the dashboard second and reminders third."
         }
       ]
     },
@@ -2302,7 +2302,7 @@
           "start": 98,
           "time": "01:38",
           "speakerId": "p-jonas",
-          "text": "Also, many Lantern tickets had no acceptance criteria, so nobody knew when they were done."
+          "text": "Also, many Nexo tickets had no acceptance criteria, so nobody knew when they were done."
         },
         {
           "start": 124,
@@ -2400,7 +2400,7 @@
           "start": 230,
           "time": "03:50",
           "speakerId": "p-elin",
-          "text": "One more thing. After the go or no-go prep we freeze the Lantern scope, so nothing new goes in."
+          "text": "One more thing. After the go or no-go prep we freeze the Nexo scope, so nothing new goes in."
         }
       ]
     },
@@ -2536,7 +2536,7 @@
           "start": 240,
           "time": "04:00",
           "speakerId": "p-elin",
-          "text": "Good. And the Lantern scope is frozen from tomorrow, 6 October."
+          "text": "Good. And the Nexo scope is frozen from tomorrow, 6 October."
         }
       ]
     },
@@ -2624,7 +2624,7 @@
           "start": 54,
           "time": "00:54",
           "speakerId": "p-elin",
-          "text": "WCAG AA is our minimum for Lantern. Where we can easily reach AAA, we do."
+          "text": "WCAG AA is our minimum for Nexo. Where we can easily reach AAA, we do."
         },
         {
           "start": 82,
@@ -2996,7 +2996,7 @@
     },
     {
       "id": "a04",
-      "title": "Write acceptance criteria for the Lantern tickets",
+      "title": "Write acceptance criteria for the Nexo tickets",
       "kind": "task",
       "meetingId": "m05"
     },

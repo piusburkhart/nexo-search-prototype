@@ -1,6 +1,6 @@
 # Demo prompts for AI Synthesis
 
-Type a question in the search bar: the results below are what the search found. Tap the sparkle button for a short summary of exactly those results; every sentence ends with the time of a transcript moment shown below. Typos are fine ("lanrtern decision"). All of these are checked by `tests/acceptance.spec.ts` ("AI synthesis answers").
+Type a question in the search bar: the results below are what the search found. Tap the sparkle button for a short summary of exactly those results; every sentence ends with the time of a transcript moment shown below. Typos are fine ("nexxo decision"). All of these are checked by `tests/acceptance.spec.ts` ("AI synthesis answers").
 
 | Ask | You get |
 |---|---|
@@ -29,7 +29,7 @@ Type a question in the search bar: the results below are what the search found. 
 | What did Karin think about the CSV import? | Unsure which columns; wants an example file and a preview |
 | What did Maja say about Excel? | Had to export to CSV, would rather upload Excel directly |
 | Is Kestrel data stored in the EU? | Yes, Frankfurt; the DPA is fine |
-| What are the Q4 priorities? | Lantern, then the reporting dashboard, then invoice reminders |
+| What are the Q4 priorities? | Nexo, then the reporting dashboard, then invoice reminders |
 | When will invoice reminders be ready? | Late December |
 | What is the status of the CSV import? | Step two, Excel feedback, one sprint of hardening, 23 Oct, 5,000 row limit in the beta |
 | What happened in the Kestrel call? / Summarize the retro | The meeting summary |

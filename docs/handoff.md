@@ -15,7 +15,7 @@ npm test           # Playwright (starts the dev server itself); first run: npx p
 - **Transcript** (not in Figma): segments with speaker and mm:ss, opens at the clicked segment with it highlighted, find-in-transcript with "n / total" and next/previous.
 - **Meeting, memo and transcript pages: removed** (D64). Nothing opens a file any more.
 - Data: `src/data/mock-data.json` only; typed in `src/data/types.ts`. Search logic is a pure module (`src/search.ts`). Hash router (`src/router.ts`), no extra libraries beyond Playwright for tests.
-- Tests: `tests/acceptance.spec.ts` covers the 7 acceptance checks (Lantern, CSV, SSO, pricing, 16 October, swim, budget) plus navigation (home, search, close, detail, transcript, back, chips, tags, date tag, AI flow, find-in-transcript). 16 pass.
+- Tests: `tests/acceptance.spec.ts` covers the 7 acceptance checks (Nexo, CSV, SSO, pricing, 16 October, swim, budget) plus navigation (home, search, close, detail, transcript, back, chips, tags, date tag, AI flow, find-in-transcript). 16 pass.
 
 ## Visual differences
 See `docs/visual-diff.md`.

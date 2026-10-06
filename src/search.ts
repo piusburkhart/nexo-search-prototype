@@ -100,9 +100,9 @@ export const recordingScore = (rec: Recording) => recScores.get(rec.item) ?? 0
 
 /**
  * Semantic search (D69). An item is found when it covers every query concept (synonyms, stems, typo
- * corrections), belongs to Project Lantern if the project was named, and shows the kind of finding asked for
+ * corrections), belongs to Project Nexo if the project was named, and shows the kind of finding asked for
  * (decision, deadline, risk...). On top, the meeting notes that answer the query best bring in their
- * transcript moments and meetings, so "lantern decision" finds the moments where decisions were made even
+ * transcript moments and meetings, so "nexo decision" finds the moments where decisions were made even
  * where the word "decision" is never said.
  */
 export function search(q: Query, applyDate = false): Results {
@@ -136,10 +136,10 @@ export function search(q: Query, applyDate = false): Results {
     const k = `${h.meeting.id}@${h.segment.start}`
     const picked = noteAt.get(k)
     const backed = NOTES_AT.get(k) ?? []
-    // With only the project named ("Lantern"), the moments that mention it by name.
+    // With only the project named ("Nexo"), the moments that mention it by name.
     const direct = u.terms.length > 0 || u.asksKind
       ? fits(h.segment.text, h.meeting.projectId, `${h.meeting.title} ${h.segment.text}`) && (showsIntent(h.segment.text, u) || backed.some((n) => noteFits(n, u)))
-      : /\blantern\b/i.test(h.segment.text)
+      : /\bnexo\b/i.test(h.segment.text)
     // Moments that say the typed words themselves rank above ones found through meaning alone.
     if (picked || direct) transcript.push({ ...h, score: LITERAL * literalHits(h.segment.text, u) + (picked ? 6 + picked.score : 0) + (direct ? 1 + matchText(h.segment.text, u).score : 0) })
   }
@@ -167,7 +167,7 @@ export function search(q: Query, applyDate = false): Results {
   const actionScore = (a: Action) => LITERAL * (2 * literalHits(a.title, u) + literalHits(getMeeting(a.meetingId)!.title, u)) + matchText(a.title, u).score
   actions.sort((a, b) => actionScore(b) - actionScore(a))
 
-  // Folders: by name and description ("Lantern" names the folder itself). A folder is not a decision or a
+  // Folders: by name and description ("Nexo" names the folder itself). A folder is not a decision or a
   // deadline, so queries asking for a kind of finding leave folders out.
   const folders = u.asksKind || key ? [] : data.folders.filter((f) => fits(`${f.name} ${f.description}`, f.projectId))
 

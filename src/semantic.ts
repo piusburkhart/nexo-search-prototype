@@ -5,8 +5,8 @@ import type { KeyPoint, Meeting } from './data/types'
  * Query understanding shared by search and AI Synthesis (D69). One reading of the query decides what the
  * search finds; AI Synthesis only summarises what was found, so it can never bring in other sources.
  *   - words are stemmed and mapped to concepts (synonym groups), so "cost" finds "price";
- *   - typos are corrected against the words the recordings actually contain ("lanrtern" -> "lantern");
- *   - "Lantern" / "project" mean "belongs to Project Lantern", not a word to find;
+ *   - typos are corrected against the words the recordings actually contain ("nexxo" -> "nexo");
+ *   - "Nexo" / "project" mean "belongs to Project Nexo", not a word to find;
  *   - words like "decision", "deadline", "risk", "why", "who" say what kind of finding is wanted.
  */
 
@@ -63,8 +63,8 @@ export const concept = (w: string) => (GROUP_OF.has(w) ? `#${GROUP_OF.get(w)}` :
 const conceptsOf = (text: string) => new Set(words(text).map(stem).map(concept))
 
 /** The project: matched by belonging to it, never as a word to find. */
-const PROJECT_WORDS = new Set(['lantern', 'project', 'fakturo'].map(stem))
-export const inProject = (projectId: string | null, text: string) => projectId === data.project.id || /\blantern\b/i.test(text)
+const PROJECT_WORDS = new Set(['nexo', 'project', 'fakturo'].map(stem))
+export const inProject = (projectId: string | null, text: string) => projectId === data.project.id || /\bnexo\b/i.test(text)
 /** Too vague to search for. */
 const GENERIC = new Set(['today', 'tomorrow', 'yesterday', 'now', 'thing', 'week', 'day', 'month', 'year', 'new', 'good', 'great', 'one', 'two', 'say', 'said', 'plan', 'have', 'need'].map(stem))
 
@@ -133,7 +133,7 @@ const distance = (a: string, b: string, max: number) => {
   }
   return prev[b.length]
 }
-/** The closest word the recordings contain, for a word they don't ("lanrtern" -> "lantern"). */
+/** The closest word the recordings contain, for a word they don't ("nexxo" -> "nexo"). */
 function correct(word: string): string | null {
   const max = word.length >= 8 ? 2 : word.length >= 5 ? 1 : 0
   if (!max) return null
@@ -154,7 +154,7 @@ export interface Understanding {
   /** The query asks for a kind of finding (decision, deadline, number, risk, reason, person). */
   asksKind: boolean
   terms: Term[]
-  /** "Lantern" or "project" was used: results must belong to Project Lantern. */
+  /** "Nexo" or "project" was used: results must belong to Project Nexo. */
   project: boolean
   /** A word the recordings never contain, in a short keyword query: nothing can match all words. */
   blocked: boolean
@@ -207,11 +207,11 @@ export function understand(text: string, raw = text): Understanding {
   const intent = readIntent(lower.split(/(\s+)/).filter((w) => !searched.has(w.replace(/[^\p{L}\p{N}]/gu, ''))).join(''))
   const asksKind = intent.decision || intent.deadline || intent.metric || intent.risk || intent.why || intent.owner
   const highlight = [...new Set([
-    ...(project ? ['lantern'] : []),
+    ...(project ? ['nexo'] : []),
     ...terms.map((t) => t.surface),
     ...terms.flatMap((t) => (t.concept.startsWith('#') ? GROUPS[+t.concept.slice(1)] : [])),
   ])].filter((w) => w.length > 2)
-  const literal = [...new Set([...(project ? ['lantern'] : []), ...terms.map((t) => t.surface)])]
+  const literal = [...new Set([...(project ? ['nexo'] : []), ...terms.map((t) => t.surface)])]
   return { raw: lower, intent, asksKind, terms, project, blocked, highlight, literal, question, asked }
 }
 

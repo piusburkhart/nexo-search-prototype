@@ -59,7 +59,7 @@ export function synthesize(shown: Pick<Results, 'meetings' | 'memos' | 'actions'
   }
 
   // No notes: say briefly what the visible results contain.
-  // A folder on screen ("lantern"): what it holds.
+  // A folder on screen ("nexo"): what it holds.
   if (shown.folders.length) {
     return {
       parts: shown.folders.map((f) => {

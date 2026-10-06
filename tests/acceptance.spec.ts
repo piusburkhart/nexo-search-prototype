@@ -14,9 +14,9 @@ const openSearch = async (page: Page) => {
 const type = async (page: Page, q: string) => page.getByRole('searchbox', { name: 'Search', exact: true }).fill(q)
 const hits = (page: Page) => page.getByTestId('transcript-hit')
 
-test('1. "Lantern" returns recordings, actions and transcript moments', async ({ page }) => {
+test('1. "Nexo" returns recordings, actions and transcript moments', async ({ page }) => {
   await openSearch(page)
-  await type(page, 'Lantern')
+  await type(page, 'Nexo')
   await expect(page.getByTestId('group-recordings')).toBeVisible()
   await page.getByTestId('group-recordings').getByTestId('unfold').click()
   await expect(page.getByTestId('group-recordings').getByTestId('memo-card').first()).toBeVisible() // memos sit with the recordings
@@ -140,7 +140,7 @@ test.describe('navigation flow', () => {
     await openSearch(page)
     await type(page, 'csv')
     const groups = page.getByTestId('transcript-group')
-    const many = groups.filter({ hasText: 'Lantern Design Review: Onboarding Flow' }) // meeting name
+    const many = groups.filter({ hasText: 'Nexo Design Review: Onboarding Flow' }) // meeting name
     await expect(many).toHaveCount(1)
     await expect(many).toContainText('24 Sep 2026') // metadata
     expect(await many.getByTestId('transcript-hit').count()).toBeGreaterThan(1)
@@ -175,14 +175,14 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.length)
   })
 
-  test('folders: the Lantern folder shows on home and tops a "Lantern" search', async ({ page }) => {
+  test('folders: the Nexo folder shows on home and tops a "Nexo" search', async ({ page }) => {
     const f = mock.folders[0]
     await page.goto('/')
     await page.getByRole('button', { name: 'Folders', exact: true }).click()
     await expect(page.getByTestId('folder-card')).toHaveCount(mock.folders.length)
     await expect(page.getByTestId('folder-card').first()).toContainText(`${mock.meetings.filter((m) => m.projectId === f.projectId).length} meetings`)
     await page.getByRole('button', { name: 'Search', exact: true }).click()
-    await type(page, 'Lantern')
+    await type(page, 'Nexo')
     await expect(page.getByTestId('group-folders').getByTestId('folder-card')).toHaveCount(1)
     await page.getByTestId('tag-folders').click()
     await expect(page.getByTestId('group-recordings')).toHaveCount(0)
@@ -231,7 +231,7 @@ test.describe('navigation flow', () => {
     await expect(page.getByText('Ask about anything.')).toHaveCount(0) // replaced by the headline
     await expect(page.getByTestId('meeting-card')).toHaveCount(0)
     await expect(page.getByTestId('memo-card')).toHaveCount(0)
-    await type(page, 'Lantern')
+    await type(page, 'Nexo')
     await expect(page.getByTestId('meeting-card').first()).toBeVisible()
   })
 
@@ -242,7 +242,7 @@ test.describe('navigation flow', () => {
     await expect(ai).toBeDisabled() // nothing typed
     await type(page, 'De')
     await expect(ai).toBeDisabled() // not sufficient yet (Figma 76:3991)
-    await type(page, 'Lantern')
+    await type(page, 'Nexo')
     await expect(ai).toBeEnabled()
     await expect(page.getByTestId('meeting-card').first()).toBeVisible() // results are there too
     await type(page, 'budget')
@@ -253,7 +253,7 @@ test.describe('navigation flow', () => {
     await openSearch(page)
     const box = page.getByRole('searchbox', { name: 'Search', exact: true })
     await expect(page.getByTestId('clear-search')).toHaveCount(0)
-    await type(page, 'Lantern')
+    await type(page, 'Nexo')
     await page.getByTestId('tag-memos').click()
     await page.getByTestId('clear-search').click()
     await expect(box).toHaveValue('')
@@ -272,18 +272,18 @@ test.describe('navigation flow', () => {
 
   test('filter tags: one type at a time; picked tag becomes a highlighted word', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'Lantern')
+    await type(page, 'Nexo')
     await expect(page.getByTestId('tag-meetings')).toBeVisible()
     await expect(page.getByTestId('tag-memos')).toBeVisible() // stacked in one card
     await page.getByTestId('tag-memos').click()
     await expect(page.getByTestId('tag-word')).toHaveText('memos') // grey background on the word
-    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('Lantern memos ')
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('Nexo memos ')
     await expect(page.getByTestId('meeting-card')).toHaveCount(0)
     await expect(page.getByTestId('memo-card').first()).toBeVisible()
     await expect(page.getByTestId('group-actions')).toHaveCount(0)
     // you chose memos: no other type is suggested any more
     for (const t of ['meetings', 'memos', 'actions', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
-    await type(page, 'Lantern ') // deleting the word removes the tag
+    await type(page, 'Nexo ') // deleting the word removes the tag
     await expect(page.getByTestId('tag-memos')).toBeVisible()
     await expect(page.getByTestId('group-actions')).toBeVisible()
   })
@@ -303,17 +303,17 @@ test.describe('navigation flow', () => {
 
   test('typing a partial tag word filters suggestions and completes it', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'Lantern tr')
+    await type(page, 'Nexo tr')
     await expect(page.getByTestId('tag-transcript')).toBeVisible()
     await expect(page.getByTestId('tag-memos')).toHaveCount(0)
     await page.getByTestId('tag-transcript').click()
-    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('Lantern transcript ')
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('Nexo transcript ')
     await expect(page.getByTestId('tag-word')).toHaveText('transcript')
   })
 
   test('date tag is suggested in the card, applies as a filter and highlights its text', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'Lantern 02.10.26')
+    await type(page, 'Nexo 02.10.26')
     const tag = page.getByTestId('tag-date')
     await expect(tag).toHaveText(/02\.10\.26\s*\d+/) // keeps the typed dd.mm.yy format on one line
     await expect(page.getByTestId('tag-memos')).toHaveCount(0) // completing a date: only the date is suggested
@@ -323,8 +323,8 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('tag-word')).toHaveText('02.10.26')
     await page.getByTestId('group-recordings').getByTestId('unfold').click()
     await expect(page.getByTestId('meeting-card')).toHaveCount(2) // m07, m08 on 2 Oct
-    // "Lantern" means the project: memos of Project Lantern from that day count too
-    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.filter((m) => m.createdAt.startsWith('2026-10-02') && m.projectId === 'proj-lantern').length)
+    // "Nexo" means the project: memos of Project Nexo from that day count too
+    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.filter((m) => m.createdAt.startsWith('2026-10-02') && m.projectId === 'proj-nexo').length)
   })
 
   test('a partly typed year or month completes to a date tag, and only that is suggested', async ({ page }) => {
@@ -336,10 +336,10 @@ test.describe('navigation flow', () => {
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('2026 ')
     await expect(page.getByTestId('tag-word')).toHaveText('2026')
     await expect(page.getByTestId('tag-meetings')).toBeVisible() // after selecting, more suggestions return
-    await type(page, 'lantern sep')
+    await type(page, 'nexo sep')
     await expect(page.getByTestId('tag-date')).toContainText('September 2026')
     await page.getByTestId('tag-date').click()
-    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('lantern September 2026 ')
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('nexo September 2026 ')
     await expect(page.getByTestId('tag-word')).toHaveText('September 2026')
   })
 
@@ -355,7 +355,7 @@ test.describe('navigation flow', () => {
 
   test('a full date stays on one line in the suggestion', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'Lantern 02.10.26')
+    await type(page, 'Nexo 02.10.26')
     const h = await page.getByTestId('tag-date').boundingBox()
     expect(h!.height).toBeLessThan(44)
   })
@@ -370,31 +370,31 @@ test.describe('navigation flow', () => {
 
   test('a question offers only the Transcript tag: you want content, not a file', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'what did we decide about lantern ')
+    await type(page, 'what did we decide about nexo ')
     await expect(page.getByTestId('tag-transcript')).toBeVisible()
     for (const t of ['meetings', 'memos', 'actions']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
-    await type(page, 'what did we decide about lantern m')
+    await type(page, 'what did we decide about nexo m')
     for (const t of ['meetings', 'memos']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
   })
 
-  test('direct hits come first: meetings titled "Lantern" top the recordings', async ({ page }) => {
+  test('direct hits come first: meetings titled "Nexo" top the recordings', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'Lantern')
-    const titled = mock.meetings.filter((m) => /lantern/i.test(m.title)).length
+    await type(page, 'Nexo')
+    const titled = mock.meetings.filter((m) => /nexo/i.test(m.title)).length
     await page.getByTestId('group-recordings').getByTestId('unfold').click()
     const cards = page.getByTestId('group-recordings').locator('[data-testid$="-card"]')
     for (let i = 0; i < titled; i++) {
       await expect(cards.nth(i)).toHaveAttribute('data-testid', 'meeting-card')
-      await expect(cards.nth(i).locator('span').first()).toContainText('Lantern')
+      await expect(cards.nth(i).locator('span').first()).toContainText('Nexo')
     }
     await expect(page.getByTestId('transcript-group').first().locator('mark').first()).toBeVisible()
   })
 
   test('actions highlight the word in their meeting name too', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'Lantern')
+    await type(page, 'Nexo')
     await page.getByTestId('group-actions').getByTestId('unfold').click()
-    await expect(page.getByTestId('action-item').locator('span.truncate mark').first()).toHaveText(/lantern/i)
+    await expect(page.getByTestId('action-item').locator('span.truncate mark').first()).toHaveText(/nexo/i)
   })
 
   test('finishing a word never loses results: "percen" and "percent" both find the percent memos', async ({ page }) => {
@@ -459,7 +459,7 @@ test.describe('navigation flow', () => {
 
   test('picking a tag keeps the search field focused; tapping results blurs it', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'Lantern')
+    await type(page, 'Nexo')
     await page.getByTestId('tag-memos').click()
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toBeFocused()
     await page.getByTestId('search-body').click({ position: { x: 5, y: 5 } })
@@ -469,7 +469,7 @@ test.describe('navigation flow', () => {
   test('suggestions disappear with the keyboard and return on focus; Enter closes the keyboard', async ({ page }) => {
     await openSearch(page)
     const box = page.getByRole('searchbox', { name: 'Search', exact: true })
-    await type(page, 'Lantern')
+    await type(page, 'Nexo')
     await expect(page.getByTestId('tag-memos')).toBeVisible()
     await box.press('Enter')
     await expect(box).not.toBeFocused()
@@ -481,7 +481,7 @@ test.describe('navigation flow', () => {
 
   test('tag highlight is not clipped by its container', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'Lantern')
+    await type(page, 'Nexo')
     await page.getByTestId('tag-memos').click()
     const tag = await page.getByTestId('tag-word').boundingBox()
     const box = await page.getByTestId('tag-word').locator('xpath=ancestor::span[contains(@class,"overflow-hidden")]').boundingBox()
@@ -540,7 +540,7 @@ test.describe('AI synthesis answers', () => {
     expect(await answer.locator('[class*="block"]').count()).toBe(0) // one paragraph, no list
   })
 
-  for (const query of ['lanrtern decision', 'lantern decision', 'pricing', 'What did we agree about the feature?', 'When is the deadline we decided to?', 'kestrel']) {
+  for (const query of ['nexxo decision', 'nexo decision', 'pricing', 'What did we agree about the feature?', 'When is the deadline we decided to?', 'kestrel']) {
     test(`AI never brings in other sources than the search: "${query}"`, async ({ page }) => {
       await openSearch(page)
       await type(page, query)
@@ -564,11 +564,11 @@ test.describe('AI synthesis answers', () => {
     })
   }
 
-  test('typos are corrected: "lanrtern decision" finds what "lantern decision" finds', async ({ page }) => {
+  test('typos are corrected: "nexxo decision" finds what "nexo decision" finds', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'lantern decision')
+    await type(page, 'nexo decision')
     const right = await page.getByTestId('transcript-hit').count()
-    await type(page, 'lanrtern decision')
+    await type(page, 'nexxo decision')
     await expect(page.getByTestId('transcript-hit')).toHaveCount(right)
     expect(right).toBeGreaterThan(0)
   })
