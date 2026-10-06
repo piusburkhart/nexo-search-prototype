@@ -28,6 +28,21 @@ export const refocusSearch = () => document.querySelector<HTMLInputElement>('inp
 
 export const blurSearch = () => { const a = document.activeElement; if (a instanceof HTMLInputElement) a.blur() }
 
+/**
+ * Tapping back into the field: move the bar to the keyboard position and focus in the same gesture.
+ * Doing it on touch-start moved the bar out from under the finger, so the tap never reached the
+ * field and the keyboard stayed away (D49).
+ */
+function focusWithKeyboard(e: React.TouchEvent<HTMLLabelElement>) {
+  if ((e.target as HTMLElement).closest('button')) return
+  const input = e.currentTarget.querySelector('input')
+  if (!input || document.activeElement === input) return
+  e.preventDefault()
+  anticipateKeyboard()
+  input.focus()
+  input.setSelectionRange(input.value.length, input.value.length)
+}
+
 const escRe = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
@@ -45,7 +60,8 @@ export function SearchBar({ value, onChange, onClose, onClear, tagWords = [], pl
   const text = 'text-heading-xs tracking-heading leading-[24px] whitespace-pre'
   return (
     <div className="flex items-center gap-3 px-5 pb-[var(--bar-pb)]">
-      <label className="flex h-12 min-w-0 flex-1 items-center rounded-pill border border-gray-200 bg-white px-[19px] shadow-bar">
+      <label onTouchEnd={focusWithKeyboard}
+        className="flex h-12 min-w-0 flex-1 items-center rounded-pill border border-gray-200 bg-white px-[19px] shadow-bar">
         <SearchIcon className={`mr-2 size-4 shrink-0 text-gray-600 ${value ? 'hidden' : ''}`} />
         {/* padded, clipping box: tag backgrounds may extend past the text without being cut off */}
         <span className="relative -mx-1.5 -my-2 h-10 min-w-0 flex-1 overflow-hidden">
@@ -58,7 +74,6 @@ export function SearchBar({ value, onChange, onClose, onClear, tagWords = [], pl
           </div>
           <input autoFocus value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
             aria-label="Search" type="search" enterKeyHint="search"
-            onTouchStart={(e) => { if (document.activeElement !== e.currentTarget) anticipateKeyboard() }}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() } }} onScroll={(e) => sync(e.currentTarget)}
             onKeyUp={(e) => sync(e.currentTarget)} onSelect={(e) => sync(e.currentTarget)}
             className={`absolute inset-x-1.5 top-2 h-6 w-[calc(100%-12px)] bg-transparent p-0 outline-none placeholder:text-gray-600 [&::-webkit-search-cancel-button]:hidden ${text.replace('whitespace-pre', '')} ${value ? 'caret-gray-975' : ''}`}
@@ -83,7 +98,7 @@ export interface TagRow { id: string; label: string; count: number; icon: ReactN
 /** Stacked suggestions in one white card (Figma 72:1957): type tags and a date. Selected ones are removed from it. */
 export function TagCard({ rows, onPick }: { rows: TagRow[]; onPick: (id: string) => void }) {
   return (
-    <ul className="w-[145px] rounded-hit border border-gray-200 bg-white px-4 py-2 shadow-bar" aria-label="Filter tags">
+    <ul className="min-w-[145px] whitespace-nowrap rounded-hit border border-gray-200 bg-white px-4 py-2 shadow-bar" aria-label="Filter tags">
       {rows.map((r) => (
         <li key={r.id}>
           <button onClick={() => onPick(r.id)} onMouseDown={keepFocus} data-testid={`tag-${r.id}`}

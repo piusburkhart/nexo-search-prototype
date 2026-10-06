@@ -64,7 +64,7 @@ export default function Search() {
     },
   })
   const dateRow = (d: NonNullable<typeof detected>, i: number, replacePartial: boolean): Row => ({
-    id: i ? `date-${i}` : 'date', label: d.label, icon: <CalendarIcon />,
+    id: i ? `date-${i}` : 'date', label: d.kind === 'day' ? d.text : d.label, icon: <CalendarIcon />, // a typed day keeps its dd.mm.yy format
     count: dateCount({ raw: q, terms: query.terms, date: d }),
     pick: () => set({ q: replacePartial ? `${before}${d.text} ` : q.endsWith(' ') ? q : `${q} `, date: d.key }),
   })
@@ -74,6 +74,8 @@ export default function Search() {
       ...typeCompletions.map(typeRow).filter((r) => r.count > 0),
       ...dateCompletionList.map((d, i) => dateRow(d, i, !dateAtEnd)),
     ]
+  } else if (lastWord && lastWord.length < 3 && !rawDate) {
+    rows = [] // a word fragment that completes to nothing ("n"): nothing to suggest yet
   } else {
     // A type tag is only worth suggesting when the results mix more than one type.
     const types = type ? [] : (Object.keys(LABEL) as Tag[]).filter((t) => counts[t] > 0)

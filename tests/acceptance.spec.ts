@@ -219,7 +219,7 @@ test.describe('navigation flow', () => {
     await openSearch(page)
     await type(page, 'Lantern 02.10.26')
     const tag = page.getByTestId('tag-date')
-    await expect(tag).toContainText('2 Oct 2026')
+    await expect(tag).toHaveText(/02\.10\.26\s*\d+/) // keeps the typed dd.mm.yy format on one line
     await expect(page.getByTestId('tag-memos')).toHaveCount(0) // completing a date: only the date is suggested
     await expect(page.getByTestId('meeting-card')).not.toHaveCount(2)
     await tag.click()
@@ -244,6 +244,23 @@ test.describe('navigation flow', () => {
     await page.getByTestId('tag-date').click()
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('lantern September 2026 ')
     await expect(page.getByTestId('tag-word')).toHaveText('September 2026')
+  })
+
+  test('a fragment that completes to nothing suggests nothing; "m" suggests only Meetings and Memos', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'n')
+    for (const t of ['meetings', 'memos', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
+    await type(page, 'm')
+    await expect(page.getByTestId('tag-meetings')).toBeVisible()
+    await expect(page.getByTestId('tag-memos')).toBeVisible()
+    await expect(page.getByTestId('tag-transcript')).toHaveCount(0)
+  })
+
+  test('a full date stays on one line in the suggestion', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'Lantern 02.10.26')
+    const h = await page.getByTestId('tag-date').boundingBox()
+    expect(h!.height).toBeLessThan(44)
   })
 
   test('no pointless type tag: one type of result offers AI synthesis instead', async ({ page }) => {
