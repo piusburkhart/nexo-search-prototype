@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Screen } from '../components/Chrome'
 import { EmptyState, SectionLabel } from '../components/Atoms'
 import { HitCard, RecordingCard } from '../components/Cards'
-import { DatePill, SearchBar, TagCard, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
+import { DatePill, SearchBar, TagCard, keepFocus, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
 import { MicIcon, ChatIcon, SparkleIcon, WaveIcon } from '../components/Icons'
 import { navigate, useRoute } from '../router'
 import { dateCount, emptyResults, everything, parseQuery, search, synthesize, total, looksLikeQuestion } from '../search'
@@ -53,6 +53,17 @@ export default function Search() {
   const rows = partial ? open.filter((t) => t.id.startsWith(partial.toLowerCase())) : open
   const showDate = !!detected && !dateOn
   const hasText = !!q.trim()
+  // Suggestions follow the keyboard: they are only shown while the search field has focus.
+  const [focused, setFocused] = useState(() => document.activeElement?.getAttribute('aria-label') === 'Search')
+  useEffect(() => {
+    const isSearch = (t: EventTarget | null) => t instanceof HTMLInputElement && t.getAttribute('aria-label') === 'Search'
+    const on = (e: FocusEvent) => isSearch(e.target) && setFocused(true)
+    const off = (e: FocusEvent) => isSearch(e.target) && setFocused(false)
+    document.addEventListener('focusin', on)
+    document.addEventListener('focusout', off)
+    setFocused(isSearch(document.activeElement))
+    return () => { document.removeEventListener('focusin', on); document.removeEventListener('focusout', off) }
+  }, [])
   const partialOnly = idle
 
   // AI synthesis: simulated "thinking" delay, then the result (Figma 72:2695 -> 72:2651)
@@ -72,12 +83,12 @@ export default function Search() {
   return (
     <Screen
       dock={
-        <div style={{ bottom: 'var(--kb, 0px)' }} className="pointer-events-none absolute inset-x-0 [&_button]:pointer-events-auto [&_label]:pointer-events-auto [&_ul]:pointer-events-auto">
-          {hasText && !ai && (showAiPill || showDate || rows.length > 0) && (
+        <div style={{ bottom: 'var(--kb, 0px)' }} className="pointer-events-none absolute inset-x-0 [&_button]:pointer-events-auto [&_label]:pointer-events-auto [&_ul]:pointer-events-auto [&_button]:touch-none [&_label]:touch-none [&_ul]:touch-none">
+          {focused && hasText && !ai && (showAiPill || showDate || rows.length > 0) && (
             <div className="flex flex-col items-start gap-2 px-5 pb-3">
               {showAiPill && (
-                <button onClick={() => { blurSearch(); set({ ai: '1' }) }} data-testid="ai-synthesis"
-                  className="flex h-[46px] items-center gap-2 rounded-pill bg-white px-4 text-body-m shadow-pill">
+                <button onClick={() => { blurSearch(); set({ ai: '1' }) }} onMouseDown={keepFocus} data-testid="ai-synthesis"
+                  className="flex h-[46px] items-center gap-2 rounded-pill bg-white px-4 text-body-m shadow-bar">
                   <SparkleIcon />AI Synthesis
                 </button>
               )}

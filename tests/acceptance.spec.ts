@@ -261,6 +261,19 @@ test.describe('navigation flow', () => {
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).not.toBeFocused()
   })
 
+  test('suggestions disappear with the keyboard and return on focus; Enter closes the keyboard', async ({ page }) => {
+    await openSearch(page)
+    const box = page.getByRole('searchbox', { name: 'Search', exact: true })
+    await type(page, 'Lantern')
+    await expect(page.getByTestId('tag-memos')).toBeVisible()
+    await box.press('Enter')
+    await expect(box).not.toBeFocused()
+    await expect(page.getByTestId('tag-memos')).toHaveCount(0)
+    await expect(page.getByTestId('meeting-card').first()).toBeVisible() // results stay
+    await box.focus()
+    await expect(page.getByTestId('tag-memos')).toBeVisible()
+  })
+
   test('tag highlight is not clipped by its container', async ({ page }) => {
     await openSearch(page)
     await type(page, 'Lantern')

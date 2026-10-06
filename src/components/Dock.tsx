@@ -56,7 +56,8 @@ export function SearchBar({ value, onChange, onClose, onClear, tagWords = [], pl
             </div>
           </div>
           <input autoFocus value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-            aria-label="Search" type="search" enterKeyHint="search" onScroll={(e) => sync(e.currentTarget)}
+            aria-label="Search" type="search" enterKeyHint="search"
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() } }} onScroll={(e) => sync(e.currentTarget)}
             onKeyUp={(e) => sync(e.currentTarget)} onSelect={(e) => sync(e.currentTarget)}
             className={`absolute inset-x-1.5 top-2 h-6 w-[calc(100%-12px)] bg-transparent p-0 outline-none placeholder:text-gray-600 [&::-webkit-search-cancel-button]:hidden ${text.replace('whitespace-pre', '')} ${value ? 'caret-gray-975' : ''}`}
             style={value ? { WebkitTextFillColor: 'transparent' } : undefined} />
@@ -80,7 +81,7 @@ export interface TagRow { id: string; label: string; count: number; icon: ReactN
 /** Stacked tag suggestions in one white card (Figma 72:1957). Selected tags are removed from it. */
 export function TagCard({ rows, onPick }: { rows: TagRow[]; onPick: (id: string) => void }) {
   return (
-    <ul className="w-[145px] rounded-hit bg-white px-4 py-2 shadow-pill" aria-label="Filter tags">
+    <ul className="w-[145px] rounded-hit bg-white px-4 py-2 shadow-bar" aria-label="Filter tags">
       {rows.map((r) => (
         <li key={r.id}>
           <button onClick={() => onPick(r.id)} onMouseDown={keepFocus} data-testid={`tag-${r.id}`}
@@ -97,7 +98,7 @@ export function TagCard({ rows, onPick }: { rows: TagRow[]; onPick: (id: string)
 export function DatePill({ label, count, onClick }: { label: string; count: number; onClick: () => void }) {
   return (
     <button onClick={onClick} onMouseDown={keepFocus} data-testid="date-tag"
-      className="flex h-[46px] items-center gap-3 rounded-pill bg-white px-4 text-body-m shadow-pill">
+      className="flex h-[46px] items-center gap-3 rounded-pill bg-white px-4 text-body-m shadow-bar">
       <CalendarIcon />{label}<span className="ml-2">{count}</span>
     </button>
   )
