@@ -117,28 +117,50 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('group-meetings')).toBeVisible()
   })
 
-  test('filter tags: select highlights and filters; deselect restores', async ({ page }) => {
+  test('filter tags: stacked card; selected tag moves into the input as a chip', async ({ page }) => {
     await openSearch(page)
     await type(page, 'Lantern')
-    const memos = page.getByTestId('tag-memos')
-    await memos.click()
-    await expect(memos).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByTestId('tag-meetings')).toBeVisible()
+    await expect(page.getByTestId('tag-memos')).toBeVisible() // stacked in one card
+    await page.getByTestId('tag-memos').click()
+    await expect(page.getByTestId('tag-memos')).toHaveCount(0) // gone from suggestions
+    await expect(page.getByTestId('chip-memos')).toHaveText('Memos') // grey chip in prompt
     await expect(page.getByTestId('group-meetings')).toHaveCount(0)
     await expect(page.getByTestId('group-memos')).toBeVisible()
-    await memos.click()
+    await page.getByTestId('tag-meetings').click() // multiple tags combine
     await expect(page.getByTestId('group-meetings')).toBeVisible()
+    await expect(page.getByTestId('group-transcript')).toHaveCount(0)
+    await page.getByTestId('chip-memos').click() // chip removes the filter, tag returns
+    await expect(page.getByTestId('tag-memos')).toBeVisible()
+    await expect(page.getByTestId('group-memos')).toHaveCount(0)
   })
 
   test('date tag is recognised and filters to that day', async ({ page }) => {
     await openSearch(page)
     await type(page, 'Lantern 02.10.26')
-    const tag = page.getByTestId('tag-2 oct 2026')
-    await expect(tag).toBeVisible()
+    const tag = page.getByTestId('date-tag')
+    await expect(tag).toContainText('2 Oct 2026')
     await expect(page.getByTestId('meeting-card')).not.toHaveCount(2)
     await tag.click()
-    await expect(tag).toHaveAttribute('aria-pressed', 'true')
+    await expect(tag).toHaveCount(0)
     await expect(page.getByTestId('meeting-card')).toHaveCount(2) // m07, m08 on 2 Oct
     await expect(page.getByTestId('memo-card')).toHaveCount(0)
+  })
+
+  test('typing a year or month offers a date filter', async ({ page }) => {
+    await openSearch(page)
+    await type(page, '2026')
+    await expect(page.getByTestId('date-tag')).toContainText('2026')
+    await page.getByTestId('date-tag').click()
+    await expect(page.getByTestId('meeting-card')).toHaveCount(10)
+    await expect(page.getByTestId('memo-card')).toHaveCount(10)
+    await type(page, 'september')
+    await expect(page.getByTestId('date-tag')).toContainText('September 2026')
+    await page.getByTestId('date-tag').click()
+    await expect(page.getByTestId('meeting-card')).toHaveCount(6) // m01 to m06
+    await expect(page.getByTestId('memo-card')).toHaveCount(8)
+    await type(page, '16 October') // day + month name stays plain text
+    await expect(page.getByTestId('date-tag')).toHaveCount(0)
   })
 
   test('AI search: offer -> synthesizing -> result -> content card opens transcript', async ({ page }) => {

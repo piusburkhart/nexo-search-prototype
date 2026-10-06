@@ -15,8 +15,8 @@ Compared at 402x874 against `docs/screens/*.png` (Figma exports, 1x). Two rounds
 - Recordings show the 3 newest rather than 2 plus "Show all recordings".
 
 ## Search with query (`search-actions.png`, tags frames)
-- Figma shows a tag popover floating above the field with Actions / Folder / Recording. Ours: Meetings / Memos / Transcript chips (+ date chip, AI pill) in a wrapped row above the bar (D6).
-- Figma inserts selected tags as highlighted words inside the input; ours keeps tags outside the input.
+- Figma shows a tag popover floating above the field with Actions / Folder / Recording. Ours: the same stacked card with Meetings / Memos / Transcript (+ date pill, AI pill) (D6).
+- Selected tags are grey chips inside the input as in Figma, but placed after the typed text rather than inline between words.
 - Results list (grouped cards with snippets) has no Figma frame.
 
 ## AI search (`ai-offer.png`, `ai-synthesizing.png`, `ai-result.png`)
