@@ -1,4 +1,4 @@
-# Prototype project
+# nexo_search_prototype
 Stack: Vite + React + TypeScript + Tailwind CSS v4. Run with `npm run dev`.
 - Keep it simple: small components, no extra libraries unless needed.
 - Store data in localStorage or mock JSON; no backend unless asked.
