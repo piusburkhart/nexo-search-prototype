@@ -390,6 +390,15 @@ test.describe('navigation flow', () => {
     }
   })
 
+  test('a day and month complete to the full date: "21.09" suggests 21.09.26', async ({ page }) => {
+    await openSearch(page)
+    await type(page, '21.09')
+    await expect(page.getByTestId('tag-date')).toContainText('21.09.26')
+    await page.getByTestId('tag-date').click()
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('21.09.26 ')
+    await expect(page.getByTestId('meeting-card')).toHaveCount(mock.meetings.filter((m) => m.startsAt.startsWith('2026-09-21')).length)
+  })
+
   test('typing a year or month suggests it as a tag', async ({ page }) => {
     await openSearch(page)
     await type(page, '2026')
@@ -543,6 +552,20 @@ test.describe('AI synthesis answers', () => {
     await type(page, 'lanrtern decision')
     await expect(page.getByTestId('transcript-hit')).toHaveCount(right)
     expect(right).toBeGreaterThan(0)
+  })
+
+  test('a question about a day summarises that day: meetings, what they were about, actions', async ({ page }) => {
+    const m = mock.meetings.find((x) => x.startsAt.startsWith('2026-09-21'))!
+    const acts = mock.actions.filter((a) => a.meetingId === m.id)
+    await openSearch(page)
+    await type(page, 'what happened on 21.09.26')
+    await expect(page.getByTestId('meeting-card')).toHaveCount(1) // the date applies without picking the tag
+    await page.getByTestId('ai-synthesis').click()
+    const r = page.getByTestId('ai-result')
+    await expect(r).toContainText('On 21 September 2026 you had one meeting')
+    await expect(r).toContainText(m.title)
+    await expect(r).toContainText(`led to ${acts.length === 1 ? 'one action' : ''}`)
+    await expect(page.getByTestId('meeting-card')).toHaveCount(1) // still the same results
   })
 
   test('says it cannot help when the meetings do not know', async ({ page }) => {

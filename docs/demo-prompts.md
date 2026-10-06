@@ -18,6 +18,9 @@ Type a question in the search bar: the results below are what the search found. 
 | How long does onboarding take today? | Median 26 minutes to the first invoice, target 15 |
 | How many beta customers do we have? | About twelve |
 | When does the beta start? | 21 October (runs until 4 November) |
+| What happened on 21.09.26? | One meeting at 14:00, "Onboarding Baseline Review": 38 percent finish onboarding; led to one action, the weekly onboarding report |
+| What happened on 01.10.26? | Two meetings (support readiness, Holm & Söner interview), three actions, three memos |
+| What happened in September? | Nine meetings, the first three with what they were about, nine actions, nine memos |
 | How will the beta be rolled out? | Feature flag: 25 percent from 21 Oct, 50 percent from 28 Oct, everyone on 14 Nov |
 | What are the go or no-go criteria? | 70 percent finish onboarding, 95 percent CSV import success, 99.5 percent crash-free |
 | When is the go or no-go meeting? | 5 November |

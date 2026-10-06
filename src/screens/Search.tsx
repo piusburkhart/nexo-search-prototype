@@ -47,7 +47,7 @@ export default function Search() {
   const query = useMemo(() => parseQuery(q, skip), [q, skip.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
   const detected = query.date
   const dateOn = !!detected && dateParam === detected.key
-  const hasTerms = query.terms.length > 0 || dateOn
+  const hasTerms = query.terms.length > 0 || !!detected // a date on its own applies itself (D72)
   const pool = useMemo(() => (hasTerms ? search(query, dateOn) : everything()), [query, dateOn, hasTerms])
   const idle = !hasTerms && !type // nothing to search yet
   const show = { meetings: !type || type === 'meetings', memos: !type || type === 'memos', actions: !type || type === 'actions', transcript: !type || type === 'transcript' }
@@ -120,7 +120,7 @@ export default function Search() {
   }, [])
 
   // AI Synthesis is always there (Figma 75:3668): disabled until enough is typed, then it can run.
-  const sufficient = query.terms.join(' ').length >= 3 || dateOn || !!type
+  const sufficient = query.terms.join(' ').length >= 3 || !!detected || !!type
   const [thinking, setThinking] = useState(false)
   useEffect(() => {
     if (!ai) return

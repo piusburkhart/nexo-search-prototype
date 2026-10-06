@@ -59,8 +59,10 @@ export interface TranscriptHit {
 export interface Results {
   meetings: Meeting[]; memos: Memo[]; actions: Action[]; transcript: TranscriptHit[]
   notes: Note[]; summaryOf: Meeting | null; highlight: string[]
+  /** Set when the query asks about a day, month or year only ("what happened on 21.09.26"). */
+  period: DateFilter | null
 }
-export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [], notes: [], summaryOf: null, highlight: [] }
+export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [], notes: [], summaryOf: null, highlight: [], period: null }
 export const total = (r: Pick<Results, 'meetings' | 'memos' | 'actions' | 'transcript'>) => r.meetings.length + r.memos.length + r.actions.length + r.transcript.length
 
 /** Transcript hits grouped by meeting, the most relevant meetings first (Figma 77:4717). */
@@ -104,9 +106,10 @@ export const recordingScore = (rec: Recording) => recScores.get(rec.item) ?? 0
  * where the word "decision" is never said.
  */
 export function search(q: Query, applyDate = false): Results {
-  const key = applyDate ? q.date?.key ?? null : null
   const u = understand(q.terms.join(' '), q.raw)
   const hasQuery = u.terms.length > 0 || u.asksKind || u.project
+  // A query about a date and nothing else ("what happened on 21.09.26") applies the date without the tag.
+  const key = applyDate || !hasQuery ? q.date?.key ?? null : null
   if (u.blocked || (!hasQuery && !key)) return emptyResults
   const inDay = (iso: string) => !key || dayOf(iso).startsWith(key)
 
@@ -114,6 +117,7 @@ export function search(q: Query, applyDate = false): Results {
   if (!hasQuery) {
     return {
       ...emptyResults,
+      period: q.date,
       meetings: data.meetings.filter((m) => inDay(m.startsAt)),
       memos: data.memos.filter((m) => inDay(m.createdAt)),
       actions: data.actions.filter((a) => inDay(actionDate(a))),
@@ -163,7 +167,7 @@ export function search(q: Query, applyDate = false): Results {
   const actionScore = (a: Action) => LITERAL * (2 * literalHits(a.title, u) + literalHits(getMeeting(a.meetingId)!.title, u)) + matchText(a.title, u).score
   actions.sort((a, b) => actionScore(b) - actionScore(a))
 
-  return { meetings, memos, actions, transcript, notes, summaryOf: namedMeeting(u), highlight: u.highlight }
+  return { meetings, memos, actions, transcript, notes, summaryOf: namedMeeting(u), highlight: u.highlight, period: null }
 }
 
 /** Count of date-matching recordings for the date tag. */
@@ -193,6 +197,16 @@ const RECORDING_DAYS = [...data.meetings.map((m) => dayOf(m.startsAt)), ...data.
  */
 export function dateCompletions(word: string, before: string): DateFilter[] {
   const w = word.toLowerCase()
+  // "21.09" or "21.9.2" -> 21.09.26: days with recordings whose day, month and year start like the typed parts.
+  const dotted = w.match(/^(\d{1,2})\.(\d{0,2})(?:\.(\d{0,4}))?$/)
+  if (dotted) {
+    const [, d, m, y = ''] = dotted
+    const fits = (n: number, typed: string) => !typed || pad(n).startsWith(typed) || String(n).startsWith(typed)
+    return [...new Set(RECORDING_DAYS)].sort()
+      .filter((k) => +k.slice(8, 10) === +d && fits(+k.slice(5, 7), m) && (k.slice(0, 4).startsWith(y) || k.slice(2, 4).startsWith(y)))
+      .slice(0, 4)
+      .map((k) => ({ ...day(+k.slice(0, 4), +k.slice(5, 7), +k.slice(8, 10)), text: `${k.slice(8, 10)}.${k.slice(5, 7)}.${k.slice(2, 4)}` }))
+  }
   if (/^\d{1,4}$/.test(w)) {
     const years = [...new Set(RECORDING_DAYS.map((d) => d.slice(0, 4)))].filter((y) => y.startsWith(w)).sort()
     return years.map((y) => ({ ...year(+y), text: y }))
