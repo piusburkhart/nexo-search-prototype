@@ -1,7 +1,21 @@
+import { PhoneFrame } from './components/Chrome'
+import Home from './screens/Home'
+import Search from './screens/Search'
+import Transcript from './screens/Transcript'
+import { MeetingDetail, MemoDetail } from './screens/Details'
+import { useRoute } from './router'
+
+function Routes() {
+  const [screen, id] = useRoute().segments
+  switch (screen) {
+    case 'search': return <Search />
+    case 'meeting': return <MeetingDetail id={id} />
+    case 'memo': return <MemoDetail id={id} />
+    case 'transcript': return <Transcript key={id} id={id} />
+    default: return <Home />
+  }
+}
+
 export default function App() {
-  return (
-    <main className="min-h-screen grid place-items-center bg-slate-950 text-slate-100">
-      <h1 className="text-4xl font-bold">Ready to build ✨</h1>
-    </main>
-  )
+  return <PhoneFrame><Routes /></PhoneFrame>
 }

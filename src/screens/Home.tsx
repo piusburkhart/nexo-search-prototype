@@ -1,0 +1,50 @@
+import { useState } from 'react'
+import { Screen } from '../components/Chrome'
+import { Chip, SectionLabel } from '../components/Atoms'
+import { RecordingCard } from '../components/Cards'
+import { TabBar } from '../components/Dock'
+import { initials, data, isNew, recordings } from '../data'
+import { navigate } from '../router'
+
+type Filter = 'all' | 'meeting' | 'memo'
+const CHIPS: { id: Filter | 'folders' | 'people'; label: string }[] = [
+  { id: 'all', label: 'All' }, { id: 'meeting', label: 'Meetings' }, { id: 'memo', label: 'Memos' },
+  { id: 'folders', label: 'Folders' }, { id: 'people', label: 'People' },
+]
+
+export default function Home() {
+  const [filter, setFilter] = useState<Filter>('all')
+  const list = recordings.filter((r) => filter === 'all' || r.kind === filter)
+  const fresh = list.filter((r) => isNew(r.date))
+  const earlier = list.filter((r) => !isNew(r.date))
+  const open = (r: (typeof list)[number]) => navigate(`/${r.kind}/${r.item.id}`)
+  const hasNew = (k: Filter) => recordings.some((r) => (k === 'all' || r.kind === k) && isNew(r.date))
+
+  return (
+    <Screen bg="bg-gray-200" dock={<TabBar onSearch={() => navigate('/search')} />}>
+      <header className="flex flex-col gap-6 px-4 pb-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-heading-xl leading-[1.2] tracking-heading">Recordings</h1>
+          <span className="flex size-[46px] items-center justify-center rounded-pill bg-gray-975 text-heading-s font-bold tracking-[0.06em] text-gray-50">
+            {initials(data.user.id)}
+          </span>
+        </div>
+        <div className="flex items-end gap-1" role="tablist">
+          {CHIPS.map((c) => {
+            const live = c.id === 'all' || c.id === 'meeting' || c.id === 'memo'
+            return (
+              <Chip key={c.id} label={c.label} selected={c.id === filter} dot={live && hasNew(c.id as Filter)}
+                onClick={live ? () => setFilter(c.id as Filter) : undefined} />
+            )
+          })}
+        </div>
+      </header>
+      <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-[130px]">
+        {fresh.length > 0 && <SectionLabel>New</SectionLabel>}
+        {fresh.map((r) => <RecordingCard key={r.item.id} rec={r} showNew onOpen={() => open(r)} />)}
+        {earlier.length > 0 && <div className="mt-4"><SectionLabel>Earlier</SectionLabel></div>}
+        {earlier.map((r) => <RecordingCard key={r.item.id} rec={r} onOpen={() => open(r)} />)}
+      </main>
+    </Screen>
+  )
+}
