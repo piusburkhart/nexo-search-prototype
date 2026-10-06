@@ -40,13 +40,15 @@
   --shadow-pill: 0 0 32px rgba(0, 0, 0, 0.05);
 }
 
-html, body, #root { height: 100%; }
-body {
-  margin: 0;
-  font-family: var(--font-sans);
-  color: var(--color-gray-975);
-  background: var(--color-gray-50);
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-gray-975);
+    background: var(--color-gray-50);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; }
+  input { font: inherit; color: inherit; }
 }
-button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; }
-input { font: inherit; color: inherit; }

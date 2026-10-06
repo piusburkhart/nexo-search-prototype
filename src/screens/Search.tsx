@@ -53,7 +53,7 @@ export default function Search() {
     <Screen
       dock={
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent pt-6">
-          {!idle && !ai && (
+          {!idle && !ai && (showAiPill || total(all) > 0) && (
             <div className="flex flex-wrap justify-center gap-2 px-5 pb-3" aria-label="Filter tags">
               {showAiPill && (
                 <button onClick={() => set({ ai: '1' })} data-testid="ai-synthesis"
@@ -61,12 +61,12 @@ export default function Search() {
                   <SparkleIcon />AI Synthesis
                 </button>
               )}
-              <SearchTag label="Meetings" count={all.meetings.length} icon={<MicIcon />} selected={tag === 'meetings'}
+              {total(all) > 0 && <><SearchTag label="Meetings" count={all.meetings.length} icon={<MicIcon />} selected={tag === 'meetings'}
                 onClick={() => set({ tag: tag === 'meetings' ? undefined : 'meetings' })} />
               <SearchTag label="Memos" count={all.memos.length} icon={<ChatIcon />} selected={tag === 'memos'}
                 onClick={() => set({ tag: tag === 'memos' ? undefined : 'memos' })} />
               <SearchTag label="Transcript" count={all.transcript.length} icon={<WaveIcon />} selected={tag === 'transcript'}
-                onClick={() => set({ tag: tag === 'transcript' ? undefined : 'transcript' })} />
+                onClick={() => set({ tag: tag === 'transcript' ? undefined : 'transcript' })} /></>}
               {query.date && (
                 <SearchTag label={formatDay(query.date)} count={dCount} icon={<CalendarIcon />} selected={useDate}
                   onClick={() => set({ date: useDate ? undefined : '1' })} />

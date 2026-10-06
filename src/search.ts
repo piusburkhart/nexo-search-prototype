@@ -24,7 +24,8 @@ export function parseQuery(raw: string): Query {
       break
     }
   }
-  const terms = rest.toLowerCase().split(/\s+/).filter(Boolean)
+  const terms = rest.toLowerCase().split(/\s+/)
+    .map((w) => w.replace(/^[?!.,;:"'“”]+|[?!.,;:"'“”]+$/g, '')).filter(Boolean)
   return { raw, terms, date }
 }
 

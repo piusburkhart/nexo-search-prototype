@@ -17,7 +17,7 @@ export function Chip({ label, selected, dot, count, onClick }: {
 }
 
 export const NewTag = () => (
-  <span className="inline-flex h-6 items-center rounded-tag bg-new px-2 text-body-s leading-[0.9] text-black">New</span>
+  <span className="inline-flex h-6 items-center self-start rounded-tag bg-new px-2 text-body-s leading-[0.9] text-black">New</span>
 )
 
 export const SectionLabel = ({ children }: { children: ReactNode }) => (
