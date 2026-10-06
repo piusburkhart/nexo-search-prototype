@@ -164,10 +164,13 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('group-actions')).toBeVisible()
   })
 
-  test('home filter chips', async ({ page }) => {
+  test('home chips: All, Folders, People; unselected ones are outlined, not filled', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: 'Memos' }).click()
-    await expect(page.getByTestId('meeting-card')).toHaveCount(0)
+    for (const n of ['Meetings', 'Memos']) await expect(page.getByRole('button', { name: n, exact: true })).toHaveCount(0)
+    const folders = page.getByRole('button', { name: 'Folders', exact: true })
+    await expect(folders).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+    await expect(folders).toHaveCSS('border-color', 'rgb(161, 159, 154)')
+    await expect(page.getByTestId('meeting-card')).toHaveCount(mock.meetings.length)
     await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.length)
   })
 

@@ -8,7 +8,7 @@ export function Chip({ label, selected, dot, count, onClick }: {
     <span className="flex items-start">
       <button onClick={onClick} aria-pressed={selected}
         className={`rounded-pill border px-3 py-2.5 text-body-m leading-[0.9] tracking-heading ${
-          selected ? 'border-gray-975 bg-gray-975 text-gray-50' : 'border-gray-600 bg-gray-200 text-gray-975'}`}>
+          selected ? 'border-gray-975 bg-gray-975 text-gray-50' : 'border-gray-600 bg-transparent text-gray-975'}`}>
         {label}{count !== undefined && <span className="ml-1.5 text-gray-700">{count}</span>}
       </button>
       {dot && <span className="-ml-0.5 size-2.5 rounded-pill bg-new" />}
