@@ -130,3 +130,10 @@ export function snippet(text: string, terms: string[], max = 140) {
   if (start > 0) { const sp = text.indexOf(' ', start); if (sp >= 0 && sp < first) start = sp + 1 }
   return (start > 0 ? '…' : '') + text.slice(start, start + max) + (start + max < text.length ? '…' : '')
 }
+
+const ASK = new Set('what why how who when where which did does do is are was can could should would will summarize summarise explain compare tell list find give show'.split(' '))
+/** True when the query reads like a question or request a keyword search cannot answer. */
+export const looksLikeQuestion = (raw: string) => {
+  const words = raw.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  return raw.trim().endsWith('?') || words.length >= 4 || (words.length >= 2 && ASK.has(words[0]))
+}

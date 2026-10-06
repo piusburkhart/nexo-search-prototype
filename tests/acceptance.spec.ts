@@ -131,7 +131,31 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('meeting-card').first()).toBeVisible()
   })
 
-  test('AI synthesis is always offered and says so when it cannot help; it closes the keyboard', async ({ page }) => {
+  test('AI synthesis is offered only for question-like queries or when keyword search finds nothing', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'Lantern')
+    await expect(page.getByTestId('meeting-card').first()).toBeVisible()
+    await expect(page.getByTestId('ai-synthesis')).toHaveCount(0)
+    await type(page, 'What did we decide about SSO?')
+    await expect(page.getByTestId('ai-synthesis')).toBeVisible()
+    await type(page, 'budget')
+    await expect(page.getByTestId('ai-synthesis')).toBeVisible() // no keyword results
+  })
+
+  test('clear button appears with text and empties the field and filters', async ({ page }) => {
+    await openSearch(page)
+    const box = page.getByRole('searchbox', { name: 'Search', exact: true })
+    await expect(page.getByTestId('clear-search')).toHaveCount(0)
+    await type(page, 'Lantern')
+    await page.getByTestId('tag-memos').click()
+    await page.getByTestId('clear-search').click()
+    await expect(box).toHaveValue('')
+    await expect(box).toBeFocused()
+    await expect(page.getByTestId('tag-word')).toHaveCount(0)
+    await expect(page.getByTestId('clear-search')).toHaveCount(0)
+  })
+
+  test('AI synthesis closes the keyboard and says so when it cannot help', async ({ page }) => {
     await openSearch(page)
     await type(page, 'budget')
     await page.getByTestId('ai-synthesis').click()

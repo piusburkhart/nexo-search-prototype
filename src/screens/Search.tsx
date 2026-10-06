@@ -5,7 +5,7 @@ import { HitCard, RecordingCard } from '../components/Cards'
 import { DatePill, SearchBar, TagCard, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
 import { MicIcon, ChatIcon, SparkleIcon, WaveIcon } from '../components/Icons'
 import { navigate, useRoute } from '../router'
-import { dateCount, emptyResults, everything, parseQuery, search, synthesize, total } from '../search'
+import { dateCount, emptyResults, everything, parseQuery, search, synthesize, total, looksLikeQuestion } from '../search'
 
 type Tag = 'meetings' | 'memos' | 'transcript'
 
@@ -53,6 +53,7 @@ export default function Search() {
   const rows = partial ? open.filter((t) => t.id.startsWith(partial.toLowerCase())) : open
   const showDate = !!detected && !dateOn
   const hasText = !!q.trim()
+  const partialOnly = idle
 
   // AI synthesis: simulated "thinking" delay, then the result (Figma 72:2695 -> 72:2651)
   const [thinking, setThinking] = useState(false)
@@ -65,12 +66,13 @@ export default function Search() {
   const synth = useMemo(() => (ai ? synthesize(q) : null), [ai, q])
 
   const noResults = !idle && total(results) === 0
-  const showAiPill = hasText && !ai // always offered as a last resort (D33)
+  // AI is offered when a keyword search cannot answer: no results, or a question-like query (D33)
+  const showAiPill = hasText && !ai && !partialOnly && (noResults || (hasTerms && looksLikeQuestion(q)))
 
   return (
     <Screen
       dock={
-        <div style={{ bottom: 'var(--kb, 0px)' }} className="absolute inset-x-0 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent pt-6">
+        <div style={{ bottom: 'var(--kb, 0px)' }} className="pointer-events-none absolute inset-x-0 [&_button]:pointer-events-auto [&_label]:pointer-events-auto [&_ul]:pointer-events-auto">
           {hasText && !ai && (showAiPill || showDate || rows.length > 0) && (
             <div className="flex flex-col items-start gap-2 px-5 pb-3">
               {showAiPill && (
@@ -84,6 +86,7 @@ export default function Search() {
             </div>
           )}
           <SearchBar value={q} onChange={(v) => set({ q: v, ai: undefined, tag: tags.filter((t) => wordsOf(v).includes(t)).join(',') || undefined })} tagWords={tags}
+            onClear={() => { set({ q: '', tag: undefined, date: undefined, ai: undefined }); refocusSearch() }}
             onClose={() => navigate('/')} placeholder={ai ? 'Ask a question' : 'Search anything'} />
         </div>
       }
@@ -114,7 +117,7 @@ export default function Search() {
             </div>
           </section>
         ) : idle ? (
-          <p className="px-2 pt-3.5 text-heading-xs tracking-heading text-gray-975">Ask about anything.</p>
+          <p className="px-2 pt-3.5 text-heading-xs tracking-heading text-gray-700">Ask about anything.</p>
         ) : noResults ? (
           <EmptyState query={q.trim()} />
         ) : (

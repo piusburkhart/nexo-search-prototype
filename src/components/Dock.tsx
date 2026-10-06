@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { CalendarIcon, ChecklistIcon, CloseIcon, FilterIcon, RecordIcon, SearchIcon } from './Icons'
+import { CalendarIcon, ChecklistIcon, CloseIcon, RecordIcon, SearchIcon } from './Icons'
 
 /** Home bottom bar (Figma 72:1749): tabs pill + search button. */
 export function TabBar({ onSearch }: { onSearch: () => void }) {
@@ -33,8 +33,8 @@ const escRe = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
  * Search field + close button (Figma 72:2686). A selected tag is a word in the text with a grey
  * background (72:2345). The input is transparent over a mirror layer that paints that background.
  */
-export function SearchBar({ value, onChange, onClose, tagWords = [], placeholder = 'Search anything' }: {
-  value: string; onChange: (v: string) => void; onClose: () => void
+export function SearchBar({ value, onChange, onClose, onClear, tagWords = [], placeholder = 'Search anything' }: {
+  value: string; onChange: (v: string) => void; onClose: () => void; onClear: () => void
   tagWords?: string[]; placeholder?: string
 }) {
   const [scrollX, setScrollX] = useState(0)
@@ -44,7 +44,7 @@ export function SearchBar({ value, onChange, onClose, tagWords = [], placeholder
   const text = 'text-heading-xs tracking-heading leading-[24px] whitespace-pre'
   return (
     <div className="flex items-center gap-3 px-5 pb-[var(--bar-pb)]">
-      <label className="flex h-12 min-w-0 flex-1 items-center rounded-pill bg-white px-[19px] shadow-pill">
+      <label className="flex h-12 min-w-0 flex-1 items-center rounded-pill bg-white px-[19px] shadow-bar">
         <SearchIcon className={`mr-2 size-4 shrink-0 text-gray-600 ${value ? 'hidden' : ''}`} />
         {/* padded, clipping box: tag backgrounds may extend past the text without being cut off */}
         <span className="relative -mx-1.5 -my-2 h-10 min-w-0 flex-1 overflow-hidden">
@@ -62,10 +62,15 @@ export function SearchBar({ value, onChange, onClose, tagWords = [], placeholder
             style={value ? { WebkitTextFillColor: 'transparent' } : undefined} />
           {/* typed text is always drawn by the mirror layer so tag words can carry a background */}
         </span>
-        <FilterIcon className="ml-2 h-[11px] w-[17px] shrink-0 text-gray-600" />
+        {value && (
+          <button type="button" onClick={onClear} onMouseDown={keepFocus} aria-label="Clear search" data-testid="clear-search"
+            className="ml-2 flex size-5 shrink-0 items-center justify-center rounded-pill bg-gray-200 text-gray-800">
+            <CloseIcon className="size-3" />
+          </button>
+        )}
       </label>
       <button onClick={onClose} aria-label="Close search"
-        className="flex size-12 shrink-0 items-center justify-center rounded-pill bg-white shadow-pill"><CloseIcon /></button>
+        className="flex size-12 shrink-0 items-center justify-center rounded-pill bg-white shadow-bar"><CloseIcon /></button>
     </div>
   )
 }
