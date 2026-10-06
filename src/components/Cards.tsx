@@ -103,7 +103,7 @@ export function ActionPill({ action, terms = [] }: { action: Action; terms?: str
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="line-clamp-2 text-heading-s leading-[1.1] tracking-heading text-gray-975"><Highlight text={action.title} terms={terms} /></span>
-        <span className="truncate text-body-s text-gray-700">{meeting.title}</span>
+        <span className="truncate text-body-s text-gray-700"><Highlight text={meeting.title} terms={terms} /></span>
       </span>
       {isNewAction(action) && <span className="pr-4"><NewTag small /></span>}
     </div>

@@ -8,6 +8,7 @@ import { CalendarIcon, CheckCircleIcon, MicIcon, ChatIcon, WaveIcon } from '../c
 import { navigate, useRoute } from '../router'
 import { synthesize } from '../ai'
 import { dateCompletions, dateCount, emptyResults, everything, groupByMeeting, parseQuery, recordingScore, search } from '../search'
+import { understand } from '../semantic'
 import type { Recording } from '../data'
 
 type Tag = 'meetings' | 'memos' | 'actions' | 'transcript'
@@ -35,7 +36,10 @@ export default function Search() {
   const before = q.slice(0, q.length - lastWord.length)
   const rawDate = useMemo(() => parseQuery(q).date, [q])
   const dateAtEnd = !!rawDate && dateParam !== rawDate.key && !!lastWord && q.trimEnd().endsWith(rawDate.text)
-  const typeCompletions = !type && lastWord ? (Object.keys(LABEL) as Tag[]).filter((t) => t.startsWith(lastWord.toLowerCase())) : []
+  // A question or long query wants content (what was said), not a file: only the Transcript tag is offered.
+  const asking = useMemo(() => understand(q).question, [q])
+  const offered = (Object.keys(LABEL) as Tag[]).filter((t) => !asking || t === 'transcript')
+  const typeCompletions = !type && lastWord ? offered.filter((t) => t.startsWith(lastWord.toLowerCase())) : []
   const dateCompletionList = !lastWord ? [] : dateAtEnd ? [rawDate!] : dateCompletions(lastWord, before)
   const partial = typeCompletions.length || dateCompletionList.length ? lastWord : ''
 
@@ -97,7 +101,7 @@ export default function Search() {
     // A type tag is only worth suggesting when the results mix more than one type.
     const types = type ? [] : (Object.keys(LABEL) as Tag[]).filter((t) => counts[t] > 0)
     rows = [
-      ...(types.length >= 2 && !idle ? types.map(typeRow) : []),
+      ...(types.length >= 2 && !idle ? types.filter((t) => offered.includes(t)).map(typeRow) : []),
       ...(detected && !dateOn ? [dateRow(detected, 0, false)] : []),
     ]
   }
@@ -149,7 +153,7 @@ export default function Search() {
       <h1 data-testid="search-headline" className="flex h-4 shrink-0 items-center justify-center text-heading-xs font-normal tracking-heading text-black">Global search</h1>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[380px]" data-testid="search-body"
         onPointerDown={() => blurSearch()}>
-        <div className="pt-6 pb-4">
+        <div className={`pt-6 ${aiState === 'done' ? 'pb-10' : 'pb-4'}`}>
           <AiSynthesis state={aiState} answer={answer}
             onRun={() => { blurSearch(); set({ ai: '1' }) }} onReset={() => set({ ai: undefined })} />
         </div>

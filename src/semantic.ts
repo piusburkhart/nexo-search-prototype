@@ -90,7 +90,8 @@ const INTENT_WORDS = new Set(['agree', 'decid', 'decision', 'conclu', 'settl', '
 const INTENT_STEMS: Partial<Record<keyof Intent, string[]>> = {
   decision: ['agre', 'decid', 'decision', 'defer', 'postpon'],
   deadline: ['deadlin', 'due'],
-  risk: ['risk', 'worr', 'concern', 'problem', 'confus', 'stuck'],
+  risk: ['risk', 'worr', 'concern', 'problem', 'confus', 'stuck', 'blocker', 'issu', 'challeng', 'complain', 'struggl'],
+  metric: ['percent', 'target', 'goal', 'number', 'rate', 'baselin'],
   why: ['becaus', 'reason', 'so'],
 }
 
@@ -159,6 +160,12 @@ export interface Understanding {
   blocked: boolean
   /** Literal words to highlight in results. */
   highlight: string[]
+  /** The words as typed (corrected, no synonyms): an item containing them is a direct hit. */
+  literal: string[]
+  /** A question or a long query: the user wants content (what was said), not a file. */
+  question: boolean
+  /** The intent words as typed ("blocker", "date"): a text saying them shows the kind asked for. */
+  asked: string[]
 }
 
 const ASK = /^(what|why|how|who|when|where|which|did|does|do|is|are|was|can|could|should|summari[sz]e|tell|show|list|explain)\b/
@@ -169,16 +176,18 @@ const ASK = /^(what|why|how|who|when|where|which|did|does|do|is|are|was|can|coul
  */
 export function understand(text: string, raw = text): Understanding {
   const lower = raw.toLowerCase()
-  const intent = readIntent(lower)
   const all = words(text)
   const question = lower.trim().endsWith('?') || all.length >= 4 || ASK.test(lower.trim())
   const terms: Term[] = []
   let project = false
   let blocked = false
+  const asked: string[] = []
   for (const w of all) {
     if (STOP.has(w)) continue
     const s = stem(w)
-    if (!s || STOP.has(s) || GENERIC.has(s) || INTENT_WORDS.has(s)) continue
+    // Generic words ("week", "plan") only carry meaning in a keyword search; in a question they are filler.
+    if (!s || STOP.has(s) || (question && GENERIC.has(s))) continue
+    if (INTENT_WORDS.has(s)) { asked.push(s); continue }
     if (PROJECT_WORDS.has(s)) { project = true; continue }
     const c = concept(s)
     if (CONCEPTS.has(c) || SURFACE_LIST.some((x) => x.includes(w))) { terms.push({ concept: c, surface: w }); continue }
@@ -186,19 +195,30 @@ export function understand(text: string, raw = text): Understanding {
     if (fixed) {
       const fs = stem(fixed)
       if (PROJECT_WORDS.has(fs)) { project = true; continue }
-      if (!GENERIC.has(fs) && !INTENT_WORDS.has(fs)) terms.push({ concept: concept(fs), surface: fixed })
+      if (!(question && GENERIC.has(fs)) && !INTENT_WORDS.has(fs)) terms.push({ concept: concept(fs), surface: fixed })
       continue
     }
     // Every word of a short keyword query must match; a question can contain words that don't matter.
     if (!question) blocked = true
   }
+  // A word that is searched for itself ("percent") does not also ask for a kind of finding (a number):
+  // otherwise the finished word would filter out the very texts that contain it.
+  const searched = new Set(terms.map((t) => t.surface))
+  const intent = readIntent(lower.split(/(\s+)/).filter((w) => !searched.has(w.replace(/[^\p{L}\p{N}]/gu, ''))).join(''))
   const asksKind = intent.decision || intent.deadline || intent.metric || intent.risk || intent.why || intent.owner
   const highlight = [...new Set([
     ...(project ? ['lantern'] : []),
     ...terms.map((t) => t.surface),
     ...terms.flatMap((t) => (t.concept.startsWith('#') ? GROUPS[+t.concept.slice(1)] : [])),
   ])].filter((w) => w.length > 2)
-  return { raw: lower, intent, asksKind, terms, project, blocked, highlight }
+  const literal = [...new Set([...(project ? ['lantern'] : []), ...terms.map((t) => t.surface)])]
+  return { raw: lower, intent, asksKind, terms, project, blocked, highlight, literal, question, asked }
+}
+
+/** How many of the typed words a text contains literally (word starts), for putting direct hits on top. */
+export const literalHits = (text: string, u: Understanding) => {
+  const lower = text.toLowerCase()
+  return u.literal.filter((w) => new RegExp(`(^|[^\\p{L}\\p{N}])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'u').test(lower)).length
 }
 
 /** How well a text matches the query terms: how many it covers, and a score for ranking. */
@@ -218,6 +238,7 @@ export const coversAll = (text: string, u: Understanding, set?: Set<string>) => 
 export function showsIntent(text: string, u: Understanding): boolean {
   if (!u.asksKind) return true
   const stems = words(text).map(stem)
+  if (u.asked.some((x) => stems.some((s) => s.startsWith(x)))) return true
   return (Object.keys(INTENT_STEMS) as (keyof Intent)[]).some((k) => u.intent[k] && INTENT_STEMS[k]!.some((x) => stems.some((s) => s.startsWith(x))))
 }
 /** True when a note is the kind of finding asked for. */

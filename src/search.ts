@@ -1,5 +1,5 @@
 import { actionDate, data, dayOf, getMeeting, MONTH_NAMES, type Recording } from './data'
-import { coversAll, inProject, matchText, namedMeeting, noteFits, NOTES_AT, rankNotes, showsIntent, understand, type Note } from './semantic'
+import { coversAll, inProject, literalHits, matchText, namedMeeting, noteFits, NOTES_AT, rankNotes, showsIntent, understand, type Note } from './semantic'
 import type { Action, Meeting, Memo, Segment, Transcript } from './data/types'
 
 export interface DateFilter { kind: 'day' | 'month' | 'year'; key: string; label: string; text: string }
@@ -66,15 +66,16 @@ export const total = (r: Pick<Results, 'meetings' | 'memos' | 'actions' | 'trans
 /** Transcript hits grouped by meeting, the most relevant meetings first (Figma 77:4717). */
 export interface TranscriptGroup { meeting: Meeting; hits: TranscriptHit[] }
 export function groupByMeeting(hits: TranscriptHit[]): TranscriptGroup[] {
-  const by = new Map<string, TranscriptGroup & { score: number }>()
+  const by = new Map<string, TranscriptGroup & { score: number; tier: number }>()
   for (const h of hits) {
-    const g = by.get(h.meeting.id) ?? { meeting: h.meeting, hits: [], score: 0 }
+    const g = by.get(h.meeting.id) ?? { meeting: h.meeting, hits: [], score: 0, tier: 0 }
     g.hits.push(h)
     g.score += h.score ?? 1
+    g.tier = Math.max(g.tier, Math.floor((h.score ?? 0) / LITERAL)) // meetings with direct hits first
     by.set(h.meeting.id, g)
   }
   for (const g of by.values()) g.hits.sort((a, b) => a.segment.start - b.segment.start)
-  return [...by.values()].sort((a, b) => b.score - a.score || b.meeting.startsAt.localeCompare(a.meeting.startsAt))
+  return [...by.values()].sort((a, b) => b.tier - a.tier || b.score - a.score || b.meeting.startsAt.localeCompare(a.meeting.startsAt))
 }
 
 // Index of everything searchable, read once.
@@ -88,6 +89,8 @@ export const everything = (): Results => ({
   ...emptyResults, meetings: data.meetings, memos: data.memos, actions: data.actions, transcript: SEGMENTS,
 })
 
+/** Weight of a literal hit: large enough that direct hits always rank above semantic ones. */
+const LITERAL = 100
 const meetingText = (m: Meeting) => `${m.title} ${m.summary}`
 const recScores = new WeakMap<object, number>()
 /** How relevant a recording was to the last search (higher first). */
@@ -133,7 +136,8 @@ export function search(q: Query, applyDate = false): Results {
     const direct = u.terms.length > 0 || u.asksKind
       ? fits(h.segment.text, h.meeting.projectId, `${h.meeting.title} ${h.segment.text}`) && (showsIntent(h.segment.text, u) || backed.some((n) => noteFits(n, u)))
       : /\blantern\b/i.test(h.segment.text)
-    if (picked || direct) transcript.push({ ...h, score: (picked ? 6 + picked.score : 0) + (direct ? 1 + matchText(h.segment.text, u).score : 0) })
+    // Moments that say the typed words themselves rank above ones found through meaning alone.
+    if (picked || direct) transcript.push({ ...h, score: LITERAL * literalHits(h.segment.text, u) + (picked ? 6 + picked.score : 0) + (direct ? 1 + matchText(h.segment.text, u).score : 0) })
   }
 
   // Meetings: their own title and summary, or a note of theirs among the best.
@@ -142,19 +146,22 @@ export function search(q: Query, applyDate = false): Results {
     const mine = notes.filter((n) => n.meeting.id === m.id).length
     const direct = fits(meetingText(m), m.projectId) && (u.terms.length > 0 || !u.asksKind || showsIntent(m.summary, u) || m.keyPoints.some((k) => noteFits(k, u)))
     if (!mine && !direct) return false
-    recScores.set(m, mine * 4 + (direct ? 1 + matchText(m.title, u).score * 3 + matchText(m.summary, u).score : 0))
+    // Direct hits first: the typed words in the title, then in the summary, then everything else.
+    recScores.set(m, LITERAL * (10 * literalHits(m.title, u) + literalHits(m.summary, u)) + mine * 4 + (direct ? 1 + matchText(m.title, u).score * 3 + matchText(m.summary, u).score : 0))
     return true
   })
   const memos = data.memos.filter((m) => {
     if (!inDay(m.createdAt) || !fits(m.content, m.projectId) || (u.asksKind && !showsIntent(m.content, u))) return false
-    recScores.set(m, 1 + matchText(m.content, u).score)
+    recScores.set(m, LITERAL * literalHits(m.content, u) + 1 + matchText(m.content, u).score)
     return true
   })
   const actions = data.actions.filter((a) => {
     const m = getMeeting(a.meetingId)!
     if (!inDay(actionDate(a)) || (u.asksKind && !u.terms.length)) return false
     return fits(a.title, m.projectId, `${m.title} ${a.title}`)
-  }).sort((a, b) => matchText(b.title, u).score - matchText(a.title, u).score)
+  })
+  const actionScore = (a: Action) => LITERAL * (2 * literalHits(a.title, u) + literalHits(getMeeting(a.meetingId)!.title, u)) + matchText(a.title, u).score
+  actions.sort((a, b) => actionScore(b) - actionScore(a))
 
   return { meetings, memos, actions, transcript, notes, summaryOf: namedMeeting(u), highlight: u.highlight }
 }

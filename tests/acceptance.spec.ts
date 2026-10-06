@@ -349,6 +349,47 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('ai-synthesis')).toBeEnabled()
   })
 
+  test('a question offers only the Transcript tag: you want content, not a file', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'what did we decide about lantern ')
+    await expect(page.getByTestId('tag-transcript')).toBeVisible()
+    for (const t of ['meetings', 'memos', 'actions']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
+    await type(page, 'what did we decide about lantern m')
+    for (const t of ['meetings', 'memos']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
+  })
+
+  test('direct hits come first: meetings titled "Lantern" top the recordings', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'Lantern')
+    const titled = mock.meetings.filter((m) => /lantern/i.test(m.title)).length
+    await page.getByTestId('group-recordings').getByTestId('unfold').click()
+    const cards = page.getByTestId('group-recordings').locator('[data-testid$="-card"]')
+    for (let i = 0; i < titled; i++) {
+      await expect(cards.nth(i)).toHaveAttribute('data-testid', 'meeting-card')
+      await expect(cards.nth(i).locator('span').first()).toContainText('Lantern')
+    }
+    await expect(page.getByTestId('transcript-group').first().locator('mark').first()).toBeVisible()
+  })
+
+  test('actions highlight the word in their meeting name too', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'Lantern')
+    await page.getByTestId('group-actions').getByTestId('unfold').click()
+    await expect(page.getByTestId('action-item').locator('span.truncate mark').first()).toHaveText(/lantern/i)
+  })
+
+  test('finishing a word never loses results: "percen" and "percent" both find the percent memos', async ({ page }) => {
+    const withWord = mock.memos.filter((m) => /\bpercent/i.test(m.content)).map((m) => m.id)
+    expect(withWord.length).toBeGreaterThan(0)
+    await openSearch(page)
+    for (const q of ['percen', 'percent']) {
+      await type(page, q)
+      const unfold = page.getByTestId('group-recordings').getByTestId('unfold')
+      if (await unfold.count()) await unfold.click()
+      for (const id of withWord) await expect(page.locator(`[data-testid="memo-card"][data-id="${id}"]`), `${q} -> ${id}`).toBeVisible()
+    }
+  })
+
   test('typing a year or month suggests it as a tag', async ({ page }) => {
     await openSearch(page)
     await type(page, '2026')
