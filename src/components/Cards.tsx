@@ -1,4 +1,4 @@
-import { CalendarIcon, CheckCircleIcon, ChatIcon, FolderIcon, MailIcon, MicIcon } from './Icons'
+import { CalendarIcon, CheckCircleIcon, ChatIcon, FolderIcon, MailIcon, MicIcon, WaveIcon } from './Icons'
 import { AvatarStack, NewTag } from './Atoms'
 import { Highlight } from './Highlight'
 import { firstName, folderContents, folderName, formatDay, getMeeting, isNew, isNewAction, type Recording } from '../data'
@@ -47,23 +47,16 @@ export function RecordingCard({ rec, terms = [], showNew = false, withSnippet = 
   )
 }
 
-/** Folder card: the folder's name, what it is about, and what it holds (same card shape as recordings). */
-export function FolderCard({ folder, terms = [], withSnippet = false }: { folder: Folder; terms?: string[]; withSnippet?: boolean }) {
+/** Folder card (owner's design): a near-square tile, name at the bottom, number of recordings under it. */
+export function FolderCard({ folder, terms = [] }: { folder: Folder; terms?: string[] }) {
   const c = folderContents(folder)
-  const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`
   return (
     <div data-testid="folder-card" data-id={folder.id}
-      className="flex w-full flex-col gap-[19px] rounded-card bg-white px-6 pt-[30px] pb-6 text-left shadow-card">
-      <span className="flex items-center gap-2 text-heading-m leading-[1.24] tracking-heading text-gray-950">
-        <FolderIcon className="size-6 shrink-0" /><Highlight text={folder.name} terms={terms} />
+      className="flex aspect-[210/218] w-full flex-col justify-end gap-1 rounded-hit bg-white px-[18px] pb-5 text-left">
+      <span className="truncate text-[24px] leading-[1.2] tracking-heading text-gray-975"><Highlight text={folder.name} terms={terms} /></span>
+      <span className="flex items-center gap-2 text-heading-s leading-[1.2] text-gray-800" aria-label={`${c.meetings.length + c.memos.length} recordings`}>
+        <WaveIcon className="size-4" />{c.meetings.length + c.memos.length}
       </span>
-      {withSnippet && <span className="line-clamp-3 text-body-m leading-[1.4] text-gray-800"><Highlight text={folder.description} terms={terms} /></span>}
-      <div className="flex flex-wrap items-center gap-x-[9px] gap-y-1 text-body-s leading-[1.2] text-gray-900">
-        <span className="flex items-center gap-1"><MicIcon className="size-[15px]" />{plural(c.meetings.length, 'meeting')}</span>
-        <span className="flex items-center gap-1"><ChatIcon className="size-[15px]" />{plural(c.memos.length, 'memo')}</span>
-        <span className="flex items-center gap-1"><CheckCircleIcon className="size-[15px]" />{plural(c.actions.length, 'action')}</span>
-        <AvatarStack ids={c.people} />
-      </div>
     </div>
   )
 }

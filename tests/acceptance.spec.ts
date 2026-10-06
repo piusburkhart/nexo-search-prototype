@@ -180,7 +180,8 @@ test.describe('navigation flow', () => {
     await page.goto('/')
     await page.getByRole('button', { name: 'Folders', exact: true }).click()
     await expect(page.getByTestId('folder-card')).toHaveCount(mock.folders.length)
-    await expect(page.getByTestId('folder-card').first()).toContainText(`${mock.meetings.filter((m) => m.projectId === f.projectId).length} meetings`)
+    const recs = mock.meetings.filter((m) => m.projectId === f.projectId).length + mock.memos.filter((m) => m.projectId === f.projectId).length
+    await expect(page.getByTestId('folder-card').first()).toHaveText(`${f.name}${recs}`)
     await page.getByRole('button', { name: 'Search', exact: true }).click()
     await type(page, 'Nexo')
     await expect(page.getByTestId('group-folders').getByTestId('folder-card')).toHaveCount(1)

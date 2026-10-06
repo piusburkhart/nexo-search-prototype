@@ -162,7 +162,7 @@ export default function Search() {
           <div className="flex flex-col gap-6">
             {shown.folders.length > 0 && <section className="flex flex-col gap-2" data-testid="group-folders">
               <SectionLabel>Folders</SectionLabel>
-              {shown.folders.map((f) => <FolderCard key={f.id} folder={f} terms={pool.highlight} withSnippet />)}
+              <div className="grid grid-cols-2 gap-2">{shown.folders.map((f) => <FolderCard key={f.id} folder={f} terms={pool.highlight} />)}</div>
             </section>}
             {recs.length > 0 && <section className="flex flex-col gap-2" data-testid="group-recordings">
               <SectionLabel>Recordings</SectionLabel>

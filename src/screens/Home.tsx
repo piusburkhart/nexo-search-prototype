@@ -38,7 +38,7 @@ export default function Home() {
         </div>
       </header>
       <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-[130px]">
-        {filter === 'folders' ? data.folders.map((f) => <FolderCard key={f.id} folder={f} withSnippet />) : <>
+        {filter === 'folders' ? <div className="grid grid-cols-2 gap-2">{data.folders.map((f) => <FolderCard key={f.id} folder={f} />)}</div> : <>
           {fresh.length > 0 && <SectionLabel>New</SectionLabel>}
           {fresh.map((r) => <RecordingCard key={r.item.id} rec={r} showNew />)}
           {earlier.length > 0 && <div className="mt-4"><SectionLabel>Earlier</SectionLabel></div>}
