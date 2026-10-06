@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { mock } from './data'
 
 // The password gate is covered in gate.spec.ts; here we start unlocked.
 test.beforeEach(async ({ page }) => {
@@ -130,7 +131,7 @@ test.describe('navigation flow', () => {
     await page.goto('/')
     await page.getByRole('button', { name: 'Memos' }).click()
     await expect(page.getByTestId('meeting-card')).toHaveCount(0)
-    await expect(page.getByTestId('memo-card')).toHaveCount(10)
+    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.length)
   })
 
   test('headline "Global search" is centred, black and bold; AI button is 56x40', async ({ page }) => {
@@ -211,7 +212,6 @@ test.describe('navigation flow', () => {
     await page.getByTestId('ai-synthesis').click()
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).not.toBeFocused()
     await expect(page.getByTestId('ai-result')).toHaveText('Can’t help you with that.')
-    await expect(page.getByTestId('empty-state')).toBeVisible() // results area still below
   })
 
   test('filter tags: one type at a time; picked tag becomes a highlighted word', async ({ page }) => {
@@ -301,11 +301,12 @@ test.describe('navigation flow', () => {
     expect(h!.height).toBeLessThan(44)
   })
 
-  test('no pointless type tag: one type of result offers AI synthesis instead', async ({ page }) => {
+  test('no pointless type tag: results of one type offer no type suggestions', async ({ page }) => {
     await openSearch(page)
-    await type(page, 'lantern project ')
-    await expect(page.getByTestId('meeting-card')).toHaveCount(1)
+    await type(page, 'gym card ')
+    await expect(page.getByTestId('memo-card')).toHaveCount(1) // only a memo matches
     for (const t of ['meetings', 'memos', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
+    await expect(page.getByTestId('ai-synthesis')).toBeEnabled()
   })
 
   test('typing a year or month suggests it as a tag', async ({ page }) => {
@@ -315,13 +316,13 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('tag-date')).toContainText('2026')
     await page.getByTestId('tag-date').click()
     await expect(page.getByTestId('tag-word')).toHaveText('2026')
-    await expect(page.getByTestId('meeting-card')).toHaveCount(10)
-    await expect(page.getByTestId('memo-card')).toHaveCount(10)
+    await expect(page.getByTestId('meeting-card')).toHaveCount(mock.meetings.length)
+    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.length)
     await type(page, 'september')
     await expect(page.getByTestId('tag-date')).toContainText('September 2026')
     await page.getByTestId('tag-date').click()
-    await expect(page.getByTestId('meeting-card')).toHaveCount(6) // m01 to m06
-    await expect(page.getByTestId('memo-card')).toHaveCount(8)
+    await expect(page.getByTestId('meeting-card')).toHaveCount(mock.meetings.filter((m) => m.startsAt.startsWith('2026-09')).length)
+    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.filter((m) => m.createdAt.startsWith('2026-09')).length)
     await type(page, '16 October') // day + month name stays plain text
     await expect(page.getByTestId('tag-date')).toHaveCount(0)
   })
@@ -383,5 +384,61 @@ test.describe('navigation flow', () => {
     const box = await page.getByTestId('tag-word').locator('xpath=ancestor::span[contains(@class,"overflow-hidden")]').boundingBox()
     expect(tag!.y - 3).toBeGreaterThanOrEqual(box!.y)
     expect(tag!.y + tag!.height + 3).toBeLessThanOrEqual(box!.y + box!.height)
+  })
+})
+
+// ---- AI Synthesis: real questions, answered from the meeting notes ----
+const QA: [string, string[]][] = [
+  ['What did we agree about the feature?', ['five steps with a progress checklist', 'CSV import moves to step two', 'SSO is postponed']],
+  ['When is the deadline we decided to?', ['16 October', '21 October', '23 October', '5 November', '14 November']],
+  ['Why was SSO postponed?', ['SSO is postponed to version two', 'blow the 14 November launch date']],
+  ['Who is responsible for the CSV import?', ['Jonas', 'CSV import fixes are done by 23 October']],
+  ['How much does Kestrel cost?', ['1,200 per month', 'fifteen percent off']],
+  ['What are the risks for the launch?', ['biggest technical risk', 'Support capacity', 'SSO']],
+  ['What is our onboarding completion target?', ['seventy percent']],
+  ['How long does onboarding take today?', ['twenty-six minutes']],
+  ['When does the beta start?', ['The beta starts on 21 October']],
+  ['What did Brightside say about pricing?', ['price matters', 'pay a bit extra']],
+  ['How many beta customers do we have?', ['twelve']],
+  ['Who is on call during launch?', ['Jonas', 'on call']],
+  ['When is the go or no-go meeting?', ['5 November']],
+  ['What is the crash-free target?', ['ninety-nine point five percent']],
+  ['Is Kestrel data stored in the EU?', ['Frankfurt']],
+  ['What did we agree about SSO?', ['SSO is postponed', 'not mentioned in the launch communication']],
+  ['Why did we replace the word workspace?', ['“account”', 'Brightside Dental was confused']],
+  ['What happened in the Kestrel call?', ['summary of “Vendor Call: Kestrel Analytics”']],
+]
+
+test.describe('AI synthesis answers', () => {
+  test('answers project questions with facts and time chips', async ({ page }) => {
+    test.setTimeout(180_000)
+    await openSearch(page)
+    const box = page.getByRole('searchbox', { name: 'Search', exact: true })
+    for (const [question, expected] of QA) {
+      await box.fill(question)
+      await page.getByTestId('ai-synthesis').click()
+      const answer = page.getByTestId('ai-result')
+      await expect(answer, question).toBeVisible()
+      const text = (await answer.textContent()) ?? ''
+      for (const part of expected) expect(text, `${question} → ${part}`).toContain(part)
+      if (!question.startsWith('What happened')) await expect(page.getByTestId('time-chip').first()).toHaveText(/\d\d:\d\d/)
+      await box.focus()
+    }
+  })
+
+  test('says it cannot help when the meetings do not know', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'What is the weather today?')
+    await page.getByTestId('ai-synthesis').click()
+    await expect(page.getByTestId('ai-result')).toHaveText('Can’t help you with that.')
+  })
+
+  test('every time chip points at a real transcript moment', async () => {
+    for (const m of mock.meetings) {
+      const t = mock.transcripts.find((x) => x.meetingId === m.id)
+      expect(t, `${m.id} has a transcript`).toBeTruthy()
+      const starts = new Set(t!.segments.map((s) => s.start))
+      for (const k of m.keyPoints) expect(starts.has(k.at), `${m.id} key point at ${k.at}`).toBe(true)
+    }
   })
 })

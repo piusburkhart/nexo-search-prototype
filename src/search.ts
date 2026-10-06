@@ -96,20 +96,17 @@ export const dateCount = (q: Query) => (q.date ? total({ ...search(q, true), tra
 
 const STOP = new Set('the a an in on of to and for is are was what why how did do does about we with it be any who when'.split(' '))
 
-/** A piece of the synthesized answer: prose, optionally followed by a transcript time chip (Figma 76:4043). */
-export interface AnswerPart { text: string; time?: string }
-
 /**
- * Extractive "synthesis" (D9): loose (any-word) ranking over transcript segments, written as prose
- * where each sentence is followed by the transcript time it came from. Null when nothing is relevant.
+ * Last-resort answer: transcript moments that mention the given words, written as prose with time chips.
+ * Null when no moment matches.
  */
-export function synthesize(raw: string): AnswerPart[] | null {
-  const terms = parseQuery(raw.replace(/[?!.,]/g, ' ')).terms.filter((w) => !STOP.has(w))
+export function synthesizeFromMoments(terms: string[]): { text: string; time?: string }[] | null {
+  const useful = terms.filter((w) => !STOP.has(w) && w.length > 2)
   const scored: (TranscriptHit & { score: number })[] = []
   for (const t of data.transcripts) {
     const meeting = getMeeting(t.meetingId)!
     t.segments.forEach((segment, segIndex) => {
-      const score = terms.filter((w) => segment.text.toLowerCase().includes(w)).length
+      const score = useful.filter((w) => segment.text.toLowerCase().includes(w)).length
       if (score) scored.push({ transcript: t, meeting, segIndex, segment, score })
     })
   }
@@ -120,7 +117,7 @@ export function synthesize(raw: string): AnswerPart[] | null {
   const one = meetings === 1
   const where = one ? `in “${hits[0].meeting.title}”` : `across ${meetings} meetings`
   return [
-    { text: `${hits.length} relevant moment${hits.length > 1 ? 's' : ''} ${where}.` },
+    { text: `I found ${hits.length} relevant moment${hits.length > 1 ? 's' : ''} ${where}.` },
     ...hits.map((h) => ({
       text: `${firstName(h.segment.speakerId)}${one ? '' : ` in “${h.meeting.title}”`}: ${h.segment.text}`,
       time: h.segment.time,

@@ -3,6 +3,21 @@ export interface Project { id: string; name: string; description: string; launch
 export interface Meeting {
   id: string; title: string; startsAt: string; durationMin: number; participants: string[]
   projectId: string | null; tags: string[]; transcriptId: string | null; summary: string
+  /** Notes extracted from the meeting (like Nexo's own meeting notes); each points at a transcript moment. */
+  keyPoints: KeyPoint[]
+}
+export interface KeyPoint {
+  kind: 'decision' | 'deadline' | 'metric' | 'risk' | 'action'
+  text: string
+  /** Start (seconds) of the transcript segment that backs this note. */
+  at: number
+  topics: string[]
+  why?: string
+  /** ISO date, for deadlines. */
+  due?: string
+  owner?: string
+  /** A headline fact: preferred when a question is broad. */
+  star?: boolean
 }
 export interface Memo {
   id: string; title: string; createdAt: string; type: string; durationSec: number

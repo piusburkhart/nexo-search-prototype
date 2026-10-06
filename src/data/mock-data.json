@@ -14,14 +14,72 @@
     "status": "beta"
   },
   "people": [
-    { "id": "p-elin", "name": "Elin Berg", "role": "Product Lead", "external": false },
-    { "id": "p-jonas", "name": "Jonas Lindgren", "role": "Engineering Lead", "external": false },
-    { "id": "p-priya", "name": "Priya Nair", "role": "Product Designer", "external": false },
-    { "id": "p-sofia", "name": "Sofia Almeida", "role": "Customer Success", "external": false },
-    { "id": "p-dev", "name": "Dev Patel", "role": "Data Analyst", "external": false },
-    { "id": "p-marcus", "name": "Marcus Wahl", "role": "Marketing Manager", "external": false },
-    { "id": "p-karin", "name": "Karin Ek", "role": "Practice Manager, Brightside Dental", "external": true },
-    { "id": "p-tomas", "name": "Tomas Reyes", "role": "Sales, Kestrel Analytics", "external": true }
+    {
+      "id": "p-elin",
+      "name": "Elin Berg",
+      "role": "Product Lead",
+      "external": false
+    },
+    {
+      "id": "p-jonas",
+      "name": "Jonas Lindgren",
+      "role": "Engineering Lead",
+      "external": false
+    },
+    {
+      "id": "p-priya",
+      "name": "Priya Nair",
+      "role": "Product Designer",
+      "external": false
+    },
+    {
+      "id": "p-sofia",
+      "name": "Sofia Almeida",
+      "role": "Customer Success",
+      "external": false
+    },
+    {
+      "id": "p-dev",
+      "name": "Dev Patel",
+      "role": "Data Analyst",
+      "external": false
+    },
+    {
+      "id": "p-marcus",
+      "name": "Marcus Wahl",
+      "role": "Marketing Manager",
+      "external": false
+    },
+    {
+      "id": "p-karin",
+      "name": "Karin Ek",
+      "role": "Practice Manager, Brightside Dental",
+      "external": true
+    },
+    {
+      "id": "p-tomas",
+      "name": "Tomas Reyes",
+      "role": "Sales, Kestrel Analytics",
+      "external": true
+    },
+    {
+      "id": "p-lena",
+      "name": "Lena Sjöberg",
+      "role": "Support Lead",
+      "external": false
+    },
+    {
+      "id": "p-anton",
+      "name": "Anton Holm",
+      "role": "QA Engineer",
+      "external": false
+    },
+    {
+      "id": "p-maja",
+      "name": "Maja Holm",
+      "role": "Owner, Holm & Söner Plumbing",
+      "external": true
+    }
   ],
   "meetings": [
     {
@@ -29,110 +87,1427 @@
       "title": "Lantern Kickoff",
       "startsAt": "2026-09-08T10:00:00+02:00",
       "durationMin": 50,
-      "participants": ["p-elin", "p-jonas", "p-priya", "p-sofia", "p-dev"],
+      "participants": [
+        "p-elin",
+        "p-jonas",
+        "p-priya",
+        "p-sofia",
+        "p-dev"
+      ],
       "projectId": "proj-lantern",
-      "tags": ["lantern", "kickoff", "onboarding"],
-      "transcriptId": null,
-      "summary": "Aligned on the goals for Project Lantern: simplify customer onboarding, launch on 14 November, and run a beta with a small group of customers. Roles were assigned across product, design, engineering, customer success and data."
+      "tags": [
+        "lantern",
+        "kickoff",
+        "onboarding"
+      ],
+      "transcriptId": "t04",
+      "summary": "Aligned on the goals for Project Lantern: simplify customer onboarding, launch on 14 November, and run a beta with a small group of customers. Roles were assigned across product, design, engineering, customer success and data. Dev measures the baseline and the target is that seventy percent of new customers finish onboarding.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "The launch of Project Lantern is on 14 November.",
+          "at": 0,
+          "topics": [
+            "launch",
+            "date"
+          ],
+          "due": "2026-11-14"
+        },
+        {
+          "kind": "metric",
+          "text": "The target is that seventy percent of new customers finish onboarding.",
+          "at": 102,
+          "topics": [
+            "target",
+            "completion",
+            "onboarding",
+            "metrics"
+          ],
+          "star": true
+        },
+        {
+          "kind": "decision",
+          "text": "A beta with a small group of customers runs before the launch, and Sofia owns recruiting.",
+          "at": 158,
+          "topics": [
+            "beta",
+            "customers"
+          ],
+          "owner": "p-sofia"
+        },
+        {
+          "kind": "action",
+          "text": "Dev measures the onboarding baseline before anything changes.",
+          "at": 75,
+          "topics": [
+            "baseline",
+            "metrics",
+            "analytics"
+          ],
+          "owner": "p-dev"
+        },
+        {
+          "kind": "decision",
+          "text": "Roles: Elin product, Jonas engineering, Priya design, Sofia customer success, Dev data.",
+          "at": 213,
+          "topics": [
+            "roles",
+            "team"
+          ]
+        }
+      ]
     },
     {
       "id": "m02",
       "title": "Lantern Weekly Sync",
       "startsAt": "2026-09-15T09:30:00+02:00",
       "durationMin": 30,
-      "participants": ["p-elin", "p-jonas", "p-priya", "p-sofia"],
+      "participants": [
+        "p-elin",
+        "p-jonas",
+        "p-priya",
+        "p-sofia"
+      ],
       "projectId": "proj-lantern",
-      "tags": ["lantern", "weekly", "beta"],
-      "transcriptId": null,
-      "summary": "Reviewed early onboarding drafts. Jonas flagged the CSV import as the main technical risk. Sofia will recruit beta customers, including Brightside Dental."
+      "tags": [
+        "lantern",
+        "weekly",
+        "beta"
+      ],
+      "transcriptId": "t05",
+      "summary": "Reviewed early onboarding drafts. Jonas flagged the CSV import as the main technical risk. Sofia will recruit beta customers, including Brightside Dental. The five-step checklist with a small celebration at the end stays in. Sofia aims for around twelve beta customers.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "The checklist ends with a small celebration when the first invoice is ready.",
+          "at": 20,
+          "topics": [
+            "checklist",
+            "celebration",
+            "design",
+            "onboarding"
+          ]
+        },
+        {
+          "kind": "risk",
+          "text": "The CSV import is the biggest technical risk because big files time out.",
+          "at": 126,
+          "topics": [
+            "csv",
+            "import",
+            "risk",
+            "launch"
+          ],
+          "owner": "p-jonas"
+        },
+        {
+          "kind": "action",
+          "text": "Sofia recruits around twelve beta customers; Brightside Dental has said yes.",
+          "at": 205,
+          "topics": [
+            "beta",
+            "customers"
+          ],
+          "owner": "p-sofia"
+        }
+      ]
+    },
+    {
+      "id": "m11",
+      "title": "Beta Customer Selection",
+      "startsAt": "2026-09-16T10:00:00+02:00",
+      "durationMin": 40,
+      "participants": [
+        "p-elin",
+        "p-sofia",
+        "p-dev"
+      ],
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "beta",
+        "customers"
+      ],
+      "transcriptId": "t11",
+      "summary": "Planned the beta with about twelve customers: small and mid-sized companies, at least four with spreadsheets to import. Sofia contacts everyone by 25 September. The beta starts on 21 October and runs until 4 November.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "The beta has about twelve customers: small and mid-sized, at least four with data to import.",
+          "at": 50,
+          "topics": [
+            "beta",
+            "customers",
+            "selection"
+          ]
+        },
+        {
+          "kind": "deadline",
+          "text": "Sofia contacts all beta customers by 25 September.",
+          "at": 190,
+          "topics": [
+            "beta",
+            "outreach",
+            "deadline"
+          ],
+          "due": "2026-09-25",
+          "owner": "p-sofia"
+        },
+        {
+          "kind": "deadline",
+          "text": "The beta starts on 21 October.",
+          "at": 190,
+          "topics": [
+            "beta",
+            "start",
+            "deadline"
+          ],
+          "due": "2026-10-21",
+          "star": true
+        },
+        {
+          "kind": "deadline",
+          "text": "The beta runs until 4 November, in time for the go or no-go on 5 November.",
+          "at": 218,
+          "topics": [
+            "beta",
+            "end",
+            "deadline"
+          ],
+          "due": "2026-11-04"
+        }
+      ]
     },
     {
       "id": "m03",
       "title": "Q4 Roadmap Planning",
       "startsAt": "2026-09-17T13:00:00+02:00",
       "durationMin": 55,
-      "participants": ["p-elin", "p-jonas", "p-marcus", "p-sofia"],
+      "participants": [
+        "p-elin",
+        "p-jonas",
+        "p-marcus",
+        "p-sofia"
+      ],
       "projectId": null,
-      "tags": ["roadmap", "planning", "lantern", "q4"],
-      "transcriptId": null,
-      "summary": "Agreed Q4 priorities: Lantern first, the reporting dashboard second and automatic invoice reminders third. Marketing asked for a fixed launch date for Lantern as soon as possible."
+      "tags": [
+        "roadmap",
+        "planning",
+        "lantern",
+        "q4"
+      ],
+      "transcriptId": "t06",
+      "summary": "Agreed Q4 priorities: Lantern first, the reporting dashboard second and automatic invoice reminders third. Marketing asked for a fixed launch date for Lantern as soon as possible. The launch date of 14 November is fixed unless the go or no-go decision says otherwise. Reporting dashboard starts after launch with a first version in early December, reminders follow in late December.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "Q4 priorities in order: Lantern first, the reporting dashboard second, invoice reminders third.",
+          "at": 22,
+          "topics": [
+            "roadmap",
+            "priorities",
+            "q4"
+          ]
+        },
+        {
+          "kind": "decision",
+          "text": "The launch date is fixed at 14 November unless the go or no-go decision says otherwise.",
+          "at": 106,
+          "topics": [
+            "launch",
+            "date",
+            "deadline"
+          ],
+          "why": "Marketing cannot plan around a date that keeps moving.",
+          "due": "2026-11-14",
+          "star": true
+        },
+        {
+          "kind": "deadline",
+          "text": "The first version of invoice reminders is planned for late December.",
+          "at": 160,
+          "topics": [
+            "reminders",
+            "roadmap"
+          ],
+          "due": "2026-12-31"
+        },
+        {
+          "kind": "deadline",
+          "text": "The reporting dashboard starts right after launch, with a first version in early December.",
+          "at": 188,
+          "topics": [
+            "dashboard",
+            "reporting",
+            "roadmap"
+          ],
+          "due": "2026-12-07"
+        }
+      ]
+    },
+    {
+      "id": "m17",
+      "title": "Onboarding Baseline Review",
+      "startsAt": "2026-09-21T14:00:00+02:00",
+      "durationMin": 35,
+      "participants": [
+        "p-elin",
+        "p-dev",
+        "p-priya",
+        "p-jonas"
+      ],
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "analytics",
+        "baseline"
+      ],
+      "transcriptId": "t17",
+      "summary": "Baseline: 38 percent of new customers finish onboarding and the median time to the first invoice is 26 minutes. The biggest drop-off is the customer import, where 41 percent leave. Targets: 70 percent completion and a 15 minute median, with a 95 percent import success rate.",
+      "keyPoints": [
+        {
+          "kind": "metric",
+          "text": "Today thirty-eight percent of new customers finish onboarding.",
+          "at": 0,
+          "topics": [
+            "baseline",
+            "completion",
+            "onboarding",
+            "metrics"
+          ],
+          "star": true
+        },
+        {
+          "kind": "metric",
+          "text": "The median time from sign-up to the first invoice is twenty-six minutes.",
+          "at": 24,
+          "topics": [
+            "baseline",
+            "time",
+            "invoice",
+            "metrics"
+          ],
+          "star": true
+        },
+        {
+          "kind": "risk",
+          "text": "The biggest drop-off is the customer import, where forty-one percent of those who start it leave.",
+          "at": 76,
+          "topics": [
+            "import",
+            "dropoff",
+            "baseline",
+            "csv",
+            "risk"
+          ]
+        },
+        {
+          "kind": "metric",
+          "text": "Targets: seventy percent finishing onboarding and a median of fifteen minutes to the first invoice.",
+          "at": 130,
+          "topics": [
+            "target",
+            "completion",
+            "time",
+            "metrics",
+            "onboarding"
+          ],
+          "star": true
+        },
+        {
+          "kind": "metric",
+          "text": "The CSV import success rate target is ninety-five percent.",
+          "at": 210,
+          "topics": [
+            "csv",
+            "import",
+            "success",
+            "metrics",
+            "target"
+          ]
+        }
+      ]
     },
     {
       "id": "m04",
       "title": "Lantern Design Review: Onboarding Flow",
       "startsAt": "2026-09-24T14:00:00+02:00",
       "durationMin": 42,
-      "participants": ["p-elin", "p-priya", "p-jonas"],
+      "participants": [
+        "p-elin",
+        "p-priya",
+        "p-jonas"
+      ],
       "projectId": "proj-lantern",
-      "tags": ["lantern", "design", "onboarding", "csv", "sso"],
+      "tags": [
+        "lantern",
+        "design",
+        "onboarding",
+        "csv",
+        "sso"
+      ],
       "transcriptId": "t01",
-      "summary": "Locked the five-step onboarding flow with a progress checklist. CSV import moves to step two with a manual entry fallback. SSO is deferred to version two to protect the 14 November launch. Teal button contrast will be fixed and the empty state headline changes to \"Let's get your first invoice out\". Final screens are due Friday 27 September."
+      "summary": "Locked the five-step onboarding flow with a progress checklist. CSV import moves to step two with a manual entry fallback. SSO is deferred to version two to protect the 14 November launch. Teal button contrast will be fixed and the empty state headline changes to \"Let's get your first invoice out\". Final screens are due Friday 27 September.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "The onboarding is five steps with a progress checklist at the top instead of one long form.",
+          "at": 21,
+          "topics": [
+            "onboarding",
+            "checklist",
+            "design",
+            "steps"
+          ],
+          "star": true
+        },
+        {
+          "kind": "decision",
+          "text": "CSV import moves to step two, with a manual entry fallback.",
+          "at": 70,
+          "topics": [
+            "csv",
+            "import",
+            "onboarding",
+            "steps",
+            "design"
+          ],
+          "why": "If the import fails people find out early, and the fallback keeps them moving.",
+          "star": true
+        },
+        {
+          "kind": "decision",
+          "text": "SSO is postponed to version two.",
+          "at": 128,
+          "topics": [
+            "sso",
+            "scope",
+            "version",
+            "onboarding",
+            "design"
+          ],
+          "why": "It would blow the 14 November launch date, and Jonas would rather ship a solid import than a half-done SSO.",
+          "star": true
+        },
+        {
+          "kind": "decision",
+          "text": "The teal button is darkened.",
+          "at": 169,
+          "topics": [
+            "accessibility",
+            "contrast",
+            "button",
+            "design",
+            "onboarding"
+          ],
+          "why": "It fails contrast on a white background."
+        },
+        {
+          "kind": "decision",
+          "text": "The empty state headline becomes “Let’s get your first invoice out”.",
+          "at": 192,
+          "topics": [
+            "copy",
+            "empty",
+            "headline",
+            "onboarding",
+            "design"
+          ],
+          "why": "It is friendlier than “Welcome to your workspace”.",
+          "star": true
+        },
+        {
+          "kind": "deadline",
+          "text": "Final screens are due on Friday the 27th so engineering can hit the sprint.",
+          "at": 231,
+          "topics": [
+            "design",
+            "screens",
+            "deadline",
+            "onboarding"
+          ],
+          "due": "2026-09-27",
+          "owner": "p-priya"
+        },
+        {
+          "kind": "action",
+          "text": "Jonas gives an estimate for the CSV import by Monday.",
+          "at": 245,
+          "topics": [
+            "csv",
+            "import",
+            "estimate",
+            "onboarding",
+            "design"
+          ],
+          "owner": "p-jonas"
+        }
+      ]
+    },
+    {
+      "id": "m12",
+      "title": "Accessibility & Copy Review",
+      "startsAt": "2026-09-28T11:00:00+02:00",
+      "durationMin": 35,
+      "participants": [
+        "p-elin",
+        "p-priya",
+        "p-anton"
+      ],
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "accessibility",
+        "copy"
+      ],
+      "transcriptId": "t12",
+      "summary": "The teal button is darkened to pass contrast. WCAG AA is the minimum for Lantern. The word workspace is replaced by account everywhere, and CSV error messages will name the problem. An example file and an import preview are added.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "The teal button is now a darker teal with a contrast ratio above seven to one.",
+          "at": 0,
+          "topics": [
+            "accessibility",
+            "contrast",
+            "button",
+            "design"
+          ]
+        },
+        {
+          "kind": "decision",
+          "text": "WCAG AA is the minimum accessibility level for Lantern.",
+          "at": 54,
+          "topics": [
+            "accessibility",
+            "wcag",
+            "standard"
+          ]
+        },
+        {
+          "kind": "decision",
+          "text": "The word “workspace” is replaced by “account” everywhere.",
+          "at": 82,
+          "topics": [
+            "copy",
+            "workspace",
+            "account"
+          ],
+          "why": "Brightside Dental was confused by “workspace”.",
+          "star": true
+        },
+        {
+          "kind": "decision",
+          "text": "The empty state says “Let’s get your first invoice out” and the main button says “Import my customers”.",
+          "at": 134,
+          "topics": [
+            "copy",
+            "empty",
+            "headline",
+            "button"
+          ]
+        },
+        {
+          "kind": "decision",
+          "text": "CSV error messages name the problem and show how to fix it.",
+          "at": 190,
+          "topics": [
+            "csv",
+            "errors",
+            "copy"
+          ],
+          "owner": "p-priya"
+        }
+      ]
     },
     {
       "id": "m05",
       "title": "Team Retro: September Sprint",
       "startsAt": "2026-09-29T15:00:00+02:00",
       "durationMin": 45,
-      "participants": ["p-elin", "p-jonas", "p-priya", "p-sofia", "p-dev"],
+      "participants": [
+        "p-elin",
+        "p-jonas",
+        "p-priya",
+        "p-sofia",
+        "p-dev"
+      ],
       "projectId": null,
-      "tags": ["retro", "sprint", "lantern"],
-      "transcriptId": null,
-      "summary": "The team felt stand-ups run too long, Lantern tickets lack acceptance criteria, and mid-sprint changes slow engineering down. Agreed to timebox stand-ups to 10 minutes and add acceptance criteria before tickets enter a sprint."
+      "tags": [
+        "retro",
+        "sprint",
+        "lantern"
+      ],
+      "transcriptId": "t07",
+      "summary": "The team felt stand-ups run too long, Lantern tickets lack acceptance criteria, and mid-sprint changes slow engineering down. Agreed to timebox stand-ups to 10 minutes and add acceptance criteria before tickets enter a sprint.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "Stand-ups are timeboxed to ten minutes.",
+          "at": 72,
+          "topics": [
+            "standup",
+            "process",
+            "retro"
+          ],
+          "why": "Stand-ups sometimes took twenty minutes."
+        },
+        {
+          "kind": "decision",
+          "text": "No ticket enters a sprint without acceptance criteria.",
+          "at": 124,
+          "topics": [
+            "tickets",
+            "process",
+            "retro",
+            "criteria"
+          ],
+          "why": "Nobody knew when Lantern tickets were done."
+        },
+        {
+          "kind": "decision",
+          "text": "Changes during a sprint go into the next sprint, unless a customer is blocked.",
+          "at": 180,
+          "topics": [
+            "sprint",
+            "process",
+            "retro"
+          ],
+          "why": "Every mid-sprint change costs about a day."
+        }
+      ]
     },
     {
       "id": "m06",
       "title": "Customer Interview: Brightside Dental",
       "startsAt": "2026-09-30T11:00:00+02:00",
       "durationMin": 35,
-      "participants": ["p-elin", "p-sofia", "p-karin"],
+      "participants": [
+        "p-elin",
+        "p-sofia",
+        "p-karin"
+      ],
       "projectId": "proj-lantern",
-      "tags": ["lantern", "customer", "interview", "csv", "pricing", "beta"],
+      "tags": [
+        "lantern",
+        "customer",
+        "interview",
+        "csv",
+        "pricing",
+        "beta"
+      ],
       "transcriptId": "t02",
-      "summary": "Karin liked the progress checklist but got stuck at the CSV import because she was unsure which columns were needed. The word \"workspace\" confused her. Her top request is automatic reminders for unpaid invoices. Pricing matters to a small clinic, and she would pay extra for a short onboarding call."
+      "summary": "Karin liked the progress checklist but got stuck at the CSV import because she was unsure which columns were needed. The word \"workspace\" confused her. Her top request is automatic reminders for unpaid invoices. Pricing matters to a small clinic, and she would pay extra for a short onboarding call.",
+      "keyPoints": [
+        {
+          "kind": "risk",
+          "text": "Karin was unsure which columns the CSV import wants.",
+          "at": 48,
+          "topics": [
+            "csv",
+            "import",
+            "customer",
+            "feedback",
+            "brightside",
+            "karin",
+            "dental"
+          ]
+        },
+        {
+          "kind": "decision",
+          "text": "The CSV import gets an example file and a preview before importing.",
+          "at": 82,
+          "topics": [
+            "csv",
+            "import",
+            "customer",
+            "feedback",
+            "brightside",
+            "karin",
+            "dental"
+          ],
+          "why": "Customers fear messing up their billing contacts."
+        },
+        {
+          "kind": "risk",
+          "text": "The word “workspace” confused Brightside Dental; they call it the practice.",
+          "at": 110,
+          "topics": [
+            "copy",
+            "workspace",
+            "customer",
+            "feedback",
+            "brightside",
+            "karin",
+            "dental"
+          ]
+        },
+        {
+          "kind": "risk",
+          "text": "Brightside’s top request is automatic reminders for unpaid invoices.",
+          "at": 150,
+          "topics": [
+            "reminders",
+            "customer",
+            "feedback",
+            "brightside",
+            "karin",
+            "dental"
+          ]
+        },
+        {
+          "kind": "risk",
+          "text": "For a small clinic the price matters, and the time saved must be visible.",
+          "at": 190,
+          "topics": [
+            "price",
+            "cost",
+            "customer",
+            "feedback",
+            "brightside",
+            "karin",
+            "dental"
+          ]
+        },
+        {
+          "kind": "metric",
+          "text": "Brightside would pay a bit extra for a short onboarding call with a real person.",
+          "at": 220,
+          "topics": [
+            "onboarding",
+            "call",
+            "price",
+            "customer",
+            "brightside",
+            "karin",
+            "dental"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m13",
+      "title": "Support Readiness for Launch",
+      "startsAt": "2026-10-01T09:00:00+02:00",
+      "durationMin": 45,
+      "participants": [
+        "p-elin",
+        "p-sofia",
+        "p-lena",
+        "p-jonas"
+      ],
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "support",
+        "launch"
+      ],
+      "transcriptId": "t13",
+      "summary": "Support expects about thirty percent more tickets in the first two weeks. Two extra agents are trained by 9 November, help-centre articles are ready by 6 November, support is chat and email only, with extended hours in launch week and Jonas on call.",
+      "keyPoints": [
+        {
+          "kind": "metric",
+          "text": "Support expects about thirty percent more tickets in the first two weeks.",
+          "at": 0,
+          "topics": [
+            "support",
+            "tickets",
+            "volume",
+            "launch"
+          ]
+        },
+        {
+          "kind": "deadline",
+          "text": "Support macros and help-centre articles are ready by 6 November.",
+          "at": 56,
+          "topics": [
+            "support",
+            "help",
+            "articles",
+            "deadline"
+          ],
+          "due": "2026-11-06",
+          "owner": "p-lena"
+        },
+        {
+          "kind": "deadline",
+          "text": "Two extra support agents are trained by 9 November.",
+          "at": 110,
+          "topics": [
+            "support",
+            "agents",
+            "training",
+            "deadline"
+          ],
+          "due": "2026-11-09",
+          "owner": "p-lena"
+        },
+        {
+          "kind": "decision",
+          "text": "Support is chat and email only for launch, no phone support.",
+          "at": 140,
+          "topics": [
+            "support",
+            "channels",
+            "launch"
+          ]
+        },
+        {
+          "kind": "decision",
+          "text": "Launch week has extended support hours from eight to twenty, with Jonas on call for escalations.",
+          "at": 194,
+          "topics": [
+            "support",
+            "hours",
+            "launch",
+            "oncall"
+          ],
+          "owner": "p-jonas"
+        }
+      ]
+    },
+    {
+      "id": "m14",
+      "title": "Customer Interview: Holm & Söner Plumbing",
+      "startsAt": "2026-10-01T13:00:00+02:00",
+      "durationMin": 40,
+      "participants": [
+        "p-elin",
+        "p-sofia",
+        "p-maja"
+      ],
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "customer",
+        "interview"
+      ],
+      "transcriptId": "t14",
+      "summary": "Maja finished onboarding in about eleven minutes. She had to export her Excel sheet to CSV and would prefer to upload Excel directly. The VAT step was confusing. She would not pay for a setup call and prefers a short video.",
+      "keyPoints": [
+        {
+          "kind": "risk",
+          "text": "Maja had to export her Excel sheet to CSV and would prefer to upload Excel directly.",
+          "at": 52,
+          "topics": [
+            "excel",
+            "csv",
+            "import",
+            "customer",
+            "feedback",
+            "maja",
+            "holm",
+            "plumbing"
+          ]
+        },
+        {
+          "kind": "metric",
+          "text": "Maja finished the whole onboarding in about eleven minutes.",
+          "at": 134,
+          "topics": [
+            "onboarding",
+            "time",
+            "customer",
+            "feedback",
+            "metrics",
+            "maja",
+            "holm",
+            "plumbing"
+          ]
+        },
+        {
+          "kind": "risk",
+          "text": "The VAT step was confusing because it is unclear which rate to choose.",
+          "at": 162,
+          "topics": [
+            "vat",
+            "onboarding",
+            "customer",
+            "feedback",
+            "maja",
+            "holm",
+            "plumbing"
+          ]
+        },
+        {
+          "kind": "risk",
+          "text": "Maja would not pay for a guided setup call and prefers a short video.",
+          "at": 242,
+          "topics": [
+            "call",
+            "video",
+            "price",
+            "customer",
+            "feedback",
+            "maja",
+            "holm",
+            "plumbing"
+          ]
+        }
+      ]
     },
     {
       "id": "m07",
       "title": "Vendor Call: Kestrel Analytics",
       "startsAt": "2026-10-02T10:00:00+02:00",
       "durationMin": 28,
-      "participants": ["p-elin", "p-dev", "p-tomas"],
+      "participants": [
+        "p-elin",
+        "p-dev",
+        "p-tomas"
+      ],
       "projectId": "proj-lantern",
-      "tags": ["lantern", "vendor", "analytics", "pricing", "contract"],
+      "tags": [
+        "lantern",
+        "vendor",
+        "analytics",
+        "pricing",
+        "contract"
+      ],
       "transcriptId": "t03",
-      "summary": "Kestrel can track the Lantern onboarding funnel with drop-off per step. Setup takes about two weeks, so work should start by 16 October. The growth tier costs 1,200 per month, with 15 percent off for an annual contract. EU hosting is available in Frankfurt. Elin's internal deadline to sign is 16 October."
+      "summary": "Kestrel can track the Lantern onboarding funnel with drop-off per step. Setup takes about two weeks, so work should start by 16 October. The growth tier costs 1,200 per month, with 15 percent off for an annual contract. EU hosting is available in Frankfurt. Elin's internal deadline to sign is 16 October.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "Kestrel Analytics tracks the Lantern onboarding funnel with drop-off per step.",
+          "at": 19,
+          "topics": [
+            "kestrel",
+            "analytics",
+            "tracking"
+          ]
+        },
+        {
+          "kind": "deadline",
+          "text": "Kestrel setup takes about two weeks, so work should start by 16 October.",
+          "at": 62,
+          "topics": [
+            "kestrel",
+            "setup",
+            "tracking",
+            "deadline"
+          ],
+          "due": "2026-10-16"
+        },
+        {
+          "kind": "metric",
+          "text": "The Kestrel growth tier costs 1,200 per month for up to two million events.",
+          "at": 90,
+          "topics": [
+            "kestrel",
+            "price",
+            "cost",
+            "growth"
+          ],
+          "star": true
+        },
+        {
+          "kind": "metric",
+          "text": "An annual Kestrel contract gets fifteen percent off.",
+          "at": 90,
+          "topics": [
+            "kestrel",
+            "price",
+            "annual",
+            "discount"
+          ]
+        },
+        {
+          "kind": "decision",
+          "text": "Kestrel hosts the data in an EU region in Frankfurt.",
+          "at": 128,
+          "topics": [
+            "kestrel",
+            "eu",
+            "hosting",
+            "privacy",
+            "frankfurt"
+          ]
+        },
+        {
+          "kind": "deadline",
+          "text": "The internal deadline to sign the Kestrel contract is 16 October.",
+          "at": 155,
+          "topics": [
+            "kestrel",
+            "contract",
+            "sign",
+            "deadline"
+          ],
+          "due": "2026-10-16",
+          "owner": "p-elin",
+          "star": true
+        },
+        {
+          "kind": "action",
+          "text": "Dev drafts the tracking plan, starting with CSV import failures and step completion.",
+          "at": 185,
+          "topics": [
+            "tracking",
+            "plan",
+            "kestrel"
+          ],
+          "owner": "p-dev"
+        }
+      ]
     },
     {
       "id": "m08",
       "title": "1:1 Elin / Jonas",
       "startsAt": "2026-10-02T14:00:00+02:00",
       "durationMin": 25,
-      "participants": ["p-elin", "p-jonas"],
+      "participants": [
+        "p-elin",
+        "p-jonas"
+      ],
       "projectId": null,
-      "tags": ["1on1", "lantern", "csv", "scope"],
-      "transcriptId": null,
-      "summary": "Jonas estimates the CSV import hardening at about one sprint. He is worried about support capacity around launch. They agreed to freeze Lantern scope after the go/no-go prep."
+      "tags": [
+        "1on1",
+        "lantern",
+        "csv",
+        "scope"
+      ],
+      "transcriptId": "t08",
+      "summary": "Jonas estimates the CSV import hardening at about one sprint. He is worried about support capacity around launch. They agreed to freeze Lantern scope after the go/no-go prep. CSV hardening is done by 23 October; the beta on 21 October starts with a limit of five thousand rows.",
+      "keyPoints": [
+        {
+          "kind": "metric",
+          "text": "CSV import hardening is estimated at about one sprint, two weeks.",
+          "at": 46,
+          "topics": [
+            "csv",
+            "import",
+            "estimate",
+            "sprint"
+          ],
+          "owner": "p-jonas"
+        },
+        {
+          "kind": "deadline",
+          "text": "The CSV import fixes are done by 23 October.",
+          "at": 94,
+          "topics": [
+            "csv",
+            "import",
+            "deadline"
+          ],
+          "due": "2026-10-23",
+          "owner": "p-jonas",
+          "star": true
+        },
+        {
+          "kind": "decision",
+          "text": "The beta starts with the current importer limited to five thousand rows.",
+          "at": 144,
+          "topics": [
+            "beta",
+            "csv",
+            "import",
+            "limit"
+          ],
+          "why": "The full fix lands two days after the beta starts."
+        },
+        {
+          "kind": "risk",
+          "text": "Support capacity around launch is a worry for Jonas.",
+          "at": 178,
+          "topics": [
+            "support",
+            "capacity",
+            "risk",
+            "launch"
+          ]
+        },
+        {
+          "kind": "decision",
+          "text": "The Lantern scope is frozen after the go or no-go prep.",
+          "at": 230,
+          "topics": [
+            "scope",
+            "freeze"
+          ]
+        }
+      ]
     },
     {
       "id": "m09",
       "title": "Marketing Launch Plan Sync",
       "startsAt": "2026-10-05T10:00:00+02:00",
       "durationMin": 40,
-      "participants": ["p-elin", "p-marcus", "p-sofia"],
+      "participants": [
+        "p-elin",
+        "p-marcus",
+        "p-sofia"
+      ],
       "projectId": "proj-lantern",
-      "tags": ["lantern", "marketing", "launch"],
-      "transcriptId": null,
-      "summary": "Drafted the launch plan for 14 November: announcement email, blog post and an in-app banner. Sofia will write help-centre articles about the CSV import and the onboarding checklist."
+      "tags": [
+        "lantern",
+        "marketing",
+        "launch"
+      ],
+      "transcriptId": "t09",
+      "summary": "Drafted the launch plan for 14 November: announcement email, blog post and an in-app banner. Sofia will write help-centre articles about the CSV import and the onboarding checklist. SSO is not mentioned in the launch communication. A thirty minute guided setup call costs ninety-nine euros and is free on annual plans. A customer webinar is planned for 18 November, help-centre articles are ready by 6 November.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "The launch plan for 14 November has an announcement email, a blog post and an in-app banner.",
+          "at": 0,
+          "topics": [
+            "launch",
+            "marketing",
+            "plan"
+          ],
+          "due": "2026-11-14"
+        },
+        {
+          "kind": "decision",
+          "text": "The announcement headline is “Get your first invoice out in fifteen minutes”.",
+          "at": 52,
+          "topics": [
+            "launch",
+            "marketing",
+            "headline",
+            "announcement"
+          ]
+        },
+        {
+          "kind": "deadline",
+          "text": "Help-centre articles about the CSV import and the checklist are ready by 6 November.",
+          "at": 80,
+          "topics": [
+            "help",
+            "articles",
+            "support",
+            "deadline"
+          ],
+          "due": "2026-11-06",
+          "owner": "p-sofia"
+        },
+        {
+          "kind": "decision",
+          "text": "SSO is not mentioned in the launch communication.",
+          "at": 132,
+          "topics": [
+            "sso",
+            "marketing",
+            "launch"
+          ],
+          "why": "SSO is part of version two, so it should not be promised."
+        },
+        {
+          "kind": "deadline",
+          "text": "A customer launch webinar takes place on 18 November.",
+          "at": 160,
+          "topics": [
+            "webinar",
+            "launch",
+            "marketing"
+          ],
+          "due": "2026-11-18",
+          "owner": "p-marcus"
+        },
+        {
+          "kind": "decision",
+          "text": "A guided setup call is offered: thirty minutes for ninety-nine euros, free on annual plans.",
+          "at": 212,
+          "topics": [
+            "onboarding",
+            "call",
+            "price",
+            "guided",
+            "setup"
+          ],
+          "star": true
+        },
+        {
+          "kind": "risk",
+          "text": "Customers have asked about SSO, which will not be part of the launch.",
+          "at": 108,
+          "topics": [
+            "sso",
+            "launch",
+            "risk",
+            "customers"
+          ]
+        }
+      ]
     },
     {
       "id": "m10",
       "title": "Lantern Go/No-Go Prep",
       "startsAt": "2026-10-05T14:00:00+02:00",
       "durationMin": 35,
-      "participants": ["p-elin", "p-jonas", "p-priya", "p-sofia", "p-dev"],
+      "participants": [
+        "p-elin",
+        "p-jonas",
+        "p-priya",
+        "p-sofia",
+        "p-dev"
+      ],
       "projectId": "proj-lantern",
-      "tags": ["lantern", "launch", "risks", "go-no-go"],
-      "transcriptId": null,
-      "summary": "Open items before the go/no-go: CSV import fixes, the Kestrel contract by 16 October, and support readiness. SSO stays out of scope. The formal go/no-go meeting is planned for early November."
+      "tags": [
+        "lantern",
+        "launch",
+        "risks",
+        "go-no-go"
+      ],
+      "transcriptId": "t10",
+      "summary": "Open items before the go/no-go: CSV import fixes, the Kestrel contract by 16 October, and support readiness. SSO stays out of scope. The formal go/no-go meeting is planned for early November. Go criteria: 70 percent of beta customers finish onboarding, 95 percent CSV import success and a crash-free rate of 99.5 percent. The go or no-go meeting is on 5 November and the scope is frozen from 6 October.",
+      "keyPoints": [
+        {
+          "kind": "risk",
+          "text": "The open risks before the go or no-go are the CSV import fixes, the Kestrel contract and support readiness.",
+          "at": 24,
+          "topics": [
+            "launch",
+            "risk",
+            "csv",
+            "kestrel",
+            "support",
+            "gonogo"
+          ]
+        },
+        {
+          "kind": "deadline",
+          "text": "The CSV import fixes are due on 23 October.",
+          "at": 24,
+          "topics": [
+            "csv",
+            "import",
+            "deadline"
+          ],
+          "due": "2026-10-23",
+          "owner": "p-jonas"
+        },
+        {
+          "kind": "deadline",
+          "text": "The Kestrel contract must be signed by 16 October.",
+          "at": 48,
+          "topics": [
+            "kestrel",
+            "contract",
+            "sign",
+            "deadline"
+          ],
+          "due": "2026-10-16"
+        },
+        {
+          "kind": "action",
+          "text": "Support readiness: two extra support agents are being trained.",
+          "at": 74,
+          "topics": [
+            "support",
+            "readiness",
+            "agents"
+          ],
+          "owner": "p-sofia"
+        },
+        {
+          "kind": "decision",
+          "text": "SSO stays out of scope for the launch and is planned for version two.",
+          "at": 102,
+          "topics": [
+            "sso",
+            "scope",
+            "version"
+          ]
+        },
+        {
+          "kind": "deadline",
+          "text": "The formal go or no-go meeting is on 5 November.",
+          "at": 128,
+          "topics": [
+            "gonogo",
+            "decision",
+            "meeting",
+            "deadline"
+          ],
+          "due": "2026-11-05",
+          "star": true
+        },
+        {
+          "kind": "metric",
+          "text": "Go criteria: seventy percent of beta customers finish onboarding and the CSV import succeeds in ninety-five percent of cases.",
+          "at": 182,
+          "topics": [
+            "gonogo",
+            "criteria",
+            "metrics",
+            "beta"
+          ],
+          "star": true
+        },
+        {
+          "kind": "metric",
+          "text": "The app must reach a crash-free rate of at least ninety-nine point five percent.",
+          "at": 214,
+          "topics": [
+            "gonogo",
+            "criteria",
+            "crash",
+            "stable",
+            "quality"
+          ]
+        },
+        {
+          "kind": "deadline",
+          "text": "The Lantern scope is frozen from 6 October.",
+          "at": 240,
+          "topics": [
+            "scope",
+            "freeze",
+            "deadline"
+          ],
+          "due": "2026-10-06",
+          "star": true
+        }
+      ]
+    },
+    {
+      "id": "m15",
+      "title": "Legal & Privacy Check: Kestrel DPA",
+      "startsAt": "2026-10-06T09:30:00+02:00",
+      "durationMin": 30,
+      "participants": [
+        "p-elin",
+        "p-sofia",
+        "p-dev"
+      ],
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "kestrel",
+        "privacy"
+      ],
+      "transcriptId": "t15",
+      "summary": "The data processing agreement is fine: data stays in Frankfurt and Kestrel only acts as processor. The sub-processor list arrives by 9 October. Elin signs on 15 October, one day before the deadline, and tracking can be live on 30 October.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "The Kestrel data processing agreement is fine: data stays in Frankfurt and Kestrel is only a processor.",
+          "at": 26,
+          "topics": [
+            "kestrel",
+            "dpa",
+            "privacy",
+            "frankfurt",
+            "eu"
+          ]
+        },
+        {
+          "kind": "deadline",
+          "text": "Kestrel sends the sub-processor list by 9 October.",
+          "at": 80,
+          "topics": [
+            "kestrel",
+            "subprocessors",
+            "deadline"
+          ],
+          "due": "2026-10-09"
+        },
+        {
+          "kind": "deadline",
+          "text": "Elin signs the Kestrel contract on 15 October, one day before the deadline.",
+          "at": 108,
+          "topics": [
+            "kestrel",
+            "contract",
+            "sign",
+            "deadline"
+          ],
+          "due": "2026-10-15",
+          "owner": "p-elin"
+        },
+        {
+          "kind": "deadline",
+          "text": "After signing, tracking can be live on 30 October.",
+          "at": 136,
+          "topics": [
+            "kestrel",
+            "tracking",
+            "live",
+            "deadline"
+          ],
+          "due": "2026-10-30"
+        },
+        {
+          "kind": "decision",
+          "text": "Tracking starts with two events: step completed and CSV import failed.",
+          "at": 164,
+          "topics": [
+            "tracking",
+            "events",
+            "kestrel"
+          ],
+          "owner": "p-dev"
+        }
+      ]
+    },
+    {
+      "id": "m16",
+      "title": "Beta Launch Readiness",
+      "startsAt": "2026-10-06T13:00:00+02:00",
+      "durationMin": 45,
+      "participants": [
+        "p-elin",
+        "p-jonas",
+        "p-dev",
+        "p-anton"
+      ],
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "beta",
+        "qa"
+      ],
+      "transcriptId": "t16",
+      "summary": "The beta uses a feature flag: 25 percent of new sign-ups from 21 October, 50 percent from 28 October and everyone on 14 November. The crash-free target is 99.5 percent, bugs are triaged every morning at 09:15 and Jonas is on call.",
+      "keyPoints": [
+        {
+          "kind": "decision",
+          "text": "The beta rolls out with a feature flag: 25 percent of new sign-ups from 21 October, 50 percent from 28 October, everyone on 14 November.",
+          "at": 28,
+          "topics": [
+            "beta",
+            "rollout",
+            "flag",
+            "launch"
+          ],
+          "star": true
+        },
+        {
+          "kind": "metric",
+          "text": "The crash-free target for the beta is at least ninety-nine point five percent.",
+          "at": 108,
+          "topics": [
+            "crash",
+            "quality",
+            "beta",
+            "metrics"
+          ]
+        },
+        {
+          "kind": "decision",
+          "text": "Bugs are triaged every morning at 09:15 during the beta; critical bugs are fixed within one working day.",
+          "at": 136,
+          "topics": [
+            "bugs",
+            "triage",
+            "beta",
+            "qa"
+          ]
+        },
+        {
+          "kind": "action",
+          "text": "Anton sends the test plan on Friday.",
+          "at": 220,
+          "topics": [
+            "qa",
+            "testplan"
+          ],
+          "owner": "p-anton"
+        }
+      ]
     }
   ],
   "memos": [
@@ -143,9 +1518,34 @@
       "type": "voice",
       "durationSec": 38,
       "projectId": "proj-lantern",
-      "tags": ["lantern", "idea", "onboarding"],
-      "relatedMeetingIds": ["m01", "m04"],
+      "tags": [
+        "lantern",
+        "idea",
+        "onboarding"
+      ],
+      "relatedMeetingIds": [
+        "m01",
+        "m04"
+      ],
       "content": "Onboarding feels like a wall of forms. What if there's a progress checklist at the top, five steps, with a small celebration at the end? Ask Priya to sketch it."
+    },
+    {
+      "id": "memo11",
+      "title": "Beta success metrics",
+      "createdAt": "2026-09-17T08:30:00+02:00",
+      "type": "voice",
+      "durationSec": 44,
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "beta",
+        "metrics"
+      ],
+      "relatedMeetingIds": [
+        "m11",
+        "m17"
+      ],
+      "content": "Beta success means seventy percent finish onboarding, a median of fifteen minutes to the first invoice and at least ninety-five percent successful CSV imports. Ask Dev for a weekly report."
     },
     {
       "id": "memo02",
@@ -154,8 +1554,14 @@
       "type": "voice",
       "durationSec": 52,
       "projectId": null,
-      "tags": ["roadmap", "lantern", "q4"],
-      "relatedMeetingIds": ["m03"],
+      "tags": [
+        "roadmap",
+        "lantern",
+        "q4"
+      ],
+      "relatedMeetingIds": [
+        "m03"
+      ],
       "content": "Lantern first, reporting dashboard second, invoice reminders third. Keep the pitch to ten minutes."
     },
     {
@@ -165,7 +1571,11 @@
       "type": "voice",
       "durationSec": 21,
       "projectId": null,
-      "tags": ["personal", "gift", "family"],
+      "tags": [
+        "personal",
+        "gift",
+        "family"
+      ],
       "relatedMeetingIds": [],
       "content": "Framed map of the archipelago where she grew up. Order by mid-October."
     },
@@ -176,7 +1586,11 @@
       "type": "voice",
       "durationSec": 14,
       "projectId": null,
-      "tags": ["personal", "car", "todo"],
+      "tags": [
+        "personal",
+        "car",
+        "todo"
+      ],
       "relatedMeetingIds": [],
       "content": "Book the service and winter tyres before 12 October."
     },
@@ -187,8 +1601,15 @@
       "type": "voice",
       "durationSec": 44,
       "projectId": "proj-lantern",
-      "tags": ["lantern", "copy", "onboarding"],
-      "relatedMeetingIds": ["m04", "m06"],
+      "tags": [
+        "lantern",
+        "copy",
+        "onboarding"
+      ],
+      "relatedMeetingIds": [
+        "m04",
+        "m06"
+      ],
       "content": "Empty state headline: \"Let's get your first invoice out\". Button: \"Import my customers\". Avoid the word \"workspace\"."
     },
     {
@@ -198,8 +1619,15 @@
       "type": "voice",
       "durationSec": 49,
       "projectId": "proj-lantern",
-      "tags": ["lantern", "vendor", "analytics", "pricing"],
-      "relatedMeetingIds": ["m07"],
+      "tags": [
+        "lantern",
+        "vendor",
+        "analytics",
+        "pricing"
+      ],
+      "relatedMeetingIds": [
+        "m07"
+      ],
       "content": "EU data hosting? Pricing per seat or per event? Setup time? Can they show funnel drop-off per Lantern step?"
     },
     {
@@ -209,8 +1637,14 @@
       "type": "voice",
       "durationSec": 41,
       "projectId": null,
-      "tags": ["retro", "sprint", "lantern"],
-      "relatedMeetingIds": ["m05"],
+      "tags": [
+        "retro",
+        "sprint",
+        "lantern"
+      ],
+      "relatedMeetingIds": [
+        "m05"
+      ],
       "content": "Stand-ups run too long. Lantern tickets lack acceptance criteria. Jonas wants fewer mid-sprint changes."
     },
     {
@@ -220,9 +1654,29 @@
       "type": "voice",
       "durationSec": 17,
       "projectId": null,
-      "tags": ["personal", "family", "todo"],
+      "tags": [
+        "personal",
+        "family",
+        "todo"
+      ],
       "relatedMeetingIds": [],
       "content": "Oat milk, pasta, basil. Pick up Astrid from swimming at 17:30."
+    },
+    {
+      "id": "memo12",
+      "title": "Support macros",
+      "createdAt": "2026-10-01T08:30:00+02:00",
+      "type": "voice",
+      "durationSec": 36,
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "support"
+      ],
+      "relatedMeetingIds": [
+        "m13"
+      ],
+      "content": "Macros to write for support: CSV column errors, how to restart the checklist and where to find the example file. Lena wants them in the help centre before 6 November."
     },
     {
       "id": "memo09",
@@ -231,8 +1685,14 @@
       "type": "voice",
       "durationSec": 36,
       "projectId": "proj-lantern",
-      "tags": ["lantern", "customer", "follow-up"],
-      "relatedMeetingIds": ["m06"],
+      "tags": [
+        "lantern",
+        "customer",
+        "follow-up"
+      ],
+      "relatedMeetingIds": [
+        "m06"
+      ],
       "content": "Send Karin a thank-you. Offer an onboarding call. Ask permission to quote her feedback."
     },
     {
@@ -242,9 +1702,116 @@
       "type": "voice",
       "durationSec": 58,
       "projectId": "proj-lantern",
-      "tags": ["lantern", "risks", "launch", "csv", "sso"],
-      "relatedMeetingIds": ["m04", "m08", "m10"],
+      "tags": [
+        "lantern",
+        "risks",
+        "launch",
+        "csv",
+        "sso"
+      ],
+      "relatedMeetingIds": [
+        "m04",
+        "m08",
+        "m10"
+      ],
       "content": "CSV import bugs, SSO requests from beta customers, a tight 14 November launch date, and support capacity."
+    },
+    {
+      "id": "memo13",
+      "title": "Guided setup call",
+      "createdAt": "2026-10-02T08:30:00+02:00",
+      "type": "voice",
+      "durationSec": 33,
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "onboarding",
+        "idea"
+      ],
+      "relatedMeetingIds": [
+        "m06",
+        "m09"
+      ],
+      "content": "Idea from Brightside: a short onboarding call. Proposal is thirty minutes for ninety-nine euros, free for annual plans. Marcus puts it on the launch page."
+    },
+    {
+      "id": "memo14",
+      "title": "Excel import idea",
+      "createdAt": "2026-10-02T08:30:00+02:00",
+      "type": "voice",
+      "durationSec": 29,
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "import",
+        "idea"
+      ],
+      "relatedMeetingIds": [
+        "m14"
+      ],
+      "content": "Holm and Söner keep their customers in Excel and exporting to CSV was a hurdle. Consider a native Excel import after the launch, not before."
+    },
+    {
+      "id": "memo17",
+      "title": "Parcel pickup",
+      "createdAt": "2026-10-03T08:30:00+02:00",
+      "type": "voice",
+      "durationSec": 12,
+      "projectId": null,
+      "tags": [
+        "personal",
+        "errand"
+      ],
+      "relatedMeetingIds": [],
+      "content": "Pick up the parcel at the service point on Friday before six."
+    },
+    {
+      "id": "memo18",
+      "title": "Gym card",
+      "createdAt": "2026-10-04T08:30:00+02:00",
+      "type": "voice",
+      "durationSec": 14,
+      "projectId": null,
+      "tags": [
+        "personal",
+        "errand"
+      ],
+      "relatedMeetingIds": [],
+      "content": "Renew the gym card, the offer ends at the end of October."
+    },
+    {
+      "id": "memo15",
+      "title": "Launch announcement draft",
+      "createdAt": "2026-10-05T08:30:00+02:00",
+      "type": "voice",
+      "durationSec": 41,
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "launch",
+        "marketing"
+      ],
+      "relatedMeetingIds": [
+        "m09"
+      ],
+      "content": "Headline idea for the announcement: Get your first invoice out in fifteen minutes. Mention the checklist and the CSV import. Do not mention SSO."
+    },
+    {
+      "id": "memo16",
+      "title": "Go or no-go questions",
+      "createdAt": "2026-10-05T08:30:00+02:00",
+      "type": "voice",
+      "durationSec": 47,
+      "projectId": "proj-lantern",
+      "tags": [
+        "lantern",
+        "launch",
+        "risks"
+      ],
+      "relatedMeetingIds": [
+        "m10"
+      ],
+      "content": "Questions for the go or no-go on 5 November: Do seventy percent of beta customers finish onboarding? Is the CSV import above ninety-five percent? Is support ready? Is tracking live?"
     }
   ],
   "transcripts": [
@@ -254,19 +1821,84 @@
       "language": "en",
       "note": "Excerpt of the full meeting",
       "segments": [
-        { "start": 0, "time": "00:00", "speakerId": "p-elin", "text": "Thanks for joining. The goal today is to lock the Lantern onboarding flow so Jonas can start building next sprint." },
-        { "start": 21, "time": "00:21", "speakerId": "p-priya", "text": "I've updated the Figma. The big change is a progress checklist at the top, five steps instead of one long form." },
-        { "start": 48, "time": "00:48", "speakerId": "p-jonas", "text": "Five steps is fine, but I'm worried about the CSV import step. Last time it choked on files over a few thousand rows." },
-        { "start": 70, "time": "01:10", "speakerId": "p-elin", "text": "Can we move CSV import to step two? If it fails, people find out early and we can offer a manual entry fallback." },
-        { "start": 94, "time": "01:34", "speakerId": "p-priya", "text": "Works for me. Then company details moves to step three." },
-        { "start": 112, "time": "01:52", "speakerId": "p-jonas", "text": "What about SSO? Two beta customers asked for it." },
-        { "start": 128, "time": "02:08", "speakerId": "p-elin", "text": "Let's defer SSO to version two. It would blow the 14 November launch date." },
-        { "start": 150, "time": "02:30", "speakerId": "p-jonas", "text": "Agreed. I'd rather ship a solid import than a half-done SSO." },
-        { "start": 169, "time": "02:49", "speakerId": "p-priya", "text": "One accessibility thing. The teal button fails contrast on the white background. I'll darken it." },
-        { "start": 192, "time": "03:12", "speakerId": "p-elin", "text": "Good catch. And for the empty state, I'm leaning towards \"Let's get your first invoice out\" instead of \"Welcome to your workspace\"." },
-        { "start": 215, "time": "03:35", "speakerId": "p-priya", "text": "Friendlier, yes. I'll update it." },
-        { "start": 231, "time": "03:51", "speakerId": "p-jonas", "text": "I need final screens by Friday the 27th to hit the sprint." },
-        { "start": 245, "time": "04:05", "speakerId": "p-elin", "text": "Done. Priya, final screens Friday. Jonas, estimate for the CSV import by Monday." }
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "Thanks for joining. The goal today is to lock the Lantern onboarding flow so Jonas can start building next sprint."
+        },
+        {
+          "start": 21,
+          "time": "00:21",
+          "speakerId": "p-priya",
+          "text": "I've updated the Figma. The big change is a progress checklist at the top, five steps instead of one long form."
+        },
+        {
+          "start": 48,
+          "time": "00:48",
+          "speakerId": "p-jonas",
+          "text": "Five steps is fine, but I'm worried about the CSV import step. Last time it choked on files over a few thousand rows."
+        },
+        {
+          "start": 70,
+          "time": "01:10",
+          "speakerId": "p-elin",
+          "text": "Can we move CSV import to step two? If it fails, people find out early and we can offer a manual entry fallback."
+        },
+        {
+          "start": 94,
+          "time": "01:34",
+          "speakerId": "p-priya",
+          "text": "Works for me. Then company details moves to step three."
+        },
+        {
+          "start": 112,
+          "time": "01:52",
+          "speakerId": "p-jonas",
+          "text": "What about SSO? Two beta customers asked for it."
+        },
+        {
+          "start": 128,
+          "time": "02:08",
+          "speakerId": "p-elin",
+          "text": "Let's defer SSO to version two. It would blow the 14 November launch date."
+        },
+        {
+          "start": 150,
+          "time": "02:30",
+          "speakerId": "p-jonas",
+          "text": "Agreed. I'd rather ship a solid import than a half-done SSO."
+        },
+        {
+          "start": 169,
+          "time": "02:49",
+          "speakerId": "p-priya",
+          "text": "One accessibility thing. The teal button fails contrast on the white background. I'll darken it."
+        },
+        {
+          "start": 192,
+          "time": "03:12",
+          "speakerId": "p-elin",
+          "text": "Good catch. And for the empty state, I'm leaning towards \"Let's get your first invoice out\" instead of \"Welcome to your workspace\"."
+        },
+        {
+          "start": 215,
+          "time": "03:35",
+          "speakerId": "p-priya",
+          "text": "Friendlier, yes. I'll update it."
+        },
+        {
+          "start": 231,
+          "time": "03:51",
+          "speakerId": "p-jonas",
+          "text": "I need final screens by Friday the 27th to hit the sprint."
+        },
+        {
+          "start": 245,
+          "time": "04:05",
+          "speakerId": "p-elin",
+          "text": "Done. Priya, final screens Friday. Jonas, estimate for the CSV import by Monday."
+        }
       ]
     },
     {
@@ -275,18 +1907,78 @@
       "language": "en",
       "note": "Excerpt of the full meeting",
       "segments": [
-        { "start": 0, "time": "00:00", "speakerId": "p-elin", "text": "Thanks for making time, Karin. We'd like to watch you go through the new Lantern onboarding and think aloud." },
-        { "start": 25, "time": "00:25", "speakerId": "p-karin", "text": "Sure. Okay, the checklist at the top is nice. I like seeing how much is left." },
-        { "start": 48, "time": "00:48", "speakerId": "p-karin", "text": "Now it's asking me to import customers. I have a spreadsheet, but I'm not sure which columns it wants." },
-        { "start": 75, "time": "01:15", "speakerId": "p-sofia", "text": "That's useful to know. What would help you here?" },
-        { "start": 82, "time": "01:22", "speakerId": "p-karin", "text": "An example file I could download, or a preview before it imports. I'd be nervous about messing up our patient billing contacts." },
-        { "start": 110, "time": "01:50", "speakerId": "p-karin", "text": "Also, \"workspace\". We call it the practice. I wasn't sure if workspace meant my practice or my account." },
-        { "start": 134, "time": "02:14", "speakerId": "p-elin", "text": "Noted, we'll look at the wording." },
-        { "start": 150, "time": "02:30", "speakerId": "p-karin", "text": "Once I'm in, what I'd want most is automatic reminders for unpaid invoices. We chase those by hand every Monday." },
-        { "start": 178, "time": "02:58", "speakerId": "p-sofia", "text": "Reminders are on our roadmap. Is that a dealbreaker for pricing?" },
-        { "start": 190, "time": "03:10", "speakerId": "p-karin", "text": "Not a dealbreaker, but pricing matters. We're a small clinic. If it costs more than what we pay now, I need to see the time saved." },
-        { "start": 220, "time": "03:40", "speakerId": "p-karin", "text": "Honestly, I'd pay a bit extra for a short onboarding call with a real person." },
-        { "start": 242, "time": "04:02", "speakerId": "p-elin", "text": "That's really helpful. Thank you, Karin." }
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "Thanks for making time, Karin. We'd like to watch you go through the new Lantern onboarding and think aloud."
+        },
+        {
+          "start": 25,
+          "time": "00:25",
+          "speakerId": "p-karin",
+          "text": "Sure. Okay, the checklist at the top is nice. I like seeing how much is left."
+        },
+        {
+          "start": 48,
+          "time": "00:48",
+          "speakerId": "p-karin",
+          "text": "Now it's asking me to import customers. I have a spreadsheet, but I'm not sure which columns it wants."
+        },
+        {
+          "start": 75,
+          "time": "01:15",
+          "speakerId": "p-sofia",
+          "text": "That's useful to know. What would help you here?"
+        },
+        {
+          "start": 82,
+          "time": "01:22",
+          "speakerId": "p-karin",
+          "text": "An example file I could download, or a preview before it imports. I'd be nervous about messing up our patient billing contacts."
+        },
+        {
+          "start": 110,
+          "time": "01:50",
+          "speakerId": "p-karin",
+          "text": "Also, \"workspace\". We call it the practice. I wasn't sure if workspace meant my practice or my account."
+        },
+        {
+          "start": 134,
+          "time": "02:14",
+          "speakerId": "p-elin",
+          "text": "Noted, we'll look at the wording."
+        },
+        {
+          "start": 150,
+          "time": "02:30",
+          "speakerId": "p-karin",
+          "text": "Once I'm in, what I'd want most is automatic reminders for unpaid invoices. We chase those by hand every Monday."
+        },
+        {
+          "start": 178,
+          "time": "02:58",
+          "speakerId": "p-sofia",
+          "text": "Reminders are on our roadmap. Is that a dealbreaker for pricing?"
+        },
+        {
+          "start": 190,
+          "time": "03:10",
+          "speakerId": "p-karin",
+          "text": "Not a dealbreaker, but pricing matters. We're a small clinic. If it costs more than what we pay now, I need to see the time saved."
+        },
+        {
+          "start": 220,
+          "time": "03:40",
+          "speakerId": "p-karin",
+          "text": "Honestly, I'd pay a bit extra for a short onboarding call with a real person."
+        },
+        {
+          "start": 242,
+          "time": "04:02",
+          "speakerId": "p-elin",
+          "text": "That's really helpful. Thank you, Karin."
+        }
       ]
     },
     {
@@ -295,17 +1987,982 @@
       "language": "en",
       "note": "Excerpt of the full meeting",
       "segments": [
-        { "start": 0, "time": "00:00", "speakerId": "p-elin", "text": "Thanks, Tomas. Dev and I want to understand how Kestrel could track the Lantern onboarding funnel." },
-        { "start": 19, "time": "00:19", "speakerId": "p-tomas", "text": "Sure. You add our script, define events like \"checklist step completed\", and we show drop-off per step." },
-        { "start": 44, "time": "00:44", "speakerId": "p-dev", "text": "How long is setup? We launch on 14 November, so we need tracking live a week before." },
-        { "start": 62, "time": "01:02", "speakerId": "p-tomas", "text": "Typically two weeks with a clean tracking plan. Realistically, you'd want to start by 16 October." },
-        { "start": 85, "time": "01:25", "speakerId": "p-elin", "text": "What about pricing?" },
-        { "start": 90, "time": "01:30", "speakerId": "p-tomas", "text": "The growth tier is 1,200 a month for up to two million events. An annual contract gets fifteen percent off." },
-        { "start": 115, "time": "01:55", "speakerId": "p-dev", "text": "Data hosting is our main question. Our customers are in the EU." },
-        { "start": 128, "time": "02:08", "speakerId": "p-tomas", "text": "We have an EU region in Frankfurt. Data stays there, and I can send the DPA." },
-        { "start": 155, "time": "02:35", "speakerId": "p-elin", "text": "Please send the DPA and a written quote. Our internal deadline to sign is 16 October." },
-        { "start": 172, "time": "02:52", "speakerId": "p-tomas", "text": "I'll send both tomorrow." },
-        { "start": 185, "time": "03:05", "speakerId": "p-dev", "text": "I'll draft the tracking plan this week, starting with CSV import failures and step completion." }
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "Thanks, Tomas. Dev and I want to understand how Kestrel could track the Lantern onboarding funnel."
+        },
+        {
+          "start": 19,
+          "time": "00:19",
+          "speakerId": "p-tomas",
+          "text": "Sure. You add our script, define events like \"checklist step completed\", and we show drop-off per step."
+        },
+        {
+          "start": 44,
+          "time": "00:44",
+          "speakerId": "p-dev",
+          "text": "How long is setup? We launch on 14 November, so we need tracking live a week before."
+        },
+        {
+          "start": 62,
+          "time": "01:02",
+          "speakerId": "p-tomas",
+          "text": "Typically two weeks with a clean tracking plan. Realistically, you'd want to start by 16 October."
+        },
+        {
+          "start": 85,
+          "time": "01:25",
+          "speakerId": "p-elin",
+          "text": "What about pricing?"
+        },
+        {
+          "start": 90,
+          "time": "01:30",
+          "speakerId": "p-tomas",
+          "text": "The growth tier is 1,200 a month for up to two million events. An annual contract gets fifteen percent off."
+        },
+        {
+          "start": 115,
+          "time": "01:55",
+          "speakerId": "p-dev",
+          "text": "Data hosting is our main question. Our customers are in the EU."
+        },
+        {
+          "start": 128,
+          "time": "02:08",
+          "speakerId": "p-tomas",
+          "text": "We have an EU region in Frankfurt. Data stays there, and I can send the DPA."
+        },
+        {
+          "start": 155,
+          "time": "02:35",
+          "speakerId": "p-elin",
+          "text": "Please send the DPA and a written quote. Our internal deadline to sign is 16 October."
+        },
+        {
+          "start": 172,
+          "time": "02:52",
+          "speakerId": "p-tomas",
+          "text": "I'll send both tomorrow."
+        },
+        {
+          "start": 185,
+          "time": "03:05",
+          "speakerId": "p-dev",
+          "text": "I'll draft the tracking plan this week, starting with CSV import failures and step completion."
+        }
+      ]
+    },
+    {
+      "id": "t04",
+      "meetingId": "m01",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "Welcome, everyone. Project Lantern is the redesign of customer onboarding in the Fakturo invoicing app, and we launch on 14 November."
+        },
+        {
+          "start": 24,
+          "time": "00:24",
+          "speakerId": "p-elin",
+          "text": "Today we align on what success looks like and who owns what."
+        },
+        {
+          "start": 51,
+          "time": "00:51",
+          "speakerId": "p-sofia",
+          "text": "Customers tell us setting up takes too long. Many of them give up before they send their first invoice."
+        },
+        {
+          "start": 75,
+          "time": "01:15",
+          "speakerId": "p-dev",
+          "text": "I'll measure how many people finish onboarding today, so we have a baseline before we change anything."
+        },
+        {
+          "start": 102,
+          "time": "01:42",
+          "speakerId": "p-elin",
+          "text": "My target is that seventy percent of new customers finish onboarding. Let's confirm the number once Dev has the baseline."
+        },
+        {
+          "start": 130,
+          "time": "02:10",
+          "speakerId": "p-jonas",
+          "text": "Engineering can start building once the design is locked. A beta before the full launch would help us catch problems early."
+        },
+        {
+          "start": 158,
+          "time": "02:38",
+          "speakerId": "p-elin",
+          "text": "Agreed. We run a beta with a small group of customers before 14 November, and Sofia owns recruiting them."
+        },
+        {
+          "start": 185,
+          "time": "03:05",
+          "speakerId": "p-priya",
+          "text": "I'll sketch the new flow this week. I want to try a progress checklist instead of one long form."
+        },
+        {
+          "start": 213,
+          "time": "03:33",
+          "speakerId": "p-sofia",
+          "text": "So the roles are Elin as product lead, Jonas for engineering, Priya for design, me for customer success and Dev for data."
+        },
+        {
+          "start": 240,
+          "time": "04:00",
+          "speakerId": "p-elin",
+          "text": "Exactly. We meet every Tuesday at nine thirty for the weekly sync, and the design review is planned for late September."
+        }
+      ]
+    },
+    {
+      "id": "t05",
+      "meetingId": "m02",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "Let's start with the onboarding drafts. Priya, can you walk us through them?"
+        },
+        {
+          "start": 20,
+          "time": "00:20",
+          "speakerId": "p-priya",
+          "text": "Sure. The progress checklist has five steps, and at the end there is a small celebration when the first invoice is ready."
+        },
+        {
+          "start": 52,
+          "time": "00:52",
+          "speakerId": "p-elin",
+          "text": "I like the celebration. Let's keep it in, as long as it doesn't slow the flow down."
+        },
+        {
+          "start": 78,
+          "time": "01:18",
+          "speakerId": "p-jonas",
+          "text": "My main technical worry is the CSV import. Big files made the old importer time out."
+        },
+        {
+          "start": 104,
+          "time": "01:44",
+          "speakerId": "p-elin",
+          "text": "How big a risk is it for the 14 November launch?"
+        },
+        {
+          "start": 126,
+          "time": "02:06",
+          "speakerId": "p-jonas",
+          "text": "It's the biggest technical risk we have. I want to harden it, and I'll come back with an estimate."
+        },
+        {
+          "start": 155,
+          "time": "02:35",
+          "speakerId": "p-sofia",
+          "text": "I've started recruiting beta customers. Brightside Dental has said yes already."
+        },
+        {
+          "start": 182,
+          "time": "03:02",
+          "speakerId": "p-elin",
+          "text": "Great. Sofia, please send me the list of candidates by the end of the week."
+        },
+        {
+          "start": 205,
+          "time": "03:25",
+          "speakerId": "p-sofia",
+          "text": "Will do. I'm aiming for around twelve customers in the beta."
+        },
+        {
+          "start": 228,
+          "time": "03:48",
+          "speakerId": "p-elin",
+          "text": "Perfect. Next week we plan the beta properly."
+        }
+      ]
+    },
+    {
+      "id": "t06",
+      "meetingId": "m03",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "We need to agree on the Q4 priorities for the product team."
+        },
+        {
+          "start": 22,
+          "time": "00:22",
+          "speakerId": "p-elin",
+          "text": "My proposal is Lantern first, the reporting dashboard second and automatic invoice reminders third."
+        },
+        {
+          "start": 50,
+          "time": "00:50",
+          "speakerId": "p-jonas",
+          "text": "That order works for engineering. Lantern takes most of October and the first half of November."
+        },
+        {
+          "start": 78,
+          "time": "01:18",
+          "speakerId": "p-marcus",
+          "text": "Marketing needs a fixed launch date. We can't plan an announcement around a date that keeps moving."
+        },
+        {
+          "start": 106,
+          "time": "01:46",
+          "speakerId": "p-elin",
+          "text": "Then let's fix it. The launch date is 14 November, unless the go or no-go decision says otherwise."
+        },
+        {
+          "start": 132,
+          "time": "02:12",
+          "speakerId": "p-sofia",
+          "text": "Customers keep asking about invoice reminders. When can I tell them it's coming?"
+        },
+        {
+          "start": 160,
+          "time": "02:40",
+          "speakerId": "p-elin",
+          "text": "The first version of reminders is planned for late December, after the dashboard."
+        },
+        {
+          "start": 188,
+          "time": "03:08",
+          "speakerId": "p-jonas",
+          "text": "And the reporting dashboard starts right after the launch, with a first version in early December."
+        },
+        {
+          "start": 216,
+          "time": "03:36",
+          "speakerId": "p-marcus",
+          "text": "Good. I'll plan the launch communication for 14 November then."
+        },
+        {
+          "start": 242,
+          "time": "04:02",
+          "speakerId": "p-elin",
+          "text": "Great. So Lantern first, the dashboard second and reminders third."
+        }
+      ]
+    },
+    {
+      "id": "t07",
+      "meetingId": "m05",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "Let's run the retro for the September sprint. What went well?"
+        },
+        {
+          "start": 20,
+          "time": "00:20",
+          "speakerId": "p-priya",
+          "text": "The design handover worked well. Having the Figma file ready before the sprint helped a lot."
+        },
+        {
+          "start": 46,
+          "time": "00:46",
+          "speakerId": "p-jonas",
+          "text": "What slowed us down is that stand-ups run too long. Some days they take twenty minutes."
+        },
+        {
+          "start": 72,
+          "time": "01:12",
+          "speakerId": "p-elin",
+          "text": "Let's timebox the stand-up to ten minutes. Anything longer goes into a separate conversation."
+        },
+        {
+          "start": 98,
+          "time": "01:38",
+          "speakerId": "p-jonas",
+          "text": "Also, many Lantern tickets had no acceptance criteria, so nobody knew when they were done."
+        },
+        {
+          "start": 124,
+          "time": "02:04",
+          "speakerId": "p-elin",
+          "text": "Then from now on no ticket enters a sprint without acceptance criteria. Priya and I will write them together."
+        },
+        {
+          "start": 154,
+          "time": "02:34",
+          "speakerId": "p-jonas",
+          "text": "And I'd like fewer changes in the middle of a sprint. Every change costs us a day."
+        },
+        {
+          "start": 180,
+          "time": "03:00",
+          "speakerId": "p-elin",
+          "text": "Agreed. Changes go into the next sprint, unless something is blocking a customer."
+        },
+        {
+          "start": 208,
+          "time": "03:28",
+          "speakerId": "p-sofia",
+          "text": "Can we also review support tickets from the beta once a week?"
+        },
+        {
+          "start": 232,
+          "time": "03:52",
+          "speakerId": "p-elin",
+          "text": "Yes, let's put that on the agenda of the weekly sync."
+        }
+      ]
+    },
+    {
+      "id": "t08",
+      "meetingId": "m08",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "Thanks for making time, Jonas. How is the CSV import looking?"
+        },
+        {
+          "start": 18,
+          "time": "00:18",
+          "speakerId": "p-jonas",
+          "text": "The new column mapping works. The remaining problem is big files, where it's still too slow."
+        },
+        {
+          "start": 46,
+          "time": "00:46",
+          "speakerId": "p-jonas",
+          "text": "Hardening it properly is about one sprint of work, so two weeks."
+        },
+        {
+          "start": 72,
+          "time": "01:12",
+          "speakerId": "p-elin",
+          "text": "When would that be done if you start on 12 October?"
+        },
+        {
+          "start": 94,
+          "time": "01:34",
+          "speakerId": "p-jonas",
+          "text": "The sprint ends on 23 October, so the CSV fixes will be done by 23 October."
+        },
+        {
+          "start": 122,
+          "time": "02:02",
+          "speakerId": "p-elin",
+          "text": "That's two days after the beta starts on 21 October, so it isn't ready for the first customers."
+        },
+        {
+          "start": 144,
+          "time": "02:24",
+          "speakerId": "p-jonas",
+          "text": "Right. The beta starts with the current importer, limited to five thousand rows. The full fix lands two days later."
+        },
+        {
+          "start": 178,
+          "time": "02:58",
+          "speakerId": "p-jonas",
+          "text": "My other worry is support. If customers get stuck on launch day, who answers them?"
+        },
+        {
+          "start": 204,
+          "time": "03:24",
+          "speakerId": "p-elin",
+          "text": "Sofia and Lena are working on it. I'll bring it to the go or no-go prep."
+        },
+        {
+          "start": 230,
+          "time": "03:50",
+          "speakerId": "p-elin",
+          "text": "One more thing. After the go or no-go prep we freeze the Lantern scope, so nothing new goes in."
+        }
+      ]
+    },
+    {
+      "id": "t09",
+      "meetingId": "m09",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-marcus",
+          "text": "I've drafted the launch plan for 14 November. There is an announcement email, a blog post and an in-app banner."
+        },
+        {
+          "start": 28,
+          "time": "00:28",
+          "speakerId": "p-elin",
+          "text": "Good. What is the headline of the announcement?"
+        },
+        {
+          "start": 52,
+          "time": "00:52",
+          "speakerId": "p-marcus",
+          "text": "Get your first invoice out in fifteen minutes. It follows the new empty state headline."
+        },
+        {
+          "start": 80,
+          "time": "01:20",
+          "speakerId": "p-sofia",
+          "text": "I'll write the help-centre articles about the CSV import and the onboarding checklist. They will be ready by 6 November."
+        },
+        {
+          "start": 108,
+          "time": "01:48",
+          "speakerId": "p-marcus",
+          "text": "Should we mention SSO in the announcement? A few customers asked."
+        },
+        {
+          "start": 132,
+          "time": "02:12",
+          "speakerId": "p-elin",
+          "text": "No. SSO is part of version two, so we shouldn't promise it in the launch communication."
+        },
+        {
+          "start": 160,
+          "time": "02:40",
+          "speakerId": "p-marcus",
+          "text": "Understood. I'd also like a launch webinar for customers, on 18 November."
+        },
+        {
+          "start": 186,
+          "time": "03:06",
+          "speakerId": "p-sofia",
+          "text": "Brightside Dental asked for an onboarding call. Can we offer that?"
+        },
+        {
+          "start": 212,
+          "time": "03:32",
+          "speakerId": "p-elin",
+          "text": "Yes. A thirty minute guided setup call for ninety-nine euros, and free for customers on an annual plan."
+        },
+        {
+          "start": 240,
+          "time": "04:00",
+          "speakerId": "p-marcus",
+          "text": "That works for me. I'll add it to the launch page."
+        }
+      ]
+    },
+    {
+      "id": "t10",
+      "meetingId": "m10",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "This is the go or no-go prep. Let's list what is still open before the decision."
+        },
+        {
+          "start": 24,
+          "time": "00:24",
+          "speakerId": "p-jonas",
+          "text": "First, the CSV import fixes, which are due on 23 October."
+        },
+        {
+          "start": 48,
+          "time": "00:48",
+          "speakerId": "p-elin",
+          "text": "Second, the Kestrel contract. We need to sign by 16 October so tracking can go live in time."
+        },
+        {
+          "start": 74,
+          "time": "01:14",
+          "speakerId": "p-sofia",
+          "text": "Third, support readiness. Lena and I are training two extra support agents."
+        },
+        {
+          "start": 102,
+          "time": "01:42",
+          "speakerId": "p-elin",
+          "text": "SSO stays out of scope for the launch. It is planned for version two."
+        },
+        {
+          "start": 128,
+          "time": "02:08",
+          "speakerId": "p-elin",
+          "text": "The formal go or no-go meeting is on 5 November, nine days before the launch."
+        },
+        {
+          "start": 160,
+          "time": "02:40",
+          "speakerId": "p-dev",
+          "text": "What are the criteria for a go?"
+        },
+        {
+          "start": 182,
+          "time": "03:02",
+          "speakerId": "p-elin",
+          "text": "At least seventy percent of beta customers finish onboarding, the CSV import succeeds in ninety-five percent of cases, and the app is stable."
+        },
+        {
+          "start": 214,
+          "time": "03:34",
+          "speakerId": "p-anton",
+          "text": "For stable I suggest a crash-free rate of at least ninety-nine point five percent."
+        },
+        {
+          "start": 240,
+          "time": "04:00",
+          "speakerId": "p-elin",
+          "text": "Good. And the Lantern scope is frozen from tomorrow, 6 October."
+        }
+      ]
+    },
+    {
+      "id": "t11",
+      "meetingId": "m11",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-sofia",
+          "text": "I made a first list of beta candidates. I'd like twelve customers in total."
+        },
+        {
+          "start": 26,
+          "time": "00:26",
+          "speakerId": "p-elin",
+          "text": "What mix are you aiming for?"
+        },
+        {
+          "start": 50,
+          "time": "00:50",
+          "speakerId": "p-sofia",
+          "text": "Small and mid-sized companies, at least four with a lot of customer data to import, and a few with no data at all."
+        },
+        {
+          "start": 80,
+          "time": "01:20",
+          "speakerId": "p-dev",
+          "text": "I'd like at least four that import from a spreadsheet, because that is where people drop out today."
+        },
+        {
+          "start": 110,
+          "time": "01:50",
+          "speakerId": "p-elin",
+          "text": "Good. And customers who asked for SSO should know it isn't in the beta."
+        },
+        {
+          "start": 138,
+          "time": "02:18",
+          "speakerId": "p-sofia",
+          "text": "Brightside Dental and Holm and Söner Plumbing are both on the list."
+        },
+        {
+          "start": 166,
+          "time": "02:46",
+          "speakerId": "p-elin",
+          "text": "When should outreach be done?"
+        },
+        {
+          "start": 190,
+          "time": "03:10",
+          "speakerId": "p-sofia",
+          "text": "I'll contact everyone by 25 September, and the beta starts on 21 October."
+        },
+        {
+          "start": 218,
+          "time": "03:38",
+          "speakerId": "p-elin",
+          "text": "Perfect. The beta runs for two weeks, until 4 November, so we have the results for the go or no-go on 5 November."
+        }
+      ]
+    },
+    {
+      "id": "t12",
+      "meetingId": "m12",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-priya",
+          "text": "I fixed the teal button. It's now a darker teal with a contrast ratio above seven to one on white."
+        },
+        {
+          "start": 28,
+          "time": "00:28",
+          "speakerId": "p-anton",
+          "text": "That passes AA and even AAA for normal text. What is our target?"
+        },
+        {
+          "start": 54,
+          "time": "00:54",
+          "speakerId": "p-elin",
+          "text": "WCAG AA is our minimum for Lantern. Where we can easily reach AAA, we do."
+        },
+        {
+          "start": 82,
+          "time": "01:22",
+          "speakerId": "p-priya",
+          "text": "On copy: we remove the word workspace everywhere and say account instead."
+        },
+        {
+          "start": 108,
+          "time": "01:48",
+          "speakerId": "p-elin",
+          "text": "Yes. Brightside Dental was confused by workspace, so we avoid it completely."
+        },
+        {
+          "start": 134,
+          "time": "02:14",
+          "speakerId": "p-priya",
+          "text": "The empty state says Let's get your first invoice out, and the main button says Import my customers."
+        },
+        {
+          "start": 162,
+          "time": "02:42",
+          "speakerId": "p-anton",
+          "text": "Error messages need work. Right now a CSV error just says Invalid file."
+        },
+        {
+          "start": 190,
+          "time": "03:10",
+          "speakerId": "p-priya",
+          "text": "I'll rewrite them so they name the problem, for example Column email is missing, and show how to fix it."
+        },
+        {
+          "start": 220,
+          "time": "03:40",
+          "speakerId": "p-elin",
+          "text": "Great. Please add an example file to download as well, and a preview before the import runs."
+        }
+      ]
+    },
+    {
+      "id": "t13",
+      "meetingId": "m13",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-lena",
+          "text": "Let me share the support plan for launch. I expect around thirty percent more tickets in the first two weeks."
+        },
+        {
+          "start": 30,
+          "time": "00:30",
+          "speakerId": "p-sofia",
+          "text": "Most of them will be about the CSV import, I think."
+        },
+        {
+          "start": 56,
+          "time": "00:56",
+          "speakerId": "p-lena",
+          "text": "Yes. We'll write macros for the typical CSV errors and publish help-centre articles by 6 November."
+        },
+        {
+          "start": 86,
+          "time": "01:26",
+          "speakerId": "p-elin",
+          "text": "How many people do you need?"
+        },
+        {
+          "start": 110,
+          "time": "01:50",
+          "speakerId": "p-lena",
+          "text": "Two extra support agents, trained by 9 November, so they're ready five days before the launch."
+        },
+        {
+          "start": 140,
+          "time": "02:20",
+          "speakerId": "p-lena",
+          "text": "We'll offer chat and email only. No phone support for launch."
+        },
+        {
+          "start": 168,
+          "time": "02:48",
+          "speakerId": "p-elin",
+          "text": "Agreed. What about launch week coverage?"
+        },
+        {
+          "start": 194,
+          "time": "03:14",
+          "speakerId": "p-lena",
+          "text": "Extended hours from eight to twenty, and Jonas is on call for escalations."
+        },
+        {
+          "start": 222,
+          "time": "03:42",
+          "speakerId": "p-jonas",
+          "text": "That works. Escalations go to me or Anton, and we answer within one hour."
+        }
+      ]
+    },
+    {
+      "id": "t14",
+      "meetingId": "m14",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "Thanks for joining, Maja. We'd like to watch you go through the new onboarding."
+        },
+        {
+          "start": 24,
+          "time": "00:24",
+          "speakerId": "p-maja",
+          "text": "Sure. I keep my customers in an Excel sheet, so I'll try to import that."
+        },
+        {
+          "start": 52,
+          "time": "00:52",
+          "speakerId": "p-maja",
+          "text": "It only takes CSV. I had to export it first, which I didn't expect."
+        },
+        {
+          "start": 80,
+          "time": "01:20",
+          "speakerId": "p-sofia",
+          "text": "That is useful. Would you prefer to upload the Excel file directly?"
+        },
+        {
+          "start": 106,
+          "time": "01:46",
+          "speakerId": "p-maja",
+          "text": "Definitely. Most small businesses I know work in Excel."
+        },
+        {
+          "start": 134,
+          "time": "02:14",
+          "speakerId": "p-maja",
+          "text": "The checklist at the top helps. I finished everything in about eleven minutes."
+        },
+        {
+          "start": 162,
+          "time": "02:42",
+          "speakerId": "p-maja",
+          "text": "The VAT step confused me. I wasn't sure which rate to choose."
+        },
+        {
+          "start": 190,
+          "time": "03:10",
+          "speakerId": "p-elin",
+          "text": "Noted. We'll add a short explanation there."
+        },
+        {
+          "start": 216,
+          "time": "03:36",
+          "speakerId": "p-sofia",
+          "text": "Would you pay for a guided setup call?"
+        },
+        {
+          "start": 242,
+          "time": "04:02",
+          "speakerId": "p-maja",
+          "text": "No, I'd rather watch a short video. A call feels like too much for something this simple."
+        }
+      ]
+    },
+    {
+      "id": "t15",
+      "meetingId": "m15",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-elin",
+          "text": "We're here to review the data processing agreement from Kestrel Analytics."
+        },
+        {
+          "start": 26,
+          "time": "00:26",
+          "speakerId": "p-sofia",
+          "text": "I went through it. Data stays in the Frankfurt region, and Kestrel acts only as our processor."
+        },
+        {
+          "start": 54,
+          "time": "00:54",
+          "speakerId": "p-elin",
+          "text": "So there is no blocker for us on privacy?"
+        },
+        {
+          "start": 80,
+          "time": "01:20",
+          "speakerId": "p-sofia",
+          "text": "One question on sub-processors. Kestrel will send us the list by 9 October."
+        },
+        {
+          "start": 108,
+          "time": "01:48",
+          "speakerId": "p-elin",
+          "text": "Then my plan is to sign on 15 October, one day before the deadline."
+        },
+        {
+          "start": 136,
+          "time": "02:16",
+          "speakerId": "p-dev",
+          "text": "Once we sign, setup takes two weeks, so tracking could be live on 30 October."
+        },
+        {
+          "start": 164,
+          "time": "02:44",
+          "speakerId": "p-dev",
+          "text": "I'll track two events from day one: step completed and CSV import failed."
+        },
+        {
+          "start": 192,
+          "time": "03:12",
+          "speakerId": "p-elin",
+          "text": "Good. That gives us a week of data before the go or no-go decision."
+        }
+      ]
+    },
+    {
+      "id": "t16",
+      "meetingId": "m16",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-anton",
+          "text": "Here is the QA plan for the beta. We test on the three latest iOS versions and four Android devices."
+        },
+        {
+          "start": 28,
+          "time": "00:28",
+          "speakerId": "p-jonas",
+          "text": "We roll out with a feature flag. Twenty-five percent of new sign-ups get the new onboarding from 21 October."
+        },
+        {
+          "start": 56,
+          "time": "00:56",
+          "speakerId": "p-jonas",
+          "text": "It goes to fifty percent on 28 October, and to everyone on launch day, 14 November."
+        },
+        {
+          "start": 84,
+          "time": "01:24",
+          "speakerId": "p-elin",
+          "text": "What is our crash-free target?"
+        },
+        {
+          "start": 108,
+          "time": "01:48",
+          "speakerId": "p-anton",
+          "text": "At least ninety-nine point five percent, measured over the whole beta."
+        },
+        {
+          "start": 136,
+          "time": "02:16",
+          "speakerId": "p-anton",
+          "text": "We triage bugs every morning at nine fifteen during the beta."
+        },
+        {
+          "start": 164,
+          "time": "02:44",
+          "speakerId": "p-dev",
+          "text": "I'd like to compare the beta cohort with the old onboarding. The flag makes that possible."
+        },
+        {
+          "start": 192,
+          "time": "03:12",
+          "speakerId": "p-jonas",
+          "text": "I'm on call during the first two weeks. Critical bugs get fixed within one working day."
+        },
+        {
+          "start": 220,
+          "time": "03:40",
+          "speakerId": "p-elin",
+          "text": "Good. Anton, please send me the test plan by Friday."
+        }
+      ]
+    },
+    {
+      "id": "t17",
+      "meetingId": "m17",
+      "language": "en",
+      "note": "Excerpt of the full meeting",
+      "segments": [
+        {
+          "start": 0,
+          "time": "00:00",
+          "speakerId": "p-dev",
+          "text": "I have the baseline for onboarding. Today thirty-eight percent of new customers finish it."
+        },
+        {
+          "start": 24,
+          "time": "00:24",
+          "speakerId": "p-dev",
+          "text": "The median time from sign-up to the first invoice is twenty-six minutes."
+        },
+        {
+          "start": 50,
+          "time": "00:50",
+          "speakerId": "p-elin",
+          "text": "Where do people drop out?"
+        },
+        {
+          "start": 76,
+          "time": "01:16",
+          "speakerId": "p-dev",
+          "text": "The biggest drop is the customer import. Forty-one percent of those who start it leave there."
+        },
+        {
+          "start": 104,
+          "time": "01:44",
+          "speakerId": "p-priya",
+          "text": "That supports moving the import earlier and adding an example file."
+        },
+        {
+          "start": 130,
+          "time": "02:10",
+          "speakerId": "p-elin",
+          "text": "Then our targets are clear: seventy percent finishing onboarding, and a median of fifteen minutes to the first invoice."
+        },
+        {
+          "start": 158,
+          "time": "02:38",
+          "speakerId": "p-dev",
+          "text": "I'll set up a weekly report so we can follow both numbers."
+        },
+        {
+          "start": 186,
+          "time": "03:06",
+          "speakerId": "p-jonas",
+          "text": "Can we measure the import success rate as well?"
+        },
+        {
+          "start": 210,
+          "time": "03:30",
+          "speakerId": "p-dev",
+          "text": "Yes. I'll add it, with a target of ninety-five percent."
+        }
       ]
     }
   ]

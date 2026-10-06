@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 import { MicIcon, SparkleCenteredIcon } from './Icons'
-import type { AnswerPart } from '../search'
+import type { AnswerPart } from '../ai'
 
 export type AiState = 'disabled' | 'ready' | 'thinking' | 'done'
 
@@ -42,7 +42,13 @@ export function AiSynthesis({ state, answer, onRun, onReset }: {
       {state === 'done' && (
         <p data-testid="ai-result" className="mt-[15px] px-0 text-heading-s leading-[1.4] tracking-heading text-gray-975">
           {answer
-            ? answer.map((p, i) => <Fragment key={i}>{p.text}{p.time && <TimeChip time={p.time} />} </Fragment>)
+            ? answer.map((p, i) => p.time ? (
+              // a sourced sentence gets its own line so lists of facts stay readable
+              <span key={i} className="mt-2.5 block">
+                {p.source && <span className="block text-body-m text-gray-700">{p.source}</span>}
+                {p.text}<TimeChip time={p.time} />
+              </span>
+            ) : <Fragment key={i}>{p.text} </Fragment>)
             : 'Can’t help you with that.'}
         </p>
       )}

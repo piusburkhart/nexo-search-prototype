@@ -6,7 +6,8 @@ import { HitCard, RecordingCard } from '../components/Cards'
 import { SearchBar, TagCard, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
 import { CalendarIcon, MicIcon, ChatIcon, WaveIcon } from '../components/Icons'
 import { navigate, useRoute } from '../router'
-import { dateCompletions, dateCount, emptyResults, everything, parseQuery, search, synthesize } from '../search'
+import { answerQuestion } from '../ai'
+import { dateCompletions, dateCount, emptyResults, everything, parseQuery, search } from '../search'
 
 type Tag = 'meetings' | 'memos' | 'transcript'
 const LABEL: Record<Tag, string> = { meetings: 'Meetings', memos: 'Memos', transcript: 'Transcript' }
@@ -108,7 +109,7 @@ export default function Search() {
     const t = setTimeout(() => setThinking(false), 1100)
     return () => clearTimeout(t)
   }, [ai, q])
-  const answer = useMemo(() => (ai ? synthesize(q) : undefined), [ai, q])
+  const answer = useMemo(() => (ai ? answerQuestion(q) : undefined), [ai, q])
   const aiState: AiState = ai ? (thinking ? 'thinking' : 'done') : sufficient ? 'ready' : 'disabled'
   const momentsOf = (id: string) => shown.transcript.length ? [] : pool.transcript.filter((h) => h.meeting.id === id)
 
@@ -130,14 +131,14 @@ export default function Search() {
     >
       {/* Fixed bottom padding: the content never reflows when the keyboard comes and goes; the keyboard,
           bar and suggestions simply hover over it (D44). */}
-      <h1 data-testid="search-headline" className="flex h-10 shrink-0 items-center justify-center text-heading-xs font-semibold tracking-heading text-black">Global search</h1>
+      <h1 data-testid="search-headline" className="flex h-4 shrink-0 items-center justify-center text-heading-xs font-semibold tracking-heading text-black">Global search</h1>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[380px]" data-testid="search-body"
         onPointerDown={() => blurSearch()}>
         <div className="pt-1 pb-4">
           <AiSynthesis state={aiState} answer={answer}
             onRun={() => { blurSearch(); set({ ai: '1' }) }} onReset={() => set({ ai: undefined })} />
         </div>
-        {idle ? null : noResults ? (
+        {idle ? null : noResults ? (ai ? null : 
           <EmptyState query={q.trim()} />
         ) : (
           <div className="flex flex-col gap-2">

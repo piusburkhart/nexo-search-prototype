@@ -31,3 +31,6 @@ All in `docs/decisions.md` (D1 to D23). Main ones: Figma content was placeholder
 5. What counts as "New"? We use "within 7 days of the newest item".
 6. Should the Folders and People chips on Home do anything?
 7. Fonts: Brown and Test Domaine Text need licensed files to match exactly.
+
+## Update: AI Synthesis (see docs/demo-prompts.md)
+AI Synthesis is a permanent control at the top of the search results (Figma 75:3668). It answers questions from the meeting notes in `src/data/mock-data.json` with a local engine (`src/ai.ts`, D59); there is no language model behind it. The data now has 17 meetings, 17 transcripts and 18 memos. `docs/demo-prompts.md` lists prompts to try.
