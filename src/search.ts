@@ -40,8 +40,10 @@ export function parseQuery(raw: string, tagWords: string[] = []): Query {
       break
     }
   }
-  const terms = rest.toLowerCase().split(/\s+/)
-    .map((w) => w.replace(/^[?!.,;:"'“”]+|[?!.,;:"'“”]+$/g, '')).filter((w) => w && !tagWords.includes(w))
+  // Tag words and a half-typed word are left out, compared without punctuation ("02.10." = "02.10").
+  const clean = (w: string) => w.toLowerCase().replace(/^[?!.,;:"'“”]+|[?!.,;:"'“”]+$/g, '')
+  const skip = new Set(tagWords.map(clean))
+  const terms = rest.split(/\s+/).map(clean).filter((w) => w && !skip.has(w))
   return { raw, terms, date }
 }
 

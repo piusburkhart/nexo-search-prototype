@@ -422,6 +422,17 @@ test.describe('navigation flow', () => {
     }
   })
 
+  test('the date suggestion keeps its count while the date is typed out', async ({ page }) => {
+    const day = '2026-10-02'
+    const n = mock.meetings.filter((m) => m.startsAt.startsWith(day)).length + mock.memos.filter((m) => m.createdAt.startsWith(day)).length
+      + mock.actions.filter((a) => mock.meetings.find((m) => m.id === a.meetingId)!.startsAt.startsWith(day)).length
+    await openSearch(page)
+    for (const q of ['02.10', '02.10.', '02.10.2', '02.10.26']) {
+      await type(page, q)
+      await expect(page.getByTestId('tag-date'), q).toHaveText(new RegExp(`02\\.10\\.26\\s*${n}$`))
+    }
+  })
+
   test('a day and month complete to the full date: "21.09" suggests 21.09.26', async ({ page }) => {
     await openSearch(page)
     await type(page, '21.09')
