@@ -37,7 +37,7 @@ export function SearchBar({ value, onChange, onClose, tagWords = [], placeholder
   const parts = re ? value.split(re) : [value]
   const text = 'text-heading-xs tracking-heading leading-[24px] whitespace-pre'
   return (
-    <div className="flex items-center gap-3 px-5 pb-6">
+    <div className="flex items-center gap-3 px-5 pb-[max(env(safe-area-inset-bottom),24px)] [html[data-kb=open]_&]:pb-2">
       <label className="flex h-12 min-w-0 flex-1 items-center rounded-pill bg-white px-[19px] shadow-pill">
         <SearchIcon className={`mr-2 size-4 shrink-0 text-gray-600 ${value ? 'hidden' : ''}`} />
         <span className="relative h-6 min-w-0 flex-1">

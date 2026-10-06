@@ -45,7 +45,7 @@ export default function Transcript({ id }: { id: string }) {
         <div className="flex items-center gap-2 rounded-pill bg-white px-4 py-2 shadow-pill">
           <input value={find} onChange={(e) => { setFind(e.target.value); setCursor(0); setPinned(false) }}
             placeholder="Find in transcript" aria-label="Find in transcript" type="search"
-            className="min-w-0 flex-1 bg-transparent py-1.5 text-body-m outline-none [&::-webkit-search-cancel-button]:hidden" />
+            className="min-w-0 flex-1 bg-transparent py-1.5 text-heading-xs outline-none [&::-webkit-search-cancel-button]:hidden" />
           <span className="text-body-s whitespace-nowrap text-gray-700" data-testid="find-count" aria-live="polite">
             {terms.length ? (matches.length ? `${Math.min(cursor, matches.length - 1) + 1} / ${matches.length}` : '0 matches') : ''}
           </span>

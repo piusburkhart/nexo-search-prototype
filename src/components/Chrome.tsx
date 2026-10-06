@@ -1,10 +1,32 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 
-/** Phone-sized stage: full-bleed on phones, framed 402x874 on larger screens (D15). */
+/**
+ * Exposes the on-screen keyboard height as --kb (px) so docked UI can sit right above it.
+ * iOS does not resize the layout viewport for the keyboard, so use the visual viewport.
+ */
+function useKeyboardInset() {
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => {
+      const inset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
+      const open = inset > 80
+      document.documentElement.style.setProperty('--kb', `${open ? inset : 0}px`)
+      document.documentElement.dataset.kb = open ? 'open' : 'closed'
+    }
+    update()
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update) }
+  }, [])
+}
+
+/** Phone-sized stage: full-screen on phones (D15, D24), framed 402x874 on larger screens. */
 export function PhoneFrame({ children }: { children: ReactNode }) {
+  useKeyboardInset()
   return (
-    <div className="flex min-h-dvh items-center justify-center sm:bg-gray-200 sm:p-4">
-      <div className="relative h-dvh w-full max-w-[402px] overflow-hidden bg-gray-50 sm:h-[874px] sm:rounded-[44px] sm:shadow-dock">
+    <div className="sm:flex sm:min-h-dvh sm:items-center sm:justify-center sm:bg-gray-200 sm:p-4">
+      <div className="fixed inset-0 overflow-hidden bg-gray-50 sm:relative sm:inset-auto sm:h-[874px] sm:w-[402px] sm:rounded-[44px] sm:shadow-dock">
         {children}
       </div>
     </div>
@@ -13,7 +35,7 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
 
 export function StatusBar() {
   return (
-    <div className="flex h-[62px] shrink-0 items-center justify-between px-6 pt-[21px] pb-[19px]" aria-hidden="true">
+    <div className="hidden h-[62px] shrink-0 items-center justify-between px-6 pt-[21px] pb-[19px] sm:flex" aria-hidden="true">
       <span className="flex-1 text-center text-[17px] leading-[22px] font-semibold">9:41</span>
       <span className="flex flex-1 items-center justify-center gap-[7px]">
         <svg width="19" height="12" viewBox="0 0 19 12" fill="currentColor"><rect y="8" width="3" height="4" rx="1" /><rect x="5" y="5" width="3" height="7" rx="1" /><rect x="10" y="2.5" width="3" height="9.5" rx="1" /><rect x="15" width="3" height="12" rx="1" /></svg>
@@ -24,10 +46,10 @@ export function StatusBar() {
   )
 }
 
-/** Full-height screen: status bar + scrollable body + optional docked footer. */
+/** Full-height screen: status bar (framed desktop view only) + scrollable body + optional docked footer. */
 export function Screen({ children, dock, bg = 'bg-gray-50' }: { children: ReactNode; dock?: ReactNode; bg?: string }) {
   return (
-    <div className={`absolute inset-0 flex flex-col ${bg}`}>
+    <div className={`absolute inset-0 flex flex-col pt-[max(env(safe-area-inset-top),12px)] sm:pt-0 ${bg}`}>
       <StatusBar />
       {children}
       {dock}

@@ -17,5 +17,13 @@ function Routes() {
 }
 
 export default function App() {
-  return <PhoneFrame><Routes /></PhoneFrame>
+  return (
+    <PhoneFrame>
+      {/* iOS only opens the keyboard for focus() called inside a tap. The Search screen mounts later
+          (hashchange), so the tap focuses this proxy and the real field takes focus over on mount. */}
+      <input id="kb-proxy" aria-hidden="true" tabIndex={-1} readOnly={false}
+        className="pointer-events-none fixed top-0 left-0 size-px opacity-0" />
+      <Routes />
+    </PhoneFrame>
+  )
 }

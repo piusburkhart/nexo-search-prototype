@@ -21,7 +21,7 @@ export default function Home() {
   const hasNew = (k: Filter) => recordings.some((r) => (k === 'all' || r.kind === k) && isNew(r.date))
 
   return (
-    <Screen bg="bg-gray-200" dock={<TabBar onSearch={() => navigate('/search')} />}>
+    <Screen bg="bg-gray-200" dock={<TabBar onSearch={() => { document.getElementById('kb-proxy')?.focus(); navigate('/search') }} />}>
       <header className="flex flex-col gap-5 px-4 pt-[10px] pb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-heading-xl leading-[1.2] tracking-heading">Recordings</h1>

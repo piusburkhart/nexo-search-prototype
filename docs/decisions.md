@@ -26,3 +26,5 @@
 | D21 | Environment | `node_modules` had a broken partial install (vite/rolldown without dist). | Reinstalled with `npm ci`. Added `@playwright/test` (needed for the required tests) and `npm test`. |
 | D22 | Search bar position | Figma docks the bar above the iOS keyboard. | Docked to the bottom of the phone frame; no fake keyboard (D14). |
 | D23 | Tab bar | Figma "Actions" tab goes to an Actions screen that is out of scope (D5). | Tab rendered, inert. |
+| D24 | Mobile | Brief is a 402px phone design; the real phone has its own status bar and keyboard. | Below 640px the fake status bar is hidden (safe-area top padding instead) and the app is fixed full-screen. Tapping search focuses a hidden proxy input inside the tap so iOS opens the keyboard, then the real field takes focus. The search bar sits directly above the keyboard using the visual viewport (`--kb`). Inputs are 16px to avoid iOS zoom. |
+| D25 | iOS form bar | Safari shows a system bar (up/down arrows, checkmark) above the keyboard. | Cannot be removed from a web page. Only a native app or a different input mechanism could avoid it; not attempted. |
