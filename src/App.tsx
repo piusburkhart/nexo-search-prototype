@@ -1,19 +1,16 @@
+import { useState } from 'react'
 import { PhoneFrame } from './components/Chrome'
+import Actions from './screens/Actions'
+import Gate, { isUnlocked } from './screens/Gate'
 import Home from './screens/Home'
 import Search from './screens/Search'
-import Transcript from './screens/Transcript'
-import { MeetingDetail, MemoDetail } from './screens/Details'
 import { useRoute } from './router'
-import Gate, { isUnlocked } from './screens/Gate'
-import { useState } from 'react'
 
 function Routes() {
-  const [screen, id] = useRoute().segments
+  const [screen] = useRoute().segments
   switch (screen) {
     case 'search': return <Search />
-    case 'meeting': return <MeetingDetail id={id} />
-    case 'memo': return <MemoDetail id={id} />
-    case 'transcript': return <Transcript key={id} id={id} />
+    case 'actions': return <Actions />
     default: return <Home />
   }
 }

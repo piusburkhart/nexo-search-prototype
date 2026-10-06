@@ -17,11 +17,10 @@ export default function Home() {
   const list = recordings.filter((r) => filter === 'all' || r.kind === filter)
   const fresh = list.filter((r) => isNew(r.date))
   const earlier = list.filter((r) => !isNew(r.date))
-  const open = (r: (typeof list)[number]) => navigate(`/${r.kind}/${r.item.id}`)
   const hasNew = (k: Filter) => recordings.some((r) => (k === 'all' || r.kind === k) && isNew(r.date))
 
   return (
-    <Screen dock={<TabBar onSearch={() => { anticipateKeyboard(); document.getElementById('kb-proxy')?.focus(); navigate('/search') }} />}>
+    <Screen dock={<TabBar active="recordings" onSearch={() => { anticipateKeyboard(); document.getElementById('kb-proxy')?.focus(); navigate('/search') }} />}>
       <header className="flex flex-col gap-5 px-4 pt-[10px] pb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-heading-xl leading-[1.2] tracking-heading">Recordings</h1>
@@ -41,9 +40,9 @@ export default function Home() {
       </header>
       <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-[130px]">
         {fresh.length > 0 && <SectionLabel>New</SectionLabel>}
-        {fresh.map((r) => <RecordingCard key={r.item.id} rec={r} showNew onOpen={() => open(r)} />)}
+        {fresh.map((r) => <RecordingCard key={r.item.id} rec={r} showNew />)}
         {earlier.length > 0 && <div className="mt-4"><SectionLabel>Earlier</SectionLabel></div>}
-        {earlier.map((r) => <RecordingCard key={r.item.id} rec={r} onOpen={() => open(r)} />)}
+        {earlier.map((r) => <RecordingCard key={r.item.id} rec={r} />)}
       </main>
     </Screen>
   )

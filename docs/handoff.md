@@ -13,7 +13,7 @@ npm test           # Playwright (starts the dev server itself); first run: npx p
 - **Search** (72:1770 to 72:2539): full-screen layer. Idle: folder + latest recordings. Typing: results grouped into Meetings, Memos, Transcript mentions with counts; matches highlighted in titles and snippets; filter tags with counts (green when selected); date recognition (`02.10.26`, `2026-10-02`, `2 Oct 2026`) with a date tag; no-results state.
 - **AI search** (72:2606, 72:2695, 72:2651): "AI Synthesis" offered for question-like queries, a short "Synthesizing" state, then an extractive summary and Content cards.
 - **Transcript** (not in Figma): segments with speaker and mm:ss, opens at the clicked segment with it highlighted, find-in-transcript with "n / total" and next/previous.
-- **Meeting and Memo detail** (not in Figma): the simplest screens that make the flow navigable.
+- **Meeting, memo and transcript pages: removed** (D64). Nothing opens a file any more.
 - Data: `src/data/mock-data.json` only; typed in `src/data/types.ts`. Search logic is a pure module (`src/search.ts`). Hash router (`src/router.ts`), no extra libraries beyond Playwright for tests.
 - Tests: `tests/acceptance.spec.ts` covers the 7 acceptance checks (Lantern, CSV, SSO, pricing, 16 October, swim, budget) plus navigation (home, search, close, detail, transcript, back, chips, tags, date tag, AI flow, find-in-transcript). 16 pass.
 
@@ -34,3 +34,6 @@ All in `docs/decisions.md` (D1 to D23). Main ones: Figma content was placeholder
 
 ## Update: AI Synthesis (see docs/demo-prompts.md)
 AI Synthesis is a permanent control at the top of the search results (Figma 75:3668). It answers questions from the meeting notes in `src/data/mock-data.json` with a local engine (`src/ai.ts`, D59); there is no language model behind it. The data now has 17 meetings, 17 transcripts and 18 memos. `docs/demo-prompts.md` lists prompts to try.
+
+## Update: board 77:4178
+Actions (a third file type, with an Actions tab), three-item sections with unfold links, and transcript cards that carry their meeting. The meeting, memo and transcript pages are gone. AI answers are a short summary with the supporting quotes listed as results below (D63).

@@ -1,5 +1,5 @@
-import { data, dayOf, getMeeting, MONTH_NAMES, firstName } from './data'
-import type { Meeting, Memo, Segment, Transcript } from './data/types'
+import { actionDate, data, dayOf, getMeeting, MONTH_NAMES, firstName, type Recording } from './data'
+import type { Action, Meeting, Memo, Segment, Transcript } from './data/types'
 
 export interface DateFilter { kind: 'day' | 'month' | 'year'; key: string; label: string; text: string }
 export interface Query { raw: string; terms: string[]; date: DateFilter | null }
@@ -52,14 +52,38 @@ export const matchesAll = (text: string, terms: string[]) => {
 export interface TranscriptHit {
   transcript: Transcript; meeting: Meeting; segIndex: number; segment: Segment
 }
-export interface Results { meetings: Meeting[]; memos: Memo[]; transcript: TranscriptHit[] }
-export const emptyResults: Results = { meetings: [], memos: [], transcript: [] }
-export const total = (r: Results) => r.meetings.length + r.memos.length + r.transcript.length
+export interface Results { meetings: Meeting[]; memos: Memo[]; actions: Action[]; transcript: TranscriptHit[] }
+export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [] }
+export const total = (r: Results) => r.meetings.length + r.memos.length + r.actions.length + r.transcript.length
+
+const occurrences = (text: string, terms: string[]) => {
+  const t = text.toLowerCase()
+  return terms.reduce((n, w) => n + (w ? t.split(w).length - 1 : 0), 0)
+}
+/** How relevant a recording is to the terms: a title match counts most, then each mention in the body. */
+export const recordingScore = (rec: Recording, terms: string[]) =>
+  rec.kind === 'meeting'
+    ? occurrences(rec.item.title, terms) * 3 + occurrences(rec.item.summary, terms)
+    : occurrences(rec.item.content, terms)
+const actionScore = (a: Action, terms: string[]) => occurrences(a.title, terms) * 3 + occurrences(getMeeting(a.meetingId)!.title, terms)
+
+/** Transcript hits grouped by meeting, the meetings with the most relevant moments first (Figma 77:4717). */
+export interface TranscriptGroup { meeting: Meeting; hits: TranscriptHit[] }
+export function groupByMeeting(hits: TranscriptHit[]): TranscriptGroup[] {
+  const by = new Map<string, TranscriptGroup>()
+  for (const h of hits) {
+    const g = by.get(h.meeting.id) ?? { meeting: h.meeting, hits: [] }
+    g.hits.push(h)
+    by.set(h.meeting.id, g)
+  }
+  return [...by.values()].sort((a, b) => b.hits.length - a.hits.length || b.meeting.startsAt.localeCompare(a.meeting.startsAt))
+}
 
 /** Every meeting, memo and transcript segment: the pool for tag-only queries and tag counts. */
 export const everything = (): Results => ({
   meetings: data.meetings,
   memos: data.memos,
+  actions: data.actions,
   transcript: data.transcripts.flatMap((transcript) => {
     const meeting = getMeeting(transcript.meetingId)!
     return transcript.segments.map((segment, segIndex) => ({ transcript, meeting, segIndex, segment }))
@@ -84,11 +108,13 @@ export function search(q: Query, applyDate = false): Results {
       })
     }
   }
-  // A meeting and its transcript are one thing (D42): a meeting is a hit if its title/summary or any
-  // moment in its transcript matches.
-  const withMoments = new Set(transcript.map((h) => h.meeting.id))
-  const meetings = data.meetings.filter((m) => fileMatch(m) || withMoments.has(m.id))
-  return { meetings, memos, transcript }
+  const meetings = data.meetings.filter(fileMatch)
+    .sort((a, b) => occurrences(b.title, q.terms) * 3 + occurrences(b.summary, q.terms) - (occurrences(a.title, q.terms) * 3 + occurrences(a.summary, q.terms)))
+  memos.sort((a, b) => occurrences(b.content, q.terms) - occurrences(a.content, q.terms))
+  const actions = data.actions
+    .filter((a) => inDay(actionDate(a)) && matchesAll(a.title, q.terms))
+    .sort((a, b) => actionScore(b, q.terms) - actionScore(a, q.terms))
+  return { meetings, memos, actions, transcript }
 }
 
 /** Count of date-matching recordings for the date tag. */
@@ -97,10 +123,10 @@ export const dateCount = (q: Query) => (q.date ? total({ ...search(q, true), tra
 const STOP = new Set('the a an in on of to and for is are was what why how did do does about we with it be any who when'.split(' '))
 
 /**
- * Last-resort answer: transcript moments that mention the given words, written as prose with time chips.
- * Null when no moment matches.
+ * Last-resort answer: transcript moments that mention the given words. Null when no moment matches.
+ * The summary is short prose; the moments themselves are returned as sources for the results list.
  */
-export function synthesizeFromMoments(terms: string[]): { text: string; time?: string }[] | null {
+export function synthesizeFromMoments(terms: string[]): { parts: { text: string; time?: string }[]; sources: TranscriptHit[] } | null {
   const useful = terms.filter((w) => !STOP.has(w) && w.length > 2)
   const scored: (TranscriptHit & { score: number })[] = []
   for (const t of data.transcripts) {
@@ -111,18 +137,13 @@ export function synthesizeFromMoments(terms: string[]): { text: string; time?: s
     })
   }
   scored.sort((a, b) => b.score - a.score)
-  const hits = scored.slice(0, 3)
-  if (!hits.length) return null
-  const meetings = new Set(hits.map((h) => h.meeting.id)).size
-  const one = meetings === 1
-  const where = one ? `in “${hits[0].meeting.title}”` : `across ${meetings} meetings`
-  return [
-    { text: `I found ${hits.length} relevant moment${hits.length > 1 ? 's' : ''} ${where}.` },
-    ...hits.map((h) => ({
-      text: `${firstName(h.segment.speakerId)}${one ? '' : ` in “${h.meeting.title}”`}: ${h.segment.text}`,
-      time: h.segment.time,
-    })),
-  ]
+  const sources = scored.slice(0, 4)
+  if (!sources.length) return null
+  const first = sources[0]
+  return {
+    sources,
+    parts: [{ text: `The closest mention is from ${firstName(first.segment.speakerId)} in “${first.meeting.title}”: ${first.segment.text}`, time: first.segment.time }],
+  }
 }
 
 /** Short excerpt around the first matching term, for result snippets. */

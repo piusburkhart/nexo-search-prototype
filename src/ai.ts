@@ -1,9 +1,18 @@
 import { data, firstName, MONTH_NAMES } from './data'
 import type { KeyPoint, Meeting } from './data/types'
-import { synthesizeFromMoments } from './search'
+import { synthesizeFromMoments, type TranscriptHit } from './search'
 
 /** A piece of the answer: prose, optionally followed by the transcript time it comes from (Figma 76:4049). */
-export interface AnswerPart { text: string; time?: string; /** Meeting the sentence comes from, shown when an answer spans several. */ source?: string }
+export interface AnswerPart { text: string; time?: string }
+/** A short written answer plus the transcript moments it rests on, which are shown as search results (D63). */
+export interface Answer { parts: AnswerPart[]; sources: TranscriptHit[] }
+
+/** The transcript moment (meeting, start second) as a search hit. */
+function sourceHit(meeting: Meeting, at: number): TranscriptHit | null {
+  const transcript = data.transcripts.find((t) => t.meetingId === meeting.id)
+  const segIndex = transcript?.segments.findIndex((s) => s.start === at) ?? -1
+  return transcript && segIndex >= 0 ? { transcript, meeting, segIndex, segment: transcript.segments[segIndex] } : null
+}
 
 /*
  * Local question answering (D59). There is no language model or network call in this prototype, so the
@@ -88,7 +97,6 @@ const DEMO_TODAY = [...data.meetings.map((m) => m.startsAt), ...data.memos.map((
 const fmt = (t: number) => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`
 const fullMonth = (i: number) => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][i]
 const longDate = (iso: string) => `${+iso.slice(8, 10)} ${fullMonth(+iso.slice(5, 7) - 1)} ${iso.slice(0, 4)}`
-const label = (m: Meeting) => m.title.split(': ')[0]
 
 interface Note extends KeyPoint { meeting: Meeting; score: number; order: number; covered: number }
 
@@ -137,31 +145,30 @@ const jaccard = (a: string, b: string) => {
   return inter / (x.size + y.size - inter || 1)
 }
 
-/** Write the notes as prose: one sentence per note, each followed by its time chip, grouped by meeting. */
-function compose(lead: string, notes: Note[], intent: Intent): AnswerPart[] {
-  const parts: AnswerPart[] = [{ text: lead }]
-  const meetings = new Set(notes.map((n) => n.meeting.id)).size
-  let current = ''
+/** Write the notes as one short paragraph: sentences with their time chips, no per-meeting labels. */
+function compose(lead: string, notes: Note[], intent: Intent): Answer {
+  const parts: AnswerPart[] = lead ? [{ text: lead }] : []
+  const sources: TranscriptHit[] = []
   for (const n of notes) {
     let text = n.text
-    if (intent.why && n.why) text += ` Reason: ${n.why}`
+    if (intent.why && n.why) text += ` ${n.why}`
     if (intent.owner && n.owner && !text.startsWith(firstName(n.owner))) text = `${firstName(n.owner)}: ${text}`
     if (n.due) {
       const day = +n.due.slice(8, 10)
       if (!text.includes(`${day} ${fullMonth(+n.due.slice(5, 7) - 1)}`) && !text.includes(`${day} ${MONTH_NAMES[+n.due.slice(5, 7) - 1]}`)) text += ` (${longDate(n.due)})`
     }
-    const source = meetings > 1 && n.meeting.id !== current ? label(n.meeting) : undefined
-    if (source) current = n.meeting.id
-    parts.push({ text, time: fmt(n.at), source })
+    parts.push({ text, time: fmt(n.at) })
+    const hit = sourceHit(n.meeting, n.at)
+    if (hit && !sources.some((h) => h.meeting.id === hit.meeting.id && h.segment.start === hit.segment.start)) sources.push(hit)
   }
-  return parts
+  return { parts, sources }
 }
 
 /**
  * Answer a question from the meeting notes. Returns null when nothing relevant is known, so the caller can
  * say so instead of guessing.
  */
-export function answerQuestion(raw: string): AnswerPart[] | null {
+export function answerQuestion(raw: string): Answer | null {
   const q = words(raw.replace(/\?/g, ' ')).join(' ')
   const intent = readIntent(raw.toLowerCase())
   // Both "when is the deadline we decided to" and "what did we agree" ask for a kind of note; the stronger kind wins.
@@ -178,8 +185,8 @@ export function answerQuestion(raw: string): AnswerPart[] | null {
       .filter((x) => x.hit > 0).sort((a, b) => b.hit - a.hit)[0]
     if (named) {
       const sentences = named.m.summary.match(/[^.]+\.?/g)?.map((x) => x.trim()).filter(Boolean) ?? [named.m.summary]
-      return [{ text: `Here is the summary of “${named.m.title}”.` }, ...sentences.map((text) => ({ text })),
-        ...(named.m.keyPoints[0] ? [{ text: 'The meeting starts here.', time: fmt(named.m.keyPoints[0].at) }] : [])]
+      const start = named.m.keyPoints[0] && sourceHit(named.m, named.m.keyPoints[0].at)
+      return { parts: [{ text: `Here is the summary of “${named.m.title}”. ${sentences.join(' ')}`, time: start ? start.segment.time : undefined }], sources: start ? [start] : [] }
     }
   }
 
@@ -217,13 +224,12 @@ export function answerQuestion(raw: string): AnswerPart[] | null {
 
   if (final.length) {
     const one = final.length === 1
-    const lead = intent.why ? (one ? 'Here is why.' : 'Here is why, as discussed in the meetings.')
-      : intent.deadline ? (one ? 'This is the deadline.' : 'These are the deadlines that were set.')
-      : intent.owner ? 'This is who is responsible.'
-      : intent.decision ? 'This is what was agreed.'
-      : intent.risk ? 'These are the concerns that were raised.'
-      : intent.metric ? 'These are the numbers.'
-      : 'This is what the meetings say.'
+    const lead = intent.why ? ''
+      : intent.deadline ? (one ? '' : 'These are the dates that were set.')
+      : intent.owner ? ''
+      : intent.decision ? 'Here is what was agreed.'
+      : intent.risk ? 'These concerns came up.'
+      : ''
     return compose(lead, final, intent)
   }
 

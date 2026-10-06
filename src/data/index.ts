@@ -41,6 +41,15 @@ export const recordings: Recording[] = [
   ...data.memos.map((item): Recording => ({ kind: 'memo', item, date: item.createdAt })),
 ].sort((a, b) => b.date.localeCompare(a.date))
 
+/** Actions inherit the date of their meeting; the newest few are tagged "New". */
+export const actionDate = (a: { meetingId: string }) => getMeeting(a.meetingId)!.startsAt
+export const isNewAction = (a: { meetingId: string }) => {
+  const t = (s: string) => new Date(dayOf(s)).getTime()
+  return t(recordings[0].date) - t(actionDate(a)) <= 3 * 86400000
+}
+/** Actions, newest meeting first. */
+export const actions = [...data.actions].sort((a, b) => actionDate(b).localeCompare(actionDate(a)))
+
 /** "New" = within 7 days of the newest recording (deterministic, no clock). */
 export const isNew = (date: string) => {
   const t = (s: string) => new Date(dayOf(s)).getTime()

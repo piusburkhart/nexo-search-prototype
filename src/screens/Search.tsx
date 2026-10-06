@@ -2,15 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { Screen } from '../components/Chrome'
 import { EmptyState, SectionLabel } from '../components/Atoms'
 import { AiSynthesis, type AiState } from '../components/AiSynthesis'
-import { HitCard, RecordingCard } from '../components/Cards'
+import { ActionPill, RecordingCard, TranscriptCard, UnfoldLink } from '../components/Cards'
 import { SearchBar, TagCard, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
-import { CalendarIcon, MicIcon, ChatIcon, WaveIcon } from '../components/Icons'
+import { CalendarIcon, CheckCircleIcon, MicIcon, ChatIcon, WaveIcon } from '../components/Icons'
 import { navigate, useRoute } from '../router'
 import { answerQuestion } from '../ai'
-import { dateCompletions, dateCount, emptyResults, everything, parseQuery, search } from '../search'
+import { dateCompletions, dateCount, emptyResults, everything, groupByMeeting, parseQuery, recordingScore, search } from '../search'
+import type { Recording } from '../data'
 
-type Tag = 'meetings' | 'memos' | 'transcript'
-const LABEL: Record<Tag, string> = { meetings: 'Meetings', memos: 'Memos', transcript: 'Transcript' }
+type Tag = 'meetings' | 'memos' | 'actions' | 'transcript'
+const LABEL: Record<Tag, string> = { meetings: 'Meetings', memos: 'Memos', actions: 'Actions', transcript: 'Transcript' }
 const wordsOf = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u)
 
 const isSearchField = (t: EventTarget | null) => t instanceof HTMLInputElement && t.getAttribute('aria-label') === 'Search'
@@ -45,18 +46,31 @@ export default function Search() {
   const hasTerms = query.terms.length > 0 || dateOn
   const pool = useMemo(() => (hasTerms ? search(query, dateOn) : everything()), [query, dateOn, hasTerms])
   const idle = !hasTerms && !type // nothing to search yet
-  const show = { meetings: !type || type === 'meetings', memos: !type || type === 'memos', transcript: type === 'transcript' }
+  const show = { meetings: !type || type === 'meetings', memos: !type || type === 'memos', actions: !type || type === 'actions', transcript: !type || type === 'transcript' }
   const shown = idle ? emptyResults : {
     meetings: show.meetings ? pool.meetings : emptyResults.meetings,
     memos: show.memos ? pool.memos : emptyResults.memos,
+    actions: show.actions ? pool.actions : emptyResults.actions,
     transcript: show.transcript ? pool.transcript : emptyResults.transcript,
   }
-  const noResults = !idle && shown.meetings.length + shown.memos.length + shown.transcript.length === 0
+  const noResults = !idle && shown.meetings.length + shown.memos.length + shown.actions.length + shown.transcript.length === 0
+
+  // Sections show only the 3 most relevant elements of a type, the rest unfolds with a link (Figma 77:4178).
+  const LIMIT = 3
+  const [unfolded, setUnfolded] = useState<Record<string, boolean>>({})
+  useEffect(() => setUnfolded({}), [q, type, dateParam])
+  const toggle = (k: string) => setUnfolded((u) => ({ ...u, [k]: !u[k] }))
+  const recs: Recording[] = [
+    ...shown.meetings.map((item): Recording => ({ kind: 'meeting', item, date: item.startsAt })),
+    ...shown.memos.map((item): Recording => ({ kind: 'memo', item, date: item.createdAt })),
+  ].sort((a, b) => recordingScore(b, query.terms) - recordingScore(a, query.terms) || b.date.localeCompare(a.date))
+  const groups = groupByMeeting(shown.transcript)
+  const hiddenHits = groups.slice(LIMIT).reduce((n, g) => n + g.hits.length, 0)
   const hasText = !!q.trim()
 
   // Suggestions, in one stacked card. Each row knows what picking it does.
-  const ICON: Record<Tag, React.ReactNode> = { meetings: <MicIcon />, memos: <ChatIcon />, transcript: <WaveIcon /> }
-  const counts: Record<Tag, number> = { meetings: pool.meetings.length, memos: pool.memos.length, transcript: pool.transcript.length }
+  const ICON: Record<Tag, React.ReactNode> = { meetings: <MicIcon />, memos: <ChatIcon />, actions: <CheckCircleIcon />, transcript: <WaveIcon /> }
+  const counts: Record<Tag, number> = { meetings: pool.meetings.length, memos: pool.memos.length, actions: pool.actions.length, transcript: pool.transcript.length }
   type Row = TagRow & { pick: () => void }
   const typeRow = (t: Tag): Row => ({
     id: t, label: LABEL[t], count: counts[t], icon: ICON[t],
@@ -111,7 +125,7 @@ export default function Search() {
   }, [ai, q])
   const answer = useMemo(() => (ai ? answerQuestion(q) : undefined), [ai, q])
   const aiState: AiState = ai ? (thinking ? 'thinking' : 'done') : sufficient ? 'ready' : 'disabled'
-  const momentsOf = (id: string) => shown.transcript.length ? [] : pool.transcript.filter((h) => h.meeting.id === id)
+  const sourceGroups = answer && aiState === 'done' ? groupByMeeting(answer.sources) : []
 
   return (
     <Screen
@@ -138,33 +152,28 @@ export default function Search() {
           <AiSynthesis state={aiState} answer={answer}
             onRun={() => { blurSearch(); set({ ai: '1' }) }} onReset={() => set({ ai: undefined })} />
         </div>
-        {idle ? null : noResults ? (ai ? null : 
-          <EmptyState query={q.trim()} />
-        ) : (
-          <div className="flex flex-col gap-2">
-            {shown.meetings.length > 0 && <section className="flex flex-col gap-2" data-testid="group-meetings">
-              <SectionLabel>Meetings · {shown.meetings.length}</SectionLabel>
-              {shown.meetings.map((m) => (
-                <div key={m.id} className="flex flex-col gap-2">
-                  <RecordingCard rec={{ kind: 'meeting', item: m, date: m.startsAt }} terms={query.terms} withSnippet />
-                  {/* a meeting is its transcript: matching moments sit under it */}
-                  {momentsOf(m.id).length > 0 && (
-                    <div className="ml-4 flex flex-col gap-2">
-                      {momentsOf(m.id).map((h) => <HitCard key={h.segment.start} hit={h} terms={query.terms} nested />)}
-                    </div>
-                  )}
-                </div>
-              ))}
+        {sourceGroups.length > 0 && (
+          <section className="mb-4 flex flex-col gap-2" data-testid="ai-sources">
+            <SectionLabel>Sources</SectionLabel>
+            {sourceGroups.map((g) => <TranscriptCard key={g.meeting.id} group={g} terms={[]} />)}
+          </section>
+        )}
+        {idle ? null : noResults ? (ai ? null : <EmptyState query={q.trim()} />) : (
+          <div className="flex flex-col gap-6">
+            {recs.length > 0 && <section className="flex flex-col gap-2" data-testid="group-recordings">
+              <SectionLabel>Recordings</SectionLabel>
+              {(unfolded.rec ? recs : recs.slice(0, LIMIT)).map((r) => <RecordingCard key={r.item.id} rec={r} terms={query.terms} withSnippet />)}
+              {recs.length > LIMIT && <UnfoldLink open={!!unfolded.rec} label={`${recs.length - LIMIT} more recordings might also be relevant`} onClick={() => toggle('rec')} />}
             </section>}
-            {shown.memos.length > 0 && <section className="mt-4 flex flex-col gap-2" data-testid="group-memos">
-              <SectionLabel>Memos · {shown.memos.length}</SectionLabel>
-              {shown.memos.map((m) => (
-                <RecordingCard key={m.id} rec={{ kind: 'memo', item: m, date: m.createdAt }} terms={query.terms} withSnippet />
-              ))}
+            {shown.actions.length > 0 && <section className="flex flex-col gap-2" data-testid="group-actions">
+              <SectionLabel>Actions</SectionLabel>
+              {(unfolded.act ? shown.actions : shown.actions.slice(0, LIMIT)).map((a) => <ActionPill key={a.id} action={a} terms={query.terms} />)}
+              {shown.actions.length > LIMIT && <UnfoldLink open={!!unfolded.act} label="Show all actions" onClick={() => toggle('act')} />}
             </section>}
-            {shown.transcript.length > 0 && <section className="flex flex-col gap-2" data-testid="group-transcript">
-              <SectionLabel>Transcript mentions · {shown.transcript.length}</SectionLabel>
-              {shown.transcript.map((h) => <HitCard key={h.transcript.id + h.segment.start} hit={h} terms={query.terms} />)}
+            {groups.length > 0 && <section className="flex flex-col gap-2" data-testid="group-transcript">
+              <SectionLabel>Summary &amp; Transcription</SectionLabel>
+              {(unfolded.tr ? groups : groups.slice(0, LIMIT)).map((g) => <TranscriptCard key={g.meeting.id} group={g} terms={query.terms} />)}
+              {groups.length > LIMIT && <UnfoldLink open={!!unfolded.tr} label={`${hiddenHits} more content might also be relevant`} onClick={() => toggle('tr')} />}
             </section>}
           </div>
         )}

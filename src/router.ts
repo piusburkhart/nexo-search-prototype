@@ -26,8 +26,3 @@ export function navigate(path: string, params?: Record<string, string | undefine
   if (replace) window.location.replace(h)
   else window.location.hash = h
 }
-
-export function goBack() {
-  if (window.history.length > 1) window.history.back()
-  else navigate('/')
-}

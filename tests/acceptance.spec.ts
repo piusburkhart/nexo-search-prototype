@@ -14,14 +14,15 @@ const openSearch = async (page: Page) => {
 const type = async (page: Page, q: string) => page.getByRole('searchbox', { name: 'Search', exact: true }).fill(q)
 const hits = (page: Page) => page.getByTestId('transcript-hit')
 
-test('1. "Lantern" returns meetings, memos and transcript moments', async ({ page }) => {
+test('1. "Lantern" returns recordings, actions and transcript moments', async ({ page }) => {
   await openSearch(page)
   await type(page, 'Lantern')
-  await expect(page.getByTestId('group-meetings')).toContainText('Meetings · ')
-  await expect(page.getByTestId('group-memos')).toBeVisible()
-  // a meeting is its transcript: matching moments are nested under the meeting
-  await expect(page.getByTestId('group-meetings').getByTestId('transcript-hit').first()).toBeVisible()
-  await expect(page.getByTestId('group-meetings').locator('mark').first()).toBeVisible()
+  await expect(page.getByTestId('group-recordings')).toBeVisible()
+  await page.getByTestId('group-recordings').getByTestId('unfold').click()
+  await expect(page.getByTestId('group-recordings').getByTestId('memo-card').first()).toBeVisible() // memos sit with the recordings
+  await expect(page.getByTestId('group-actions').getByTestId('action-item').first()).toBeVisible()
+  await expect(page.getByTestId('group-transcript').getByTestId('transcript-hit').first()).toBeVisible()
+  await expect(page.getByTestId('group-transcript').locator('mark').first()).toBeVisible()
 })
 
 test('2. "CSV" finds where it was discussed (speaker, time, text); results do not navigate', async ({ page }) => {
@@ -36,31 +37,22 @@ test('2. "CSV" finds where it was discussed (speaker, time, text); results do no
   await expect(page.getByRole('button', { name: /CSV/ })).toHaveCount(0)
 })
 
-test('transcript opens at the right segment (direct link)', async ({ page }) => {
-  await page.goto('/#/transcript/t01?seg=48&q=csv')
-  const active = page.locator('[data-seg-start][data-active]')
-  await expect(active).toHaveCount(1)
-  await expect(active).toContainText('worried about the CSV import step')
-  await expect(active).toBeInViewport()
-  await expect(page.getByTestId('find-count')).toContainText('/')
-})
-
 test('3. the reason SSO was postponed is findable', async ({ page }) => {
   await openSearch(page)
   await type(page, 'SSO')
   await expect(hits(page).filter({ hasText: 'defer SSO to version two. It would blow the 14 November launch date' })).toBeVisible()
-  await expect(page.getByTestId('group-meetings')).toContainText('deferred to version two to protect the 14 November launch')
+  await expect(page.getByTestId('group-recordings')).toContainText('SSO') // the meetings that mention it are recordings
 })
 
 test('4. "pricing" hits Brightside Dental and Kestrel', async ({ page }) => {
   await openSearch(page)
   await type(page, 'pricing')
-  await expect(hits(page)).toHaveCount(3)
+  const groups = page.getByTestId('transcript-group')
+  await expect(groups.filter({ hasText: 'Customer Interview: Brightside Dental' })).toHaveCount(1)
+  await expect(groups.filter({ hasText: 'Vendor Call: Kestrel Analytics' })).toHaveCount(1)
   await expect(hits(page).filter({ hasText: 'Is that a dealbreaker for pricing' })).toHaveCount(1) // Brightside 02:58
   await expect(hits(page).filter({ hasText: 'but pricing matters' })).toHaveCount(1) // Brightside 03:10
   await expect(hits(page).filter({ hasText: 'What about pricing?' })).toHaveCount(1) // Kestrel
-  for (const title of ['Customer Interview: Brightside Dental', 'Vendor Call: Kestrel Analytics'])
-    await expect(page.getByTestId('meeting-card').filter({ hasText: title })).toHaveCount(1)
 })
 
 test('5. Kestrel signing deadline (16 October) is findable', async ({ page }) => {
@@ -72,7 +64,7 @@ test('5. Kestrel signing deadline (16 October) is findable', async ({ page }) =>
 test('6. "swim" finds the personal swim pickup memo', async ({ page }) => {
   await openSearch(page)
   await type(page, 'swim')
-  const memo = page.getByTestId('group-memos').getByTestId('memo-card')
+  const memo = page.getByTestId('group-recordings').getByTestId('memo-card')
   await expect(memo).toHaveCount(1)
   await expect(memo).toContainText('Astrid from swimming')
   await expect(memo).not.toContainText('Groceries and swim') // memos have no headline
@@ -91,40 +83,85 @@ test('search: multi-word is AND, case-insensitive, group counts', async ({ page 
   await type(page, 'csv IMPORT')
   await expect(hits(page).first()).toBeVisible()
   await page.getByTestId('tag-transcript').click()
-  await expect(page.getByTestId('group-transcript')).toContainText('Transcript mentions · ')
-  await expect(page.getByTestId('group-meetings')).toHaveCount(0)
+  await expect(page.getByTestId('group-transcript')).toBeVisible()
+  await expect(page.getByTestId('group-recordings')).toHaveCount(0)
   await page.getByTestId('clear-search').click()
   await type(page, 'csv zzzz')
   await expect(page.getByTestId('empty-state')).toBeVisible()
 })
 
-test('find in transcript: count, next and previous', async ({ page }) => {
-  await page.goto('/#/transcript/t01?q=csv')
-  const count = page.getByTestId('find-count')
-  await expect(count).toHaveText(/1 \/ \d+/)
-  const total = Number((await count.textContent())!.split('/')[1])
-  expect(total).toBeGreaterThan(1)
-  await page.getByRole('button', { name: 'Next match' }).click()
-  await expect(count).toHaveText(`2 / ${total}`)
-  await page.getByRole('button', { name: 'Previous match' }).click()
-  await page.getByRole('button', { name: 'Previous match' }).click()
-  await expect(count).toHaveText(`${total} / ${total}`)
-  await expect(page.locator('[data-seg-start][data-active]')).toBeInViewport()
-})
-
-// Figma flow frame: Home -> Search -> tags -> date -> AI -> content; detail screens and back
 test.describe('navigation flow', () => {
-  test('home -> search -> close -> home; home card -> meeting -> transcript -> back', async ({ page }) => {
+  test('home -> search -> close -> home; cards are not links', async ({ page }) => {
     await openSearch(page)
     await page.getByRole('button', { name: 'Close search' }).click()
     await expect(page.getByRole('heading', { name: 'Recordings' })).toBeVisible()
-    await page.getByTestId('meeting-card').filter({ hasText: 'Vendor Call: Kestrel Analytics' }).click()
-    await expect(page.getByTestId('detail-title')).toHaveText('Vendor Call: Kestrel Analytics')
-    await page.getByTestId('open-transcript').click()
-    await expect(page.locator('[data-seg-start]').first()).toBeVisible()
-    await page.getByRole('button', { name: 'Back' }).click()
-    await page.getByRole('button', { name: 'Back' }).click()
+    await page.getByTestId('meeting-card').first().click()
+    await page.getByTestId('memo-card').first().click({ force: true })
+    await expect(page).toHaveURL(/localhost:5173\/(#\/)?$/) // nothing opened
     await expect(page.getByRole('heading', { name: 'Recordings' })).toBeVisible()
+  })
+
+  test('the meeting, memo and transcript pages no longer exist', async ({ page }) => {
+    for (const route of ['#/meeting/m04', '#/memo/memo01', '#/transcript/t01']) {
+      await page.goto('/' + route)
+      await expect(page.getByRole('heading', { name: 'Recordings' })).toBeVisible() // falls back to Home
+      await expect(page.locator('[data-seg-start]')).toHaveCount(0)
+    }
+  })
+
+  test('Actions tab lists every action, each attached to a meeting', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Actions' }).click()
+    const items = page.getByTestId('action-item')
+    await expect(items).toHaveCount(mock.actions.length)
+    await expect(items.first()).toContainText(mock.meetings.find((m) => m.id === mock.actions.find((a) => a.meetingId === 'm16')!.meetingId)!.title)
+    await expect(page.getByText('New', { exact: true }).first()).toBeVisible()
+    await page.getByRole('button', { name: 'Recordings', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Recordings' })).toBeVisible()
+  })
+
+  test('only the 3 most relevant of a type are shown, the rest unfolds with a link', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'csv')
+    const recs = page.getByTestId('group-recordings')
+    await expect(recs.locator('[data-testid$="-card"]')).toHaveCount(3)
+    await recs.getByTestId('unfold').click()
+    expect(await recs.locator('[data-testid$="-card"]').count()).toBeGreaterThan(3)
+    await recs.getByTestId('unfold').click() // "Show less"
+    await expect(recs.locator('[data-testid$="-card"]')).toHaveCount(3)
+    const acts = page.getByTestId('group-actions')
+    await expect(acts.getByTestId('action-item')).toHaveCount(3)
+    await expect(acts.getByTestId('unfold')).toHaveText('Show all actions')
+    await acts.getByTestId('unfold').click()
+    expect(await acts.getByTestId('action-item').count()).toBeGreaterThan(3)
+  })
+
+  test('transcript results carry their meeting: one quote in a card, several quotes boxed in one card', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'csv')
+    const groups = page.getByTestId('transcript-group')
+    const many = groups.filter({ has: page.locator('[data-testid="transcript-hit"] ~ [data-testid="transcript-hit"]') }).first()
+    await expect(many).toContainText('Lantern Design Review: Onboarding Flow') // meeting name
+    await expect(many).toContainText('24 Sep 2026') // metadata
+    expect(await many.getByTestId('transcript-hit').count()).toBeGreaterThan(1)
+    await type(page, 'pricing')
+    const brightside = page.getByTestId('transcript-group').filter({ hasText: 'Customer Interview: Brightside Dental' })
+    await expect(brightside.getByTestId('transcript-hit')).toHaveCount(2)
+    await type(page, 'patient')
+    const single = page.getByTestId('transcript-group')
+    await expect(single).toHaveCount(1)
+    await expect(single.getByTestId('transcript-hit')).toHaveCount(1)
+    await expect(single).toContainText('Customer Interview: Brightside Dental')
+  })
+
+  test('actions are searchable and Actions is a type tag', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'kestrel')
+    await expect(page.getByTestId('group-actions')).toContainText('Kestrel')
+    await page.getByTestId('tag-actions').click()
+    await expect(page.getByTestId('tag-word')).toHaveText('actions')
+    await expect(page.getByTestId('group-recordings')).toHaveCount(0)
+    await expect(page.getByTestId('group-actions')).toBeVisible()
   })
 
   test('home filter chips', async ({ page }) => {
@@ -222,13 +259,14 @@ test.describe('navigation flow', () => {
     await page.getByTestId('tag-memos').click()
     await expect(page.getByTestId('tag-word')).toHaveText('memos') // grey background on the word
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('Lantern memos ')
-    await expect(page.getByTestId('group-meetings')).toHaveCount(0)
-    await expect(page.getByTestId('group-memos')).toBeVisible()
+    await expect(page.getByTestId('meeting-card')).toHaveCount(0)
+    await expect(page.getByTestId('memo-card').first()).toBeVisible()
+    await expect(page.getByTestId('group-actions')).toHaveCount(0)
     // you chose memos: no other type is suggested any more
-    for (const t of ['meetings', 'memos', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
+    for (const t of ['meetings', 'memos', 'actions', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
     await type(page, 'Lantern ') // deleting the word removes the tag
     await expect(page.getByTestId('tag-memos')).toBeVisible()
-    await expect(page.getByTestId('group-meetings')).toBeVisible()
+    await expect(page.getByTestId('group-actions')).toBeVisible()
   })
 
   test('autocomplete: "transcr" leaves only Transcript and completes the word', async ({ page }) => {
@@ -316,13 +354,13 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('tag-date')).toContainText('2026')
     await page.getByTestId('tag-date').click()
     await expect(page.getByTestId('tag-word')).toHaveText('2026')
-    await expect(page.getByTestId('meeting-card')).toHaveCount(mock.meetings.length)
-    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.length)
+    await expect(page.getByTestId('tag-meetings')).toContainText(String(mock.meetings.length)) // counts follow the data
+    await expect(page.getByTestId('tag-memos')).toContainText(String(mock.memos.length))
     await type(page, 'september')
     await expect(page.getByTestId('tag-date')).toContainText('September 2026')
     await page.getByTestId('tag-date').click()
-    await expect(page.getByTestId('meeting-card')).toHaveCount(mock.meetings.filter((m) => m.startsAt.startsWith('2026-09')).length)
-    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.filter((m) => m.createdAt.startsWith('2026-09')).length)
+    await expect(page.getByTestId('tag-meetings')).toContainText(String(mock.meetings.filter((m) => m.startsAt.startsWith('2026-09')).length))
+    await expect(page.getByTestId('tag-memos')).toContainText(String(mock.memos.filter((m) => m.createdAt.startsWith('2026-09')).length))
     await type(page, '16 October') // day + month name stays plain text
     await expect(page.getByTestId('tag-date')).toHaveCount(0)
   })
@@ -342,16 +380,10 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('ai-result')).toContainText('SSO')
     await expect(firstResult).toBeVisible() // results stay, now lower
     expect((await firstResult.boundingBox())!.y).toBeGreaterThan(before)
-    await page.getByTestId('transcript-hit').first().click()
-    await expect(page).toHaveURL(/#\/search/) // cards do not navigate (D26)
+    // the answer is a summary; its quotes are search results below it (D63)
+    await expect(page.getByTestId('ai-sources').getByTestId('transcript-hit').first()).toBeVisible()
     await page.getByTestId('ai-synthesis').click() // tapping again hides the answer
     await expect(ai).toHaveAttribute('data-state', 'ready')
-  })
-
-  test('memo detail links to related meeting', async ({ page }) => {
-    await page.goto('/#/memo/memo06')
-    await page.getByRole('button', { name: 'Vendor Call: Kestrel Analytics' }).click()
-    await expect(page.getByTestId('detail-title')).toHaveText('Vendor Call: Kestrel Analytics')
   })
 
   test('picking a tag keeps the search field focused; tapping results blurs it', async ({ page }) => {
@@ -424,6 +456,20 @@ test.describe('AI synthesis answers', () => {
       if (!question.startsWith('What happened')) await expect(page.getByTestId('time-chip').first()).toHaveText(/\d\d:\d\d/)
       await box.focus()
     }
+  })
+
+  test('the answer is a summary, never a list of meetings with quotes; quotes are results below', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'What did we agree about the feature?')
+    await page.getByTestId('ai-synthesis').click()
+    const answer = page.getByTestId('ai-result')
+    await expect(answer).toBeVisible()
+    const text = (await answer.textContent()) ?? ''
+    for (const m of mock.meetings) expect(text, `answer names meeting ${m.title}`).not.toContain(m.title)
+    expect(await answer.locator('[class*="block"]').count()).toBe(0) // one paragraph, no list
+    const sources = page.getByTestId('ai-sources')
+    await expect(sources.getByTestId('transcript-group').first()).toContainText('Lantern Design Review')
+    expect(await sources.getByTestId('transcript-hit').count()).toBeGreaterThanOrEqual(3)
   })
 
   test('says it cannot help when the meetings do not know', async ({ page }) => {

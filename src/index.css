@@ -16,7 +16,6 @@
   --color-accent-orange: #ff6d0f;
   --color-new: #b1ff99;
   --color-highlight: rgba(177, 255, 153, 0.5);
-  --color-match: #b1ff99;
 
   /* Brown and Test Domaine Text are licensed; see docs/decisions.md D12 */
   --font-sans: "Brown", "Avenir Next", "Helvetica Neue", system-ui, sans-serif;

@@ -1,16 +1,19 @@
 import { useState, type ReactNode } from 'react'
 import { anticipateKeyboard } from './Chrome'
+import { navigate } from '../router'
 import { ChecklistIcon, CloseIcon, RecordIcon, SearchIcon } from './Icons'
 
 /** Home bottom bar (Figma 72:1749): tabs pill + search button. */
-export function TabBar({ onSearch }: { onSearch: () => void }) {
+export function TabBar({ active, onSearch }: { active: 'recordings' | 'actions'; onSearch: () => void }) {
+  const tab = (id: 'recordings' | 'actions') =>
+    `flex w-[112px] flex-col items-center gap-0.5 rounded-pill px-2 py-1.5 text-[10px] leading-3 font-medium ${active === id ? 'bg-gray-975 text-white' : 'text-gray-975'}`
   return (
     <nav className="absolute inset-x-0 bottom-0 h-[98px] bg-gradient-to-t from-gray-50 via-gray-50/90 to-transparent">
       <div className="absolute top-[30px] left-5 flex h-[62px] -translate-y-3.5 items-center rounded-pill bg-white p-1 shadow-dock">
-        <button className="flex w-[112px] flex-col items-center gap-0.5 rounded-pill bg-gray-975 px-2 py-1.5 text-[10px] leading-3 font-medium text-white">
+        <button onClick={() => navigate('/')} className={tab('recordings')} aria-current={active === 'recordings' ? 'page' : undefined}>
           <RecordIcon className="size-6" />Recordings
         </button>
-        <button className="flex w-[112px] flex-col items-center gap-0.5 px-2 py-1.5 text-[10px] leading-3 font-medium text-gray-975">
+        <button onClick={() => navigate('/actions')} className={tab('actions')} aria-current={active === 'actions' ? 'page' : undefined}>
           <ChecklistIcon className="size-6" />Actions
         </button>
       </div>

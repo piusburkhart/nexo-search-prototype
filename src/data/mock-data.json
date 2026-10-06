@@ -2965,5 +2965,145 @@
         }
       ]
     }
+  ],
+  "actions": [
+    {
+      "id": "a01",
+      "title": "Send Elin the list of beta candidates",
+      "kind": "task",
+      "meetingId": "m02"
+    },
+    {
+      "id": "a02",
+      "title": "Finalize the five-step onboarding screens",
+      "kind": "task",
+      "meetingId": "m04"
+    },
+    {
+      "id": "a03",
+      "title": "Estimate the CSV import work",
+      "kind": "task",
+      "meetingId": "m04"
+    },
+    {
+      "id": "a04",
+      "title": "Write acceptance criteria for the Lantern tickets",
+      "kind": "task",
+      "meetingId": "m05"
+    },
+    {
+      "id": "a05",
+      "title": "Send Karin a thank-you and the example CSV file",
+      "kind": "mail",
+      "meetingId": "m06"
+    },
+    {
+      "id": "a06",
+      "title": "Offer Brightside Dental a setup call",
+      "kind": "calendar",
+      "meetingId": "m06"
+    },
+    {
+      "id": "a07",
+      "title": "Send the DPA and a written quote to Kestrel",
+      "kind": "mail",
+      "meetingId": "m07"
+    },
+    {
+      "id": "a08",
+      "title": "Draft the Kestrel tracking plan",
+      "kind": "task",
+      "meetingId": "m07"
+    },
+    {
+      "id": "a09",
+      "title": "Harden the CSV import for large files",
+      "kind": "task",
+      "meetingId": "m08"
+    },
+    {
+      "id": "a10",
+      "title": "Write the help-centre articles for CSV import and checklist",
+      "kind": "task",
+      "meetingId": "m09"
+    },
+    {
+      "id": "a11",
+      "title": "Book the customer launch webinar for 18 November",
+      "kind": "calendar",
+      "meetingId": "m09"
+    },
+    {
+      "id": "a12",
+      "title": "Schedule the go or no-go meeting for 5 November",
+      "kind": "calendar",
+      "meetingId": "m10"
+    },
+    {
+      "id": "a13",
+      "title": "Send a catch up email about the scope freeze",
+      "kind": "mail",
+      "meetingId": "m10"
+    },
+    {
+      "id": "a14",
+      "title": "Email the twelve beta customers about the 21 October start",
+      "kind": "mail",
+      "meetingId": "m11"
+    },
+    {
+      "id": "a15",
+      "title": "Rewrite the CSV error messages",
+      "kind": "task",
+      "meetingId": "m12"
+    },
+    {
+      "id": "a16",
+      "title": "Write the support macros for CSV errors",
+      "kind": "task",
+      "meetingId": "m13"
+    },
+    {
+      "id": "a17",
+      "title": "Plan two training sessions for the new support agents",
+      "kind": "calendar",
+      "meetingId": "m13"
+    },
+    {
+      "id": "a18",
+      "title": "Add a short VAT explanation to the onboarding",
+      "kind": "task",
+      "meetingId": "m14"
+    },
+    {
+      "id": "a19",
+      "title": "Ask Kestrel for the sub-processor list",
+      "kind": "mail",
+      "meetingId": "m15"
+    },
+    {
+      "id": "a20",
+      "title": "Sign the Kestrel contract on 15 October",
+      "kind": "calendar",
+      "meetingId": "m15"
+    },
+    {
+      "id": "a21",
+      "title": "Send the beta test plan to Elin",
+      "kind": "mail",
+      "meetingId": "m16"
+    },
+    {
+      "id": "a22",
+      "title": "Set up the daily bug triage at 09:15",
+      "kind": "task",
+      "meetingId": "m16"
+    },
+    {
+      "id": "a23",
+      "title": "Set up the weekly onboarding report",
+      "kind": "task",
+      "meetingId": "m17"
+    }
   ]
 }

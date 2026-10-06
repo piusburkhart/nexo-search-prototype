@@ -25,6 +25,8 @@ export interface Memo {
 }
 export interface Segment { start: number; time: string; speakerId: string; text: string }
 export interface Transcript { id: string; meetingId: string; language: string; note: string; segments: Segment[] }
+/** A to-do created from a meeting (Figma board 77:4178). The icon follows the kind: calendar, mail or task. */
+export interface Action { id: string; title: string; kind: 'calendar' | 'mail' | 'task'; meetingId: string }
 export interface MockData {
   user: Person & { company: string; timezone: string }
   project: Project
@@ -32,4 +34,5 @@ export interface MockData {
   meetings: Meeting[]
   memos: Memo[]
   transcripts: Transcript[]
+  actions: Action[]
 }
