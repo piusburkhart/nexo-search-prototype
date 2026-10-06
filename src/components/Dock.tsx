@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { CalendarIcon, ChecklistIcon, CloseIcon, FilterIcon, RecordIcon, SearchIcon } from './Icons'
 
 /** Home bottom bar (Figma 72:1749): tabs pill + search button. */
@@ -21,28 +21,37 @@ export function TabBar({ onSearch }: { onSearch: () => void }) {
   )
 }
 
-export interface InputChip { id: string; label: string }
+const escRe = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-/** Search field + close button (Figma 72:2686). Selected tags sit inside the field as grey chips (72:2345). */
-export function SearchBar({ value, onChange, onClose, chips = [], onRemoveChip, placeholder = 'Search anything' }: {
+/**
+ * Search field + close button (Figma 72:2686). A selected tag is a word in the text with a grey
+ * background (72:2345). The input is transparent over a mirror layer that paints that background.
+ */
+export function SearchBar({ value, onChange, onClose, tagWords = [], placeholder = 'Search anything' }: {
   value: string; onChange: (v: string) => void; onClose: () => void
-  chips?: InputChip[]; onRemoveChip?: (id: string) => void; placeholder?: string
+  tagWords?: string[]; placeholder?: string
 }) {
+  const mirror = useRef<HTMLDivElement>(null)
+  const sync = (el: HTMLInputElement) => { if (mirror.current) mirror.current.scrollLeft = el.scrollLeft }
+  const re = tagWords.length ? new RegExp(`(?<![\\p{L}\\p{N}])(${tagWords.map(escRe).join('|')})(?![\\p{L}\\p{N}])`, 'giu') : null
+  const parts = re ? value.split(re) : [value]
+  const text = 'text-heading-xs tracking-heading leading-[24px] whitespace-pre'
   return (
     <div className="flex items-center gap-3 px-5 pb-6">
-      <label className="flex min-h-12 min-w-0 flex-1 items-center rounded-pill bg-white px-[19px] shadow-pill">
-        <SearchIcon className={`mr-2 size-4 shrink-0 text-gray-600 ${value || chips.length ? 'hidden' : ''}`} />
-        <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-1 py-2">
+      <label className="flex h-12 min-w-0 flex-1 items-center rounded-pill bg-white px-[19px] shadow-pill">
+        <SearchIcon className={`mr-2 size-4 shrink-0 text-gray-600 ${value ? 'hidden' : ''}`} />
+        <span className="relative h-6 min-w-0 flex-1">
+          <div ref={mirror} aria-hidden="true" className={`pointer-events-none absolute inset-0 overflow-hidden ${text}`}>
+            {parts.map((p, i) => i % 2
+              ? <mark key={i} data-testid="tag-word" className="rounded-tag bg-gray-200 text-gray-975 shadow-[0_0_0_3px_var(--color-gray-200)]">{p}</mark>
+              : <span key={i}>{p}</span>)}
+          </div>
           <input autoFocus value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-            aria-label="Search" type="search" enterKeyHint="search"
-            onKeyDown={(e) => { if (e.key === 'Backspace' && !value && chips.length) onRemoveChip?.(chips[chips.length - 1].id) }}
-            style={{ width: value ? `${value.length + 1}ch` : chips.length ? '2ch' : '100%' }}
-            className="min-w-[2ch] max-w-full bg-transparent text-heading-xs tracking-heading outline-none placeholder:text-gray-600 [&::-webkit-search-cancel-button]:hidden" />
-          {chips.map((c) => (
-            <button key={c.id} type="button" onClick={() => onRemoveChip?.(c.id)} data-testid={`chip-${c.id}`}
-              aria-label={`Remove ${c.label} filter`}
-              className="rounded-tag bg-gray-200 px-2 py-1 text-heading-xs leading-[1.2] tracking-heading">{c.label}</button>
-          ))}
+            aria-label="Search" type="search" enterKeyHint="search" onScroll={(e) => sync(e.currentTarget)}
+            onKeyUp={(e) => sync(e.currentTarget)} onSelect={(e) => sync(e.currentTarget)}
+            className={`absolute inset-0 w-full bg-transparent p-0 outline-none placeholder:text-gray-600 [&::-webkit-search-cancel-button]:hidden ${text.replace('whitespace-pre', '')} ${value ? 'caret-gray-975' : ''}`}
+            style={value ? { WebkitTextFillColor: 'transparent' } : undefined} />
+          {/* typed text is always drawn by the mirror layer so tag words can carry a background */}
         </span>
         <FilterIcon className="ml-2 h-[11px] w-[17px] shrink-0 text-gray-600" />
       </label>

@@ -13,7 +13,10 @@ type Tag = 'meetings' | 'memos' | 'transcript'
 export default function Search() {
   const { params } = useRoute()
   const q = params.get('q') ?? ''
-  const tags = (params.get('tag') ?? '').split(',').filter((t): t is Tag => ['meetings', 'memos', 'transcript'].includes(t))
+  const LABEL: Record<Tag, string> = { meetings: 'Meetings', memos: 'Memos', transcript: 'Transcript' }
+  const wordsOf = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u)
+  // A tag is selected while its word is still in the text (deleting the word removes the tag).
+  const tags = (params.get('tag') ?? '').split(',').filter((t): t is Tag => t in LABEL && wordsOf(q).includes(t))
   const dateParam = params.get('date')
   const ai = params.get('ai') === '1'
   const set = (next: Record<string, string | undefined>) =>
@@ -21,7 +24,8 @@ export default function Search() {
 
   const detected = useMemo(() => parseQuery(q).date, [q])
   const dateOn = !!detected && dateParam === detected.key
-  const query = useMemo(() => parseQuery(q, dateOn), [q, dateOn])
+  const tagWords = tags.map((t) => t)
+  const query = useMemo(() => parseQuery(q, dateOn, tagWords), [q, dateOn, tags.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
   const all = useMemo(() => search(query, dateOn), [query, dateOn])
   const on = (t: Tag) => !tags.length || tags.includes(t)
   const results = useMemo(() => ({
@@ -31,14 +35,21 @@ export default function Search() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [all, tags.join(',')])
   const dCount = dateCount(parseQuery(q))
-  const toggleTag = (t: Tag) => set({ tag: (tags.includes(t) ? tags.filter((x) => x !== t) : [...tags, t]).join(',') || undefined })
+  // Picking a tag writes its word into the text (replacing a partly typed word) and selects it.
+  const pickTag = (t: Tag) => {
+    const m = q.match(/(\S+)$/)
+    const partial = m && q.includes(' ') && LABEL[t].toLowerCase().startsWith(m[1].toLowerCase()) ? m[1] : null
+    const base = partial ? q.slice(0, q.length - partial.length) : q + (q && !q.endsWith(' ') ? ' ' : '')
+    set({ q: `${base}${t} `, tag: [...tags, t].join(',') })
+  }
   const TAGS: (TagRow & { id: Tag })[] = [
     { id: 'meetings', label: 'Meetings', count: all.meetings.length, icon: <MicIcon /> },
     { id: 'memos', label: 'Memos', count: all.memos.length, icon: <ChatIcon /> },
     { id: 'transcript', label: 'Transcript', count: all.transcript.length, icon: <WaveIcon /> },
   ]
-  const rows = TAGS.filter((t) => !tags.includes(t.id) && t.count > 0)
-  const chips = TAGS.filter((t) => tags.includes(t.id)).map(({ id, label }) => ({ id, label }))
+  const last = q.includes(' ') ? q.split(' ').pop()!.toLowerCase() : ''
+  const prefixed = TAGS.filter((t) => !tags.includes(t.id) && t.count > 0 && last && t.label.toLowerCase().startsWith(last))
+  const rows = prefixed.length ? prefixed : TAGS.filter((t) => !tags.includes(t.id) && t.count > 0)
   const showDate = !!detected && !dateOn
   const idle = !q.trim()
   const open = (kind: string, id: string) => navigate(`/${kind}/${id}`)
@@ -72,11 +83,10 @@ export default function Search() {
                 </button>
               )}
               {showDate && <DatePill label={detected!.label} count={dCount} onClick={() => set({ date: detected!.key })} />}
-              {rows.length > 0 && <TagCard rows={rows} onPick={(id) => toggleTag(id as Tag)} />}
+              {rows.length > 0 && <TagCard rows={rows} onPick={(id) => pickTag(id as Tag)} />}
             </div>
           )}
-          <SearchBar value={q} onChange={(v) => set({ q: v, ai: undefined, tag: v ? tags.join(',') || undefined : undefined })}
-            chips={chips} onRemoveChip={(id) => toggleTag(id as Tag)}
+          <SearchBar value={q} onChange={(v) => set({ q: v, ai: undefined, tag: tags.filter((t) => wordsOf(v).includes(t)).join(',') || undefined })} tagWords={tags}
             onClose={() => navigate('/')} placeholder={ai ? 'Ask a question' : 'Search anything'} />
         </div>
       }

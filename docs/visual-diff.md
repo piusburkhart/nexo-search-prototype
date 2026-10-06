@@ -16,7 +16,7 @@ Compared at 402x874 against `docs/screens/*.png` (Figma exports, 1x). Two rounds
 
 ## Search with query (`search-actions.png`, tags frames)
 - Figma shows a tag popover floating above the field with Actions / Folder / Recording. Ours: the same stacked card with Meetings / Memos / Transcript (+ date pill, AI pill) (D6).
-- Selected tags are grey chips inside the input as in Figma, but placed after the typed text rather than inline between words.
+- Selected tag words get a grey background inline in the input, as in Figma. Padding is drawn with a box-shadow, so exact spacing may differ by a pixel or two.
 - Results list (grouped cards with snippets) has no Figma frame.
 
 ## AI search (`ai-offer.png`, `ai-synthesizing.png`, `ai-result.png`)

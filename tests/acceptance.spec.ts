@@ -117,22 +117,34 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('group-meetings')).toBeVisible()
   })
 
-  test('filter tags: stacked card; selected tag moves into the input as a chip', async ({ page }) => {
+  test('filter tags: stacked card; picked tag becomes a highlighted word in the text', async ({ page }) => {
     await openSearch(page)
     await type(page, 'Lantern')
     await expect(page.getByTestId('tag-meetings')).toBeVisible()
     await expect(page.getByTestId('tag-memos')).toBeVisible() // stacked in one card
     await page.getByTestId('tag-memos').click()
     await expect(page.getByTestId('tag-memos')).toHaveCount(0) // gone from suggestions
-    await expect(page.getByTestId('chip-memos')).toHaveText('Memos') // grey chip in prompt
+    await expect(page.getByTestId('tag-word')).toHaveText('memos') // grey background on the word
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('Lantern memos ')
     await expect(page.getByTestId('group-meetings')).toHaveCount(0)
     await expect(page.getByTestId('group-memos')).toBeVisible()
     await page.getByTestId('tag-meetings').click() // multiple tags combine
+    await expect(page.getByTestId('tag-word')).toHaveCount(2)
     await expect(page.getByTestId('group-meetings')).toBeVisible()
     await expect(page.getByTestId('group-transcript')).toHaveCount(0)
-    await page.getByTestId('chip-memos').click() // chip removes the filter, tag returns
+    await type(page, 'Lantern meetings ') // deleting the word removes the tag
     await expect(page.getByTestId('tag-memos')).toBeVisible()
     await expect(page.getByTestId('group-memos')).toHaveCount(0)
+  })
+
+  test('typing a partial tag word filters suggestions and completes it', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'Lantern tr')
+    await expect(page.getByTestId('tag-transcript')).toBeVisible()
+    await expect(page.getByTestId('tag-memos')).toHaveCount(0)
+    await page.getByTestId('tag-transcript').click()
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('Lantern transcript ')
+    await expect(page.getByTestId('tag-word')).toHaveText('transcript')
   })
 
   test('date tag is recognised and filters to that day', async ({ page }) => {

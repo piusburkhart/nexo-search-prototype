@@ -29,7 +29,7 @@ const DATE_RES: [RegExp, (m: RegExpMatchArray) => DateFilter][] = [
  * Exact days are always removed from the terms; months and years only once the
  * date filter is applied, so "october" / "2026" still work as plain words.
  */
-export function parseQuery(raw: string, applyDate = false): Query {
+export function parseQuery(raw: string, applyDate = false, tagWords: string[] = []): Query {
   let rest = raw
   let date: DateFilter | null = null
   for (const [re, f] of DATE_RES) {
@@ -41,7 +41,7 @@ export function parseQuery(raw: string, applyDate = false): Query {
     }
   }
   const terms = rest.toLowerCase().split(/\s+/)
-    .map((w) => w.replace(/^[?!.,;:"'“”]+|[?!.,;:"'“”]+$/g, '')).filter(Boolean)
+    .map((w) => w.replace(/^[?!.,;:"'“”]+|[?!.,;:"'“”]+$/g, '')).filter((w) => w && !tagWords.includes(w))
   return { raw, terms, date }
 }
 
