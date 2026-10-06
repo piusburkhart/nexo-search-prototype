@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { anticipateKeyboard } from './Chrome'
 import { ChecklistIcon, CloseIcon, RecordIcon, SearchIcon } from './Icons'
 
 /** Home bottom bar (Figma 72:1749): tabs pill + search button. */
@@ -57,6 +58,7 @@ export function SearchBar({ value, onChange, onClose, onClear, tagWords = [], pl
           </div>
           <input autoFocus value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
             aria-label="Search" type="search" enterKeyHint="search"
+            onTouchStart={(e) => { if (document.activeElement !== e.currentTarget) anticipateKeyboard() }}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() } }} onScroll={(e) => sync(e.currentTarget)}
             onKeyUp={(e) => sync(e.currentTarget)} onSelect={(e) => sync(e.currentTarget)}
             className={`absolute inset-x-1.5 top-2 h-6 w-[calc(100%-12px)] bg-transparent p-0 outline-none placeholder:text-gray-600 [&::-webkit-search-cancel-button]:hidden ${text.replace('whitespace-pre', '')} ${value ? 'caret-gray-975' : ''}`}

@@ -220,13 +220,38 @@ test.describe('navigation flow', () => {
     await type(page, 'Lantern 02.10.26')
     const tag = page.getByTestId('tag-date')
     await expect(tag).toContainText('2 Oct 2026')
-    await expect(page.getByTestId('tag-memos')).toBeVisible() // same card as the type tags
+    await expect(page.getByTestId('tag-memos')).toHaveCount(0) // completing a date: only the date is suggested
     await expect(page.getByTestId('meeting-card')).not.toHaveCount(2)
     await tag.click()
     await expect(tag).toHaveCount(0)
     await expect(page.getByTestId('tag-word')).toHaveText('02.10.26')
     await expect(page.getByTestId('meeting-card')).toHaveCount(2) // m07, m08 on 2 Oct
     await expect(page.getByTestId('memo-card')).toHaveCount(0)
+  })
+
+  test('a partly typed year or month completes to a date tag, and only that is suggested', async ({ page }) => {
+    await openSearch(page)
+    await type(page, '20')
+    await expect(page.getByTestId('tag-date')).toContainText('2026')
+    for (const t of ['meetings', 'memos', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
+    await expect(page.getByTestId('ai-synthesis')).toHaveCount(0)
+    await page.getByTestId('tag-date').click()
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('2026 ')
+    await expect(page.getByTestId('tag-word')).toHaveText('2026')
+    await expect(page.getByTestId('tag-meetings')).toBeVisible() // after selecting, more suggestions return
+    await type(page, 'lantern sep')
+    await expect(page.getByTestId('tag-date')).toContainText('September 2026')
+    await page.getByTestId('tag-date').click()
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('lantern September 2026 ')
+    await expect(page.getByTestId('tag-word')).toHaveText('September 2026')
+  })
+
+  test('no pointless type tag: one type of result offers AI synthesis instead', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'lantern project ')
+    await expect(page.getByTestId('meeting-card')).toHaveCount(1)
+    for (const t of ['meetings', 'memos', 'transcript']) await expect(page.getByTestId(`tag-${t}`)).toHaveCount(0)
+    await expect(page.getByTestId('ai-synthesis')).toBeVisible()
   })
 
   test('typing a year or month suggests it as a tag', async ({ page }) => {

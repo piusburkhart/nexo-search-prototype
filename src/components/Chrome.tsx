@@ -1,31 +1,62 @@
 import { useEffect, type ReactNode } from 'react'
 
 /**
- * Mobile keyboard handling. iOS does not resize the layout viewport for the keyboard; it pans the
- * visual viewport instead, which would push the whole page up. So:
- *  - the frame is translated by the pan offset, so the content stays where it was;
- *  - --kb is the keyboard height inside the frame, so docked UI can sit right above it.
+ * Mobile keyboard handling (D47).
+ * iOS slides the whole page up when a focused field would end up under the keyboard. To keep the
+ * content still, the search bar is moved to where the keyboard will end *before* the field takes
+ * focus (anticipateKeyboard), so iOS has nothing to reveal. --kb is the keyboard height, so docked UI
+ * sits right above it; the content itself never depends on it.
  */
+const KB_KEY = 'nexo-kb'
+const isPhone = () => window.matchMedia('(max-width: 639px) and (pointer: coarse)').matches
+let pendingUntil = 0
+let updateKeyboard = () => {}
+
+const rememberedKb = () => {
+  try { const v = Number(localStorage.getItem(KB_KEY)); if (v > 80) return v } catch { /* ignore */ }
+  return Math.round(window.innerHeight * 0.45) // first time: typical iPhone keyboard + accessory bar
+}
+
+/** Call synchronously in a tap that will focus the search field. */
+export function anticipateKeyboard() {
+  if (!isPhone() || document.documentElement.dataset.kb === 'open') return
+  pendingUntil = Date.now() + 1500
+  document.documentElement.style.setProperty('--kb', `${rememberedKb()}px`)
+  document.documentElement.dataset.kb = 'pending'
+  setTimeout(() => updateKeyboard(), 1600) // give up if the keyboard never came
+}
+
 function useKeyboardInset() {
   useEffect(() => {
     const vv = window.visualViewport
-    const phone = window.matchMedia('(max-width: 639px)')
     if (!vv) return
+    const root = document.documentElement
     const update = () => {
       const frame = document.getElementById('phone-frame')
-      const root = document.documentElement
-      if (frame && !phone.matches) frame.style.transform = ''
-      if (!frame || !phone.matches) { root.style.setProperty('--kb', '0px'); root.dataset.kb = 'closed'; return }
-      frame.style.transform = `translateY(${Math.round(vv.offsetTop)}px)`
+      if (!frame || !isPhone()) { root.style.setProperty('--kb', '0px'); root.dataset.kb = 'closed'; return }
       const inset = Math.max(0, Math.round(frame.offsetHeight - vv.height))
-      const open = inset > 80
-      root.style.setProperty('--kb', `${open ? inset : 0}px`)
-      root.dataset.kb = open ? 'open' : 'closed'
+      if (inset > 80) {
+        root.style.setProperty('--kb', `${inset}px`)
+        root.dataset.kb = 'open'
+        pendingUntil = 0
+        try { localStorage.setItem(KB_KEY, String(inset)) } catch { /* ignore */ }
+      } else if (Date.now() > pendingUntil) {
+        root.style.setProperty('--kb', '0px')
+        root.dataset.kb = 'closed'
+      }
     }
+    // Safety net: if iOS still scrolls the page, put it straight back.
+    const unscroll = () => { if (isPhone() && (window.scrollY || vv.offsetTop)) window.scrollTo(0, 0) }
+    updateKeyboard = update
     update()
     vv.addEventListener('resize', update)
-    vv.addEventListener('scroll', update)
-    return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update) }
+    vv.addEventListener('scroll', unscroll)
+    window.addEventListener('scroll', unscroll)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', unscroll)
+      window.removeEventListener('scroll', unscroll)
+    }
   }, [])
 }
 

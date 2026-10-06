@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Screen } from '../components/Chrome'
+import { Screen, anticipateKeyboard } from '../components/Chrome'
 import { Chip, SectionLabel } from '../components/Atoms'
 import { RecordingCard } from '../components/Cards'
 import { TabBar } from '../components/Dock'
@@ -21,7 +21,7 @@ export default function Home() {
   const hasNew = (k: Filter) => recordings.some((r) => (k === 'all' || r.kind === k) && isNew(r.date))
 
   return (
-    <Screen tone="gray-200" dock={<TabBar onSearch={() => { document.getElementById('kb-proxy')?.focus(); navigate('/search') }} />}>
+    <Screen tone="gray-200" dock={<TabBar onSearch={() => { anticipateKeyboard(); document.getElementById('kb-proxy')?.focus(); navigate('/search') }} />}>
       <header className="flex flex-col gap-5 px-4 pt-[10px] pb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-heading-xl leading-[1.2] tracking-heading">Recordings</h1>

@@ -5,7 +5,7 @@ import { HitCard, RecordingCard } from '../components/Cards'
 import { SearchBar, TagCard, keepFocus, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
 import { CalendarIcon, MicIcon, ChatIcon, SparkleIcon, WaveIcon } from '../components/Icons'
 import { navigate, useRoute } from '../router'
-import { dateCount, emptyResults, everything, looksLikeQuestion, parseQuery, search, synthesize } from '../search'
+import { dateCompletions, dateCount, emptyResults, everything, looksLikeQuestion, parseQuery, search, synthesize } from '../search'
 
 type Tag = 'meetings' | 'memos' | 'transcript'
 const LABEL: Record<Tag, string> = { meetings: 'Meetings', memos: 'Memos', transcript: 'Transcript' }
@@ -25,9 +25,17 @@ export default function Search() {
   const set = (next: Record<string, string | undefined>) =>
     navigate('/search', { q, tag: type ?? undefined, date: dateParam ?? undefined, ...next }, true)
 
-  // Autocomplete: the word being typed is "partial" while it is a prefix of a tag word.
+  // Autocomplete (D48): while a word is being typed (no space after it yet), the suggestions only
+  // complete that word: a type tag it is the start of, or a date it could become. Such a word is not
+  // searched for until it is finished.
   const lastWord = q.endsWith(' ') ? '' : (q.match(/(\S+)$/)?.[1] ?? '')
-  const partial = !type && lastWord && (Object.keys(LABEL) as Tag[]).some((t) => t.startsWith(lastWord.toLowerCase())) ? lastWord : ''
+  const before = q.slice(0, q.length - lastWord.length)
+  const rawDate = useMemo(() => parseQuery(q).date, [q])
+  const dateAtEnd = !!rawDate && dateParam !== rawDate.key && !!lastWord && q.trimEnd().endsWith(rawDate.text)
+  const typeCompletions = !type && lastWord ? (Object.keys(LABEL) as Tag[]).filter((t) => t.startsWith(lastWord.toLowerCase())) : []
+  const dateCompletionList = !lastWord ? [] : dateAtEnd ? [rawDate!] : dateCompletions(lastWord, before)
+  const partial = typeCompletions.length || dateCompletionList.length ? lastWord : ''
+
   const skip = [type, partial.toLowerCase()].filter((w): w is string => !!w)
   const query = useMemo(() => parseQuery(q, skip), [q, skip.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
   const detected = query.date
@@ -44,25 +52,37 @@ export default function Search() {
   const noResults = !idle && shown.meetings.length + shown.memos.length + shown.transcript.length === 0
   const hasText = !!q.trim()
 
-  // Suggestions: type tags (until one is chosen) and a date tag, in one stacked card.
-  const typeRows: TagRow[] = type ? [] : [
-    { id: 'meetings', label: 'Meetings', count: pool.meetings.length, icon: <MicIcon /> },
-    { id: 'memos', label: 'Memos', count: pool.memos.length, icon: <ChatIcon /> },
-    { id: 'transcript', label: 'Transcript', count: pool.transcript.length, icon: <WaveIcon /> },
-  ].filter((r) => r.count > 0 && (!partial || r.id.startsWith(partial.toLowerCase())))
-  const dateRow: TagRow[] = detected && !dateOn && !partial
-    ? [{ id: 'date', label: detected.label, count: dateCount(query), icon: <CalendarIcon /> }] : []
-  const rows = [...typeRows, ...dateRow]
-
-  // Picking a type completes the word being typed (or appends the tag word) and selects it.
-  const pick = (id: string) => {
-    if (id === 'date') set({ date: detected!.key })
-    else {
-      const base = partial ? q.slice(0, q.length - partial.length) : q + (q && !q.endsWith(' ') ? ' ' : '')
-      set({ q: `${base}${id} `, tag: id })
-    }
-    refocusSearch()
+  // Suggestions, in one stacked card. Each row knows what picking it does.
+  const ICON: Record<Tag, React.ReactNode> = { meetings: <MicIcon />, memos: <ChatIcon />, transcript: <WaveIcon /> }
+  const counts: Record<Tag, number> = { meetings: pool.meetings.length, memos: pool.memos.length, transcript: pool.transcript.length }
+  type Row = TagRow & { pick: () => void }
+  const typeRow = (t: Tag): Row => ({
+    id: t, label: LABEL[t], count: counts[t], icon: ICON[t],
+    pick: () => {
+      const base = partial ? before : q + (q && !q.endsWith(' ') ? ' ' : '')
+      set({ q: `${base}${t} `, tag: t })
+    },
+  })
+  const dateRow = (d: NonNullable<typeof detected>, i: number, replacePartial: boolean): Row => ({
+    id: i ? `date-${i}` : 'date', label: d.label, icon: <CalendarIcon />,
+    count: dateCount({ raw: q, terms: query.terms, date: d }),
+    pick: () => set({ q: replacePartial ? `${before}${d.text} ` : q.endsWith(' ') ? q : `${q} `, date: d.key }),
+  })
+  let rows: Row[]
+  if (partial) {
+    rows = [
+      ...typeCompletions.map(typeRow).filter((r) => r.count > 0),
+      ...dateCompletionList.map((d, i) => dateRow(d, i, !dateAtEnd)),
+    ]
+  } else {
+    // A type tag is only worth suggesting when the results mix more than one type.
+    const types = type ? [] : (Object.keys(LABEL) as Tag[]).filter((t) => counts[t] > 0)
+    rows = [
+      ...(types.length >= 2 && !idle ? types.map(typeRow) : []),
+      ...(detected && !dateOn ? [dateRow(detected, 0, false)] : []),
+    ]
   }
+  const pick = (id: string) => { rows.find((r) => r.id === id)?.pick(); refocusSearch() }
   const tagWords = [type, dateOn ? detected!.text : null].filter((w): w is string => !!w)
 
   // Suggestions follow the keyboard: they are only shown while the search field has focus.
@@ -86,8 +106,9 @@ export default function Search() {
   }, [ai, q])
   const synth = useMemo(() => (ai ? synthesize(q) : null), [ai, q])
 
-  // AI is offered when a keyword search cannot answer: no results, or a question-like query (D33)
-  const showAiPill = hasText && !ai && !idle && (noResults || (hasTerms && looksLikeQuestion(q)))
+  // AI is the fallback suggestion (D33): offered whenever there is nothing else to suggest, when
+  // keyword search finds nothing, or when the query reads like a question.
+  const showAiPill = hasText && !ai && (rows.length === 0 || noResults || (hasTerms && looksLikeQuestion(q)))
   const momentsOf = (id: string) => shown.transcript.length ? [] : pool.transcript.filter((h) => h.meeting.id === id)
 
   return (

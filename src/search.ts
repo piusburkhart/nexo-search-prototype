@@ -136,3 +136,27 @@ export const looksLikeQuestion = (raw: string) => {
   const words = raw.trim().toLowerCase().split(/\s+/).filter(Boolean)
   return raw.trim().endsWith('?') || words.length >= 4 || (words.length >= 2 && ASK.has(words[0]))
 }
+
+/** Every day that has a recording, for date autocompletion. */
+const RECORDING_DAYS = [...data.meetings.map((m) => dayOf(m.startsAt)), ...data.memos.map((m) => dayOf(m.createdAt))]
+
+/**
+ * Dates a partly typed word could become (D48): digits complete to years ("20" -> 2026), letters to
+ * months ("sep" -> September 2026). Only dates that have recordings are offered. A month name right
+ * after a day number ("16 Oct") is left alone.
+ */
+export function dateCompletions(word: string, before: string): DateFilter[] {
+  const w = word.toLowerCase()
+  if (/^\d{1,4}$/.test(w)) {
+    const years = [...new Set(RECORDING_DAYS.map((d) => d.slice(0, 4)))].filter((y) => y.startsWith(w)).sort()
+    return years.map((y) => ({ ...year(+y), text: y }))
+  }
+  if (/^\p{L}{3,}$/u.test(w) && !/\d{1,2}\s*$/.test(before)) {
+    const months = [...new Set(RECORDING_DAYS.map((d) => d.slice(0, 7)))].sort()
+    return months
+      .map((k) => month(+k.slice(0, 4), +k.slice(5, 7)))
+      .filter((m) => m.label.toLowerCase().startsWith(w))
+      .map((m) => ({ ...m, text: m.label }))
+  }
+  return []
+}
