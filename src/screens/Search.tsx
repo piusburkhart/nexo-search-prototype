@@ -62,7 +62,8 @@ export default function Search() {
   const noResults = !idle && total(shown) === 0
 
   // Sections show only the 3 most relevant elements of a type, the rest unfolds with a link (Figma 77:4178).
-  const LIMIT = 3
+  // With a type tag picked there is only one section, and it shows everything.
+  const LIMIT = type ? Infinity : 3
   const [unfolded, setUnfolded] = useState<Record<string, boolean>>({})
   useEffect(() => setUnfolded({}), [q, type, dateParam])
   const toggle = (k: string) => setUnfolded((u) => ({ ...u, [k]: !u[k] }))

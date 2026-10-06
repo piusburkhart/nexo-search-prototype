@@ -191,6 +191,18 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('ai-result')).toContainText(`“${f.name}” folder holds`)
   })
 
+  test('a type tag shows all of that type, not just the first three', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'memo')
+    await page.getByTestId('tag-memos').click()
+    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.length)
+    await expect(page.getByTestId('unfold')).toHaveCount(0)
+    await type(page, 'nexo ')
+    await page.getByTestId('tag-memos').click()
+    await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.filter((m) => m.projectId === 'proj-nexo' || /nexo/i.test(m.content)).length)
+    await expect(page.getByTestId('unfold')).toHaveCount(0)
+  })
+
   test('headline "Global search" is centred, black and regular weight; AI button is 56x40', async ({ page }) => {
     await openSearch(page)
     const h = page.getByTestId('search-headline')
