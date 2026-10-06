@@ -5,7 +5,7 @@ import { ChecklistIcon, CloseIcon, RecordIcon, SearchIcon } from './Icons'
 /** Home bottom bar (Figma 72:1749): tabs pill + search button. */
 export function TabBar({ onSearch }: { onSearch: () => void }) {
   return (
-    <nav className="absolute inset-x-0 bottom-0 h-[98px] bg-gradient-to-t from-gray-200 via-gray-200/90 to-transparent">
+    <nav className="absolute inset-x-0 bottom-0 h-[98px] bg-gradient-to-t from-gray-50 via-gray-50/90 to-transparent">
       <div className="absolute top-[30px] left-5 flex h-[62px] -translate-y-3.5 items-center rounded-pill bg-white p-1 shadow-dock">
         <button className="flex w-[112px] flex-col items-center gap-0.5 rounded-pill bg-gray-975 px-2 py-1.5 text-[10px] leading-3 font-medium text-white">
           <RecordIcon className="size-6" />Recordings
@@ -65,10 +65,10 @@ export function SearchBar({ value, onChange, onClose, onClear, tagWords = [], pl
         <SearchIcon className={`mr-2 size-4 shrink-0 text-gray-600 ${value ? 'hidden' : ''}`} />
         {/* padded, clipping box: tag backgrounds may extend past the text without being cut off */}
         <span className="relative -mx-1.5 -my-2 h-10 min-w-0 flex-1 overflow-hidden">
-          <div aria-hidden="true" className={`pointer-events-none absolute inset-x-1.5 top-2 h-6 ${text}`}>
+          <div aria-hidden="true" className={`pointer-events-none absolute inset-x-1.5 top-2 h-6 text-transparent ${text}`}>
             <div style={{ transform: `translateX(${-scrollX}px)` }}>
               {parts.map((p, i) => i % 2
-                ? <mark key={i} data-testid="tag-word" className="rounded-tag bg-gray-200 text-gray-975 shadow-[0_0_0_3px_var(--color-gray-200)]">{p}</mark>
+                ? <mark key={i} data-testid="tag-word" className="rounded-tag bg-gray-200 text-transparent shadow-[0_0_0_2px_var(--color-gray-200)]">{p}</mark>
                 : <span key={i}>{p}</span>)}
             </div>
           </div>
@@ -76,9 +76,10 @@ export function SearchBar({ value, onChange, onClose, onClear, tagWords = [], pl
             aria-label="Search" type="search" enterKeyHint="search"
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() } }} onScroll={(e) => sync(e.currentTarget)}
             onKeyUp={(e) => sync(e.currentTarget)} onSelect={(e) => sync(e.currentTarget)}
-            className={`absolute inset-x-1.5 top-2 h-6 w-[calc(100%-12px)] bg-transparent p-0 outline-none placeholder:text-gray-600 [&::-webkit-search-cancel-button]:hidden ${text.replace('whitespace-pre', '')} ${value ? 'caret-gray-975' : ''}`}
-            style={value ? { WebkitTextFillColor: 'transparent' } : undefined} />
-          {/* typed text is always drawn by the mirror layer so tag words can carry a background */}
+            className={`absolute inset-x-1.5 top-2 h-6 w-[calc(100%-12px)] bg-transparent p-0 outline-none placeholder:text-gray-600 [&::-webkit-search-cancel-button]:hidden ${text.replace('whitespace-pre', '')} `}
+            />
+          {/* The input draws the text; the mirror layer behind it only paints the tag backgrounds, so a
+              rendering problem there can never hide what was typed (D57). */}
         </span>
         {value && (
           <button type="button" onClick={onClear} onMouseDown={keepFocus} aria-label="Clear search" data-testid="clear-search"

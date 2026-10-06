@@ -133,9 +133,45 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('memo-card')).toHaveCount(10)
   })
 
+  test('headline "Global search" is centred, black and bold; AI button is 56x40', async ({ page }) => {
+    await openSearch(page)
+    const h = page.getByTestId('search-headline')
+    await expect(h).toHaveText('Global search')
+    await expect(h).toHaveCSS('color', 'rgb(0, 0, 0)')
+    await expect(h).toHaveCSS('font-weight', '600')
+    await expect(h).toHaveCSS('font-size', '16px')
+    await expect(h).toHaveCSS('justify-content', 'center')
+    const b = (await page.getByTestId('ai-synthesis').boundingBox())!
+    expect([Math.round(b.width), Math.round(b.height)]).toEqual([56, 40])
+  })
+
+  test('date then type tag: both are highlighted and the typed text stays visible', async ({ page }) => {
+    await openSearch(page)
+    await type(page, '20')
+    await page.getByTestId('tag-date').click()
+    await page.getByTestId('tag-meetings').click()
+    await expect(page.getByTestId('tag-word')).toHaveText(['2026', 'meetings'])
+    // the input itself draws the text (never transparent), the mirror only paints the backgrounds
+    const box = page.getByRole('searchbox', { name: 'Search', exact: true })
+    await expect(box).toHaveValue('2026 meetings ')
+    const fill = await box.evaluate((el) => getComputedStyle(el).webkitTextFillColor)
+    expect(fill).not.toBe('rgba(0, 0, 0, 0)')
+  })
+
+  test('every screen shares one background so the status bar matches everywhere', async ({ page }) => {
+    await page.goto('/')
+    const home = await page.evaluate(() => getComputedStyle(document.querySelector('#phone-frame > div')!).backgroundColor)
+    await page.getByRole('button', { name: 'Search', exact: true }).click()
+    await expect(page.getByTestId('search-headline')).toBeVisible()
+    const search = await page.evaluate(() => getComputedStyle(document.querySelector('#phone-frame > div')!).backgroundColor)
+    expect(home).toBe(search)
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(search)
+  })
+
   test('search default view is empty until you type', async ({ page }) => {
     await openSearch(page)
     await expect(page.getByTestId('folder-card')).toHaveCount(0)
+    await expect(page.getByText('Ask about anything.')).toHaveCount(0) // replaced by the headline
     await expect(page.getByTestId('meeting-card')).toHaveCount(0)
     await expect(page.getByTestId('memo-card')).toHaveCount(0)
     await type(page, 'Lantern')

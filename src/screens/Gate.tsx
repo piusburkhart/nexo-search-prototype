@@ -24,7 +24,7 @@ export default function Gate({ onUnlock }: { onUnlock: () => void }) {
     } else setWrong(true)
   }
   return (
-    <Screen tone="gray-200">
+    <Screen>
       <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col justify-center gap-6 px-6 pb-[20vh]">
         <h1 className="text-heading-xl leading-[1.2] tracking-heading">Nexo</h1>
         <p className="-mt-3 text-heading-xs tracking-heading text-gray-800">Enter the password to open the prototype.</p>

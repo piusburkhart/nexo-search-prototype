@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { MicIcon, SparkleIcon } from './Icons'
+import { MicIcon, SparkleCenteredIcon } from './Icons'
 import type { AnswerPart } from '../search'
 
 export type AiState = 'disabled' | 'ready' | 'thinking' | 'done'
@@ -23,17 +23,17 @@ export function AiSynthesis({ state, answer, onRun, onReset }: {
   const dark = state !== 'disabled'
   return (
     <section aria-label="AI synthesis" data-state={state} data-testid="ai-section">
-      <div className="flex h-[33px] items-center gap-[9px]">
+      <div className="flex h-10 items-center gap-[9px]">
         <button data-testid="ai-synthesis" disabled={state === 'disabled' || state === 'thinking'}
           onClick={state === 'done' ? onReset : onRun} aria-label={state === 'done' ? 'Hide AI answer' : 'AI synthesis'}
-          className={`flex h-[33px] w-10 shrink-0 items-center justify-center rounded-[104px] ${dark ? 'bg-gray-975 text-gray-50' : 'bg-gray-300 text-gray-50'}`}>
+          className={`flex h-10 w-14 shrink-0 items-center justify-center rounded-[104px] ${dark ? 'bg-gray-975 text-gray-50' : 'bg-gray-300 text-gray-50'}`}>
           {state === 'thinking' ? (
             <span className="flex items-center gap-[3px]" aria-hidden="true">
               {[0, 1, 2].map((i) => (
                 <span key={i} className="size-[5px] rounded-pill bg-gray-50" style={{ animation: 'think 0.9s ease-in-out infinite', animationDelay: `${i * 150}ms` }} />
               ))}
             </span>
-          ) : <SparkleIcon className="size-[17px]" />}
+          ) : <SparkleCenteredIcon className="size-[18px]" />}
         </button>
         {state === 'thinking' && (
           <span role="status" data-testid="synthesizing" className="text-heading-xs leading-[1.2] tracking-heading">Synthesizing your answer…</span>

@@ -26,3 +26,6 @@ Compared at 402x874 against `docs/screens/*.png` (Figma exports, 1x). Two rounds
 
 ## No Figma reference (built from the design system, D10/D11)
 Meeting detail, Memo detail, Transcript, No results.
+
+## Home background
+- Figma Home uses gray-200; the prototype uses gray-50 everywhere so the status bar matches on every phone (D56).

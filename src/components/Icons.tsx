@@ -17,6 +17,12 @@ export const ChevronUpIcon = (p: P) => <Svg {...p}><path d="m6 15 6-6 6 6" /></S
 export const ChevronDownIcon = (p: P) => <Svg {...p}><path d="m6 9 6 6 6-6" /></Svg>
 export const CalendarIcon = (p: P) => <Svg {...p}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></Svg>
 export const SparkleIcon = (p: P) => <Svg {...p}><path d="M12 3c.6 4.5 2.5 6.4 7 7-4.5.6-6.4 2.5-7 7-.6-4.5-2.5-6.4-7-7 4.5-.6 6.4-2.5 7-7zM19 16c.2 1.7.8 2.3 2.5 2.5-1.7.2-2.3.8-2.5 2.5-.2-1.7-.8-2.3-2.5-2.5 1.7-.2 2.3-.8 2.5-2.5z" /></Svg>
+/** Sparkle with its viewBox cropped to its own bounds, so it sits optically centred in a button. */
+export const SparkleCenteredIcon = ({ className = 'size-[17px]' }: P) => (
+  <svg viewBox="3.75 2.75 19 19" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 3c.6 4.5 2.5 6.4 7 7-4.5.6-6.4 2.5-7 7-.6-4.5-2.5-6.4-7-7 4.5-.6 6.4-2.5 7-7zM19 16c.2 1.7.8 2.3 2.5 2.5-1.7.2-2.3.8-2.5 2.5-.2-1.7-.8-2.3-2.5-2.5 1.7-.2 2.3-.8 2.5-2.5z" />
+  </svg>
+)
 export const FilterIcon = ({ className = 'w-[17px] h-[11px]' }: P) => (
   <svg viewBox="0 0 17 11" className={className} aria-hidden="true">
     <g fill="currentColor"><rect width="17" height="2" rx="1" /><rect x="3" y="4.5" width="11" height="2" rx="1" /><rect x="6" y="9" width="5" height="2" rx="1" /></g>

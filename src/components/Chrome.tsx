@@ -65,10 +65,8 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
   useKeyboardInset()
   return (
     <div className="sm:flex sm:min-h-dvh sm:items-center sm:justify-center sm:bg-gray-200 sm:p-4">
-      {/* One persistent fixed strip at the top edge whose colour follows the screen: iOS tints its status
-          bar from the fixed element there and re-reads it when that element's colour changes. */}
-      <div id="status-strip" aria-hidden="true" style={{ background: 'var(--screen-bg, var(--color-gray-50))' }}
-        className="fixed inset-x-0 top-0 z-[60] h-1.5 sm:hidden" />
+      {/* Fixed strip at the top edge in the one app colour: iOS tints its status bar from it (D56). */}
+      <div id="status-strip" aria-hidden="true" className="fixed inset-x-0 top-0 z-[60] h-1.5 bg-gray-50 sm:hidden" />
       <div id="phone-frame" className="fixed inset-0 overflow-hidden bg-gray-50 sm:relative sm:inset-auto sm:h-[874px] sm:w-[402px] sm:rounded-[44px] sm:shadow-dock">
         {children}
       </div>
@@ -90,23 +88,9 @@ export function StatusBar() {
 }
 
 /** Full-height screen: status bar (framed desktop view only) + scrollable body + optional docked footer. */
-export function Screen({ children, dock, tone = 'gray-50' }: { children: ReactNode; dock?: ReactNode; tone?: 'gray-50' | 'gray-200' }) {
-  // The browser's status bar takes this colour so it blends into the screen (theme-color).
-  useEffect(() => {
-    const color = getComputedStyle(document.documentElement).getPropertyValue(`--color-${tone}`).trim()
-    // Replace the tag rather than edit it: Safari re-reads a fresh theme-color more reliably.
-    document.querySelectorAll('meta[name=theme-color]').forEach((m) => m.remove())
-    const meta = document.createElement('meta')
-    meta.name = 'theme-color'
-    meta.content = color
-    document.head.appendChild(meta)
-    document.documentElement.style.setProperty('--screen-bg', color)
-    document.documentElement.style.background = color
-    document.body.style.background = color
-  }, [tone])
-  const bg = tone === 'gray-200' ? 'bg-gray-200' : 'bg-gray-50'
+export function Screen({ children, dock }: { children: ReactNode; dock?: ReactNode }) {
   return (
-    <div className={`absolute inset-0 flex flex-col pt-[max(env(safe-area-inset-top),12px)] sm:pt-0 ${bg}`}>
+    <div className="absolute inset-0 flex flex-col bg-gray-50 pt-[max(env(safe-area-inset-top),12px)] sm:pt-0">
       <StatusBar />
       {children}
       {dock}

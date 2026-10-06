@@ -130,16 +130,14 @@ export default function Search() {
     >
       {/* Fixed bottom padding: the content never reflows when the keyboard comes and goes; the keyboard,
           bar and suggestions simply hover over it (D44). */}
+      <h1 data-testid="search-headline" className="flex h-10 shrink-0 items-center justify-center text-heading-xs font-semibold tracking-heading text-black">Global search</h1>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[380px]" data-testid="search-body"
         onPointerDown={() => blurSearch()}>
-        <div className="pt-6 pb-4 sm:pt-[44px]">
+        <div className="pt-1 pb-4">
           <AiSynthesis state={aiState} answer={answer}
             onRun={() => { blurSearch(); set({ ai: '1' }) }} onReset={() => set({ ai: undefined })} />
         </div>
-        {idle ? (
-
-          <p className="px-2 text-heading-xs tracking-heading text-gray-700">Ask about anything.</p>
-        ) : noResults ? (
+        {idle ? null : noResults ? (
           <EmptyState query={q.trim()} />
         ) : (
           <div className="flex flex-col gap-2">
