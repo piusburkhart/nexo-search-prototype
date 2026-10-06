@@ -1,4 +1,4 @@
-import { firstName, getMeeting, MONTH_NAMES } from './data'
+import { firstName, folderContents, getMeeting, MONTH_NAMES } from './data'
 import type { DateFilter, Results } from './search'
 import type { Action, Meeting, Memo } from './data/types'
 import { understand, type Note } from './semantic'
@@ -23,7 +23,7 @@ const firstSentence = (text: string) => (text.match(/[^.]+\.?/)?.[0] ?? text).tr
  * Summarise the results the user sees. `shown` are the visible results (after any type tag), `found` the
  * search's own reading of them; `raw` the query, for what kind of answer is wanted.
  */
-export function synthesize(shown: Pick<Results, 'meetings' | 'memos' | 'actions' | 'transcript'>, found: Pick<Results, 'notes' | 'summaryOf' | 'period'>, raw: string): Answer | null {
+export function synthesize(shown: Pick<Results, 'meetings' | 'memos' | 'actions' | 'transcript' | 'folders'>, found: Pick<Results, 'notes' | 'summaryOf' | 'period'>, raw: string): Answer | null {
   if (found.period) return overview(found.period, shown)
   const intent = understand(raw).intent
   const onScreen = new Set(shown.transcript.map((h) => `${h.meeting.id}@${h.segment.start}`))
@@ -59,6 +59,16 @@ export function synthesize(shown: Pick<Results, 'meetings' | 'memos' | 'actions'
   }
 
   // No notes: say briefly what the visible results contain.
+  // A folder on screen ("lantern"): what it holds.
+  if (shown.folders.length) {
+    return {
+      parts: shown.folders.map((f) => {
+        const c = folderContents(f)
+        const last = [...c.meetings].sort((a, b) => b.startsAt.localeCompare(a.startsAt))[0]
+        return { text: `The “${f.name}” folder holds ${count(c.meetings.length, 'meeting')} and ${count(c.memos.length, 'memo')}, with ${count(c.actions.length, 'action')}. ${f.description}${last ? ` The latest meeting is “${last.title}” on ${longDate(last.startsAt)}.` : ''}` }
+      }),
+    }
+  }
   const moments = shown.transcript.slice(0, 2)
   if (moments.length) {
     return {

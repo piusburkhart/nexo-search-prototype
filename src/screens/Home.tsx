@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Screen, anticipateKeyboard } from '../components/Chrome'
 import { Chip, SectionLabel } from '../components/Atoms'
-import { RecordingCard } from '../components/Cards'
+import { FolderCard, RecordingCard } from '../components/Cards'
 import { TabBar } from '../components/Dock'
 import { initials, data, isNew, recordings } from '../data'
 import { navigate } from '../router'
 
-type Filter = 'all' | 'meeting' | 'memo'
-const CHIPS: { id: Filter | 'folders' | 'people'; label: string }[] = [
+type Filter = 'all' | 'meeting' | 'memo' | 'folders'
+const CHIPS: { id: Filter | 'people'; label: string }[] = [
   { id: 'all', label: 'All' }, { id: 'meeting', label: 'Meetings' }, { id: 'memo', label: 'Memos' },
   { id: 'folders', label: 'Folders' }, { id: 'people', label: 'People' },
 ]
@@ -29,7 +29,7 @@ export default function Home() {
         </div>
         <div className="flex items-end gap-1" role="tablist">
           {CHIPS.map((c) => {
-            const live = c.id === 'all' || c.id === 'meeting' || c.id === 'memo'
+            const live = c.id !== 'people' // People is a placeholder
             return (
               <Chip key={c.id} label={c.label} selected={c.id === filter}
                 onClick={live ? () => setFilter(c.id as Filter) : undefined} />
@@ -38,10 +38,12 @@ export default function Home() {
         </div>
       </header>
       <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-[130px]">
-        {fresh.length > 0 && <SectionLabel>New</SectionLabel>}
-        {fresh.map((r) => <RecordingCard key={r.item.id} rec={r} showNew />)}
-        {earlier.length > 0 && <div className="mt-4"><SectionLabel>Earlier</SectionLabel></div>}
-        {earlier.map((r) => <RecordingCard key={r.item.id} rec={r} />)}
+        {filter === 'folders' ? data.folders.map((f) => <FolderCard key={f.id} folder={f} withSnippet />) : <>
+          {fresh.length > 0 && <SectionLabel>New</SectionLabel>}
+          {fresh.map((r) => <RecordingCard key={r.item.id} rec={r} showNew />)}
+          {earlier.length > 0 && <div className="mt-4"><SectionLabel>Earlier</SectionLabel></div>}
+          {earlier.map((r) => <RecordingCard key={r.item.id} rec={r} />)}
+        </>}
       </main>
     </Screen>
   )

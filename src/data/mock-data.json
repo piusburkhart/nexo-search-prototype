@@ -13,6 +13,15 @@
     "launchDate": "2026-11-14",
     "status": "beta"
   },
+  "folders": [
+    {
+      "id": "f-lantern",
+      "name": "Lantern",
+      "projectId": "proj-lantern",
+      "createdAt": "2026-09-08T09:00:00+02:00",
+      "description": "Everything about Project Lantern, the redesign of the customer onboarding flow: kickoff, design reviews, beta and launch."
+    }
+  ],
   "people": [
     {
       "id": "p-elin",

@@ -1,5 +1,5 @@
 import raw from './mock-data.json'
-import type { MockData, Person, Meeting, Memo, Transcript } from './types'
+import type { Folder, MockData, Person, Meeting, Memo, Transcript } from './types'
 
 export const data = raw as unknown as MockData
 
@@ -54,4 +54,15 @@ export const actions = [...data.actions].sort((a, b) => actionDate(b).localeComp
 export const isNew = (date: string) => {
   const t = (s: string) => new Date(dayOf(s)).getTime()
   return t(recordings[0].date) - t(date) <= 7 * 86400000
+}
+
+/** What a folder holds: the meetings, memos and actions of its project, and when it last changed. */
+export const folderContents = (f: Folder) => {
+  const meetings = data.meetings.filter((m) => m.projectId === f.projectId)
+  const memos = data.memos.filter((m) => m.projectId === f.projectId)
+  const ids = new Set(meetings.map((m) => m.id))
+  const acts = data.actions.filter((a) => ids.has(a.meetingId))
+  const people = [...new Set(meetings.flatMap((m) => m.participants))]
+  const updated = [...meetings.map((m) => m.startsAt), ...memos.map((m) => m.createdAt)].sort().at(-1) ?? f.createdAt
+  return { meetings, memos, actions: acts, people, updated }
 }

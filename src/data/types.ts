@@ -1,5 +1,7 @@
 export interface Person { id: string; name: string; role: string; external: boolean }
 export interface Project { id: string; name: string; description: string; launchDate: string; status: string }
+/** A folder groups the recordings of a project; its contents are the items with that projectId. */
+export interface Folder { id: string; name: string; projectId: string; createdAt: string; description: string }
 export interface Meeting {
   id: string; title: string; startsAt: string; durationMin: number; participants: string[]
   projectId: string | null; tags: string[]; transcriptId: string | null; summary: string
@@ -30,6 +32,7 @@ export interface Action { id: string; title: string; kind: 'calendar' | 'mail' |
 export interface MockData {
   user: Person & { company: string; timezone: string }
   project: Project
+  folders: Folder[]
   people: Person[]
   meetings: Meeting[]
   memos: Memo[]

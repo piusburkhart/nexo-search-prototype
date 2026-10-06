@@ -2,17 +2,17 @@ import { useEffect, useMemo, useState } from 'react'
 import { Screen } from '../components/Chrome'
 import { EmptyState, SectionLabel } from '../components/Atoms'
 import { AiSynthesis, type AiState } from '../components/AiSynthesis'
-import { ActionPill, RecordingCard, TranscriptCard, UnfoldLink } from '../components/Cards'
+import { ActionPill, FolderCard, RecordingCard, TranscriptCard, UnfoldLink } from '../components/Cards'
 import { SearchBar, TagCard, refocusSearch, blurSearch, type TagRow } from '../components/Dock'
-import { CalendarIcon, CheckCircleIcon, MicIcon, ChatIcon, WaveIcon } from '../components/Icons'
+import { CalendarIcon, CheckCircleIcon, FolderIcon, MicIcon, ChatIcon, WaveIcon } from '../components/Icons'
 import { navigate, useRoute } from '../router'
 import { synthesize } from '../ai'
-import { dateCompletions, dateCount, emptyResults, everything, groupByMeeting, parseQuery, recordingScore, search } from '../search'
+import { total, dateCompletions, dateCount, emptyResults, everything, groupByMeeting, parseQuery, recordingScore, search } from '../search'
 import { understand } from '../semantic'
 import type { Recording } from '../data'
 
-type Tag = 'meetings' | 'memos' | 'actions' | 'transcript'
-const LABEL: Record<Tag, string> = { meetings: 'Meetings', memos: 'Memos', actions: 'Actions', transcript: 'Transcript' }
+type Tag = 'meetings' | 'memos' | 'folders' | 'actions' | 'transcript'
+const LABEL: Record<Tag, string> = { meetings: 'Meetings', memos: 'Memos', folders: 'Folders', actions: 'Actions', transcript: 'Transcript' }
 const wordsOf = (text: string) => text.toLowerCase().split(/[^\p{L}\p{N}]+/u)
 
 const isSearchField = (t: EventTarget | null) => t instanceof HTMLInputElement && t.getAttribute('aria-label') === 'Search'
@@ -50,15 +50,16 @@ export default function Search() {
   const hasTerms = query.terms.length > 0 || !!detected // a date on its own applies itself (D72)
   const pool = useMemo(() => (hasTerms ? search(query, dateOn) : everything()), [query, dateOn, hasTerms])
   const idle = !hasTerms && !type // nothing to search yet
-  const show = { meetings: !type || type === 'meetings', memos: !type || type === 'memos', actions: !type || type === 'actions', transcript: !type || type === 'transcript' }
+  const show = (t: Tag) => !type || type === t
   const shown = idle ? emptyResults : {
     ...pool,
-    meetings: show.meetings ? pool.meetings : emptyResults.meetings,
-    memos: show.memos ? pool.memos : emptyResults.memos,
-    actions: show.actions ? pool.actions : emptyResults.actions,
-    transcript: show.transcript ? pool.transcript : emptyResults.transcript,
+    meetings: show('meetings') ? pool.meetings : emptyResults.meetings,
+    memos: show('memos') ? pool.memos : emptyResults.memos,
+    actions: show('actions') ? pool.actions : emptyResults.actions,
+    transcript: show('transcript') ? pool.transcript : emptyResults.transcript,
+    folders: show('folders') ? pool.folders : emptyResults.folders,
   }
-  const noResults = !idle && shown.meetings.length + shown.memos.length + shown.actions.length + shown.transcript.length === 0
+  const noResults = !idle && total(shown) === 0
 
   // Sections show only the 3 most relevant elements of a type, the rest unfolds with a link (Figma 77:4178).
   const LIMIT = 3
@@ -74,8 +75,8 @@ export default function Search() {
   const hasText = !!q.trim()
 
   // Suggestions, in one stacked card. Each row knows what picking it does.
-  const ICON: Record<Tag, React.ReactNode> = { meetings: <MicIcon />, memos: <ChatIcon />, actions: <CheckCircleIcon />, transcript: <WaveIcon /> }
-  const counts: Record<Tag, number> = { meetings: pool.meetings.length, memos: pool.memos.length, actions: pool.actions.length, transcript: pool.transcript.length }
+  const ICON: Record<Tag, React.ReactNode> = { meetings: <MicIcon />, memos: <ChatIcon />, folders: <FolderIcon />, actions: <CheckCircleIcon />, transcript: <WaveIcon /> }
+  const counts: Record<Tag, number> = { meetings: pool.meetings.length, memos: pool.memos.length, folders: pool.folders.length, actions: pool.actions.length, transcript: pool.transcript.length }
   type Row = TagRow & { pick: () => void }
   const typeRow = (t: Tag): Row => ({
     id: t, label: LABEL[t], count: counts[t], icon: ICON[t],
@@ -159,6 +160,10 @@ export default function Search() {
         </div>
         {idle ? null : noResults ? (ai ? null : <EmptyState query={q.trim()} />) : (
           <div className="flex flex-col gap-6">
+            {shown.folders.length > 0 && <section className="flex flex-col gap-2" data-testid="group-folders">
+              <SectionLabel>Folders</SectionLabel>
+              {shown.folders.map((f) => <FolderCard key={f.id} folder={f} terms={pool.highlight} withSnippet />)}
+            </section>}
             {recs.length > 0 && <section className="flex flex-col gap-2" data-testid="group-recordings">
               <SectionLabel>Recordings</SectionLabel>
               {(unfolded.rec ? recs : recs.slice(0, LIMIT)).map((r) => <RecordingCard key={r.item.id} rec={r} terms={pool.highlight} withSnippet />)}

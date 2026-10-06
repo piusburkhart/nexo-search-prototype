@@ -175,6 +175,21 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.length)
   })
 
+  test('folders: the Lantern folder shows on home and tops a "Lantern" search', async ({ page }) => {
+    const f = mock.folders[0]
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Folders', exact: true }).click()
+    await expect(page.getByTestId('folder-card')).toHaveCount(mock.folders.length)
+    await expect(page.getByTestId('folder-card').first()).toContainText(`${mock.meetings.filter((m) => m.projectId === f.projectId).length} meetings`)
+    await page.getByRole('button', { name: 'Search', exact: true }).click()
+    await type(page, 'Lantern')
+    await expect(page.getByTestId('group-folders').getByTestId('folder-card')).toHaveCount(1)
+    await page.getByTestId('tag-folders').click()
+    await expect(page.getByTestId('group-recordings')).toHaveCount(0)
+    await page.getByTestId('ai-synthesis').click()
+    await expect(page.getByTestId('ai-result')).toContainText(`“${f.name}” folder holds`)
+  })
+
   test('headline "Global search" is centred, black and regular weight; AI button is 56x40', async ({ page }) => {
     await openSearch(page)
     const h = page.getByTestId('search-headline')

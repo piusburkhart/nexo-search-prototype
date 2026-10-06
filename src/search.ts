@@ -1,6 +1,6 @@
 import { actionDate, data, dayOf, getMeeting, MONTH_NAMES, type Recording } from './data'
 import { coversAll, inProject, literalHits, matchText, namedMeeting, noteFits, NOTES_AT, rankNotes, showsIntent, understand, type Note } from './semantic'
-import type { Action, Meeting, Memo, Segment, Transcript } from './data/types'
+import type { Action, Folder, Meeting, Memo, Segment, Transcript } from './data/types'
 
 export interface DateFilter { kind: 'day' | 'month' | 'year'; key: string; label: string; text: string }
 export interface Query { raw: string; terms: string[]; date: DateFilter | null }
@@ -57,13 +57,13 @@ export interface TranscriptHit {
  * literal words to mark in the results.
  */
 export interface Results {
-  meetings: Meeting[]; memos: Memo[]; actions: Action[]; transcript: TranscriptHit[]
+  meetings: Meeting[]; memos: Memo[]; actions: Action[]; transcript: TranscriptHit[]; folders: Folder[]
   notes: Note[]; summaryOf: Meeting | null; highlight: string[]
   /** Set when the query asks about a day, month or year only ("what happened on 21.09.26"). */
   period: DateFilter | null
 }
-export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [], notes: [], summaryOf: null, highlight: [], period: null }
-export const total = (r: Pick<Results, 'meetings' | 'memos' | 'actions' | 'transcript'>) => r.meetings.length + r.memos.length + r.actions.length + r.transcript.length
+export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [], folders: [], notes: [], summaryOf: null, highlight: [], period: null }
+export const total = (r: Pick<Results, 'meetings' | 'memos' | 'actions' | 'transcript' | 'folders'>) => r.meetings.length + r.memos.length + r.actions.length + r.transcript.length + r.folders.length
 
 /** Transcript hits grouped by meeting, the most relevant meetings first (Figma 77:4717). */
 export interface TranscriptGroup { meeting: Meeting; hits: TranscriptHit[] }
@@ -88,7 +88,7 @@ const SEGMENTS: TranscriptHit[] = data.transcripts.flatMap((transcript) => {
 
 /** Every meeting, memo, action and transcript segment: the pool for tag-only queries and tag counts. */
 export const everything = (): Results => ({
-  ...emptyResults, meetings: data.meetings, memos: data.memos, actions: data.actions, transcript: SEGMENTS,
+  ...emptyResults, meetings: data.meetings, memos: data.memos, actions: data.actions, transcript: SEGMENTS, folders: data.folders,
 })
 
 /** Weight of a literal hit: large enough that direct hits always rank above semantic ones. */
@@ -167,7 +167,11 @@ export function search(q: Query, applyDate = false): Results {
   const actionScore = (a: Action) => LITERAL * (2 * literalHits(a.title, u) + literalHits(getMeeting(a.meetingId)!.title, u)) + matchText(a.title, u).score
   actions.sort((a, b) => actionScore(b) - actionScore(a))
 
-  return { meetings, memos, actions, transcript, notes, summaryOf: namedMeeting(u), highlight: u.highlight, period: null }
+  // Folders: by name and description ("Lantern" names the folder itself). A folder is not a decision or a
+  // deadline, so queries asking for a kind of finding leave folders out.
+  const folders = u.asksKind || key ? [] : data.folders.filter((f) => fits(`${f.name} ${f.description}`, f.projectId))
+
+  return { meetings, memos, actions, transcript, folders, notes, summaryOf: namedMeeting(u), highlight: u.highlight, period: null }
 }
 
 /** Count of date-matching recordings for the date tag. */
