@@ -20,3 +20,9 @@
 | D16 | Multi-word | "Multi-word queries match all words." | Each word must appear somewhere in the same item (title+body), any order. |
 | D17 | Transcript meetings | Only 3 of 10 meetings have transcripts. | Others open without a transcript link. |
 | D18 | Memo kind | Brief says 7 work, 3 personal; no explicit field. | Personal = memo has tag `personal` (memo03, 04, 08). Shown identically in results, per brief. |
+
+| D19 | "New" | Figma shows a "New" tag/section; no rule given. | New = within 7 days of the newest recording (deterministic, no clock). Older items go under "Earlier" without a tag. |
+| D20 | Find count | "match count" in transcript. | Counts matching segments (all words must appear in a segment), shown as "n / total"; next/previous wrap around. |
+| D21 | Environment | `node_modules` had a broken partial install (vite/rolldown without dist). | Reinstalled with `npm ci`. Added `@playwright/test` (needed for the required tests) and `npm test`. |
+| D22 | Search bar position | Figma docks the bar above the iOS keyboard. | Docked to the bottom of the phone frame; no fake keyboard (D14). |
+| D23 | Tab bar | Figma "Actions" tab goes to an Actions screen that is out of scope (D5). | Tab rendered, inert. |

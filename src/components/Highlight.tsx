@@ -12,7 +12,7 @@ export function Highlight({ text, terms, current = false }: { text: string; term
       {text.split(re).map((part, i) =>
         i % 2 ? (
           <mark key={i} data-current={current || undefined}
-            className={`rounded-mark text-inherit ${current ? 'bg-current' : 'bg-highlight'}`}>{part}</mark>
+            className={`rounded-mark text-inherit ${current ? 'bg-match' : 'bg-highlight'}`}>{part}</mark>
         ) : (
           <Fragment key={i}>{part}</Fragment>
         ),

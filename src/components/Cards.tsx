@@ -27,7 +27,7 @@ export function RecordingCard({ rec, terms = [], onOpen, showNew = false, withSn
   const body = isMeeting ? rec.item.summary : rec.item.content
   return (
     <button onClick={onOpen} data-testid={`${rec.kind}-card`} data-id={rec.item.id}
-      className="flex w-full flex-col gap-4 rounded-card bg-white p-6 shadow-card">
+      className="flex w-full flex-col gap-[19px] rounded-card bg-white px-6 pt-[30px] pb-6 shadow-card">
       {showNew && isNew(rec.date) && <NewTag />}
       {isMeeting ? (
         <>
@@ -53,7 +53,7 @@ export function HitCard({ hit, terms, onOpen }: { hit: TranscriptHit; terms: str
     <button onClick={onOpen} data-testid="transcript-hit" data-time={hit.segment.time}
       className="relative flex w-full flex-col gap-3 rounded-hit border border-gray-200 bg-white px-[19px] pt-4 pb-4 pr-[60px]">
       <span className="text-body-s text-gray-700">{hit.meeting.title}</span>
-      <span className="font-serif text-heading-xs leading-[1.2] tracking-heading text-gray-975">
+      <span className="line-clamp-2 font-serif text-heading-xs leading-[1.2] tracking-heading text-gray-975">
         <Highlight text={hit.segment.text} terms={terms} />
       </span>
       <span className="flex gap-3 text-body-m leading-[1.2] tracking-heading text-gray-700">

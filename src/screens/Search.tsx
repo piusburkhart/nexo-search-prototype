@@ -105,7 +105,7 @@ export default function Search() {
           </section>
         ) : idle ? (
           <>
-            <p className="px-2 pt-4 pb-10 text-heading-xs tracking-heading text-gray-975">Ask about anything.</p>
+            <p className="px-2 pt-3.5 pb-[50px] text-heading-xs tracking-heading text-gray-975">Ask about anything.</p>
             <div className="flex flex-col gap-2">
               <SectionLabel>Folders</SectionLabel>
               <button onClick={() => set({ q: data.project.name.replace(/^Project /, '') })} data-testid="folder-card"
@@ -113,7 +113,7 @@ export default function Search() {
                 <span className="text-heading-xl leading-[1.2] tracking-heading">{folderName(data.project.id)}</span>
                 <span className="mt-1 flex items-center gap-1 text-heading-s tracking-heading text-gray-800"><WaveIcon className="size-4" />{folderCount}</span>
               </button>
-              <div className="h-8" />
+              <div className="h-[51px]" />
               <SectionLabel>Recordings</SectionLabel>
               {recordings.slice(0, 3).map((r) => (
                 <RecordingCard key={r.item.id} rec={r} onOpen={() => open(r.kind, r.item.id)} />

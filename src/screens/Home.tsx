@@ -22,7 +22,7 @@ export default function Home() {
 
   return (
     <Screen bg="bg-gray-200" dock={<TabBar onSearch={() => navigate('/search')} />}>
-      <header className="flex flex-col gap-6 px-4 pb-4">
+      <header className="flex flex-col gap-5 px-4 pt-[10px] pb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-heading-xl leading-[1.2] tracking-heading">Recordings</h1>
           <span className="flex size-[46px] items-center justify-center rounded-pill bg-gray-975 text-heading-s font-bold tracking-[0.06em] text-gray-50">

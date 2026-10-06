@@ -90,10 +90,10 @@ export function synthesize(raw: string): { text: string; hits: TranscriptHit[] }
   if (!hits.length) return { text: '', hits: [] }
   const meetingCount = new Set(hits.map((h) => h.meeting.id)).size
   const lines = hits.slice(0, 3).map(
-    (h) => `${firstName(h.segment.speakerId)} (${h.segment.time}, ${h.meeting.title}): “${h.segment.text}”`,
+    (h) => `${firstName(h.segment.speakerId)} in “${h.meeting.title}” (${h.segment.time})`,
   )
   return {
-    text: `${hits.length} relevant moments across ${meetingCount} meeting${meetingCount > 1 ? 's' : ''}. ${lines.join(' ')}`,
+    text: `${hits.length} relevant moments across ${meetingCount} meeting${meetingCount > 1 ? 's' : ''}, including ${lines.join('; ')}.`,
     hits,
   }
 }
@@ -103,6 +103,7 @@ export function snippet(text: string, terms: string[], max = 140) {
   const low = text.toLowerCase()
   const first = terms.map((w) => low.indexOf(w)).filter((i) => i >= 0).sort((a, b) => a - b)[0]
   if (first === undefined || text.length <= max) return text.length > max ? text.slice(0, max) + '…' : text
-  const start = Math.max(0, first - 40)
+  let start = Math.max(0, first - 40)
+  if (start > 0) { const sp = text.indexOf(' ', start); if (sp >= 0 && sp < first) start = sp + 1 }
   return (start > 0 ? '…' : '') + text.slice(start, start + max) + (start + max < text.length ? '…' : '')
 }
