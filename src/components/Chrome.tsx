@@ -9,7 +9,9 @@ function useKeyboardInset() {
     const vv = window.visualViewport
     if (!vv) return
     const update = () => {
-      const inset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
+      const frame = document.getElementById('phone-frame')
+      const bottom = frame ? frame.getBoundingClientRect().bottom : window.innerHeight
+      const inset = Math.max(0, Math.round(bottom - vv.offsetTop - vv.height))
       const open = inset > 80
       document.documentElement.style.setProperty('--kb', `${open ? inset : 0}px`)
       document.documentElement.dataset.kb = open ? 'open' : 'closed'
@@ -26,7 +28,7 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
   useKeyboardInset()
   return (
     <div className="sm:flex sm:min-h-dvh sm:items-center sm:justify-center sm:bg-gray-200 sm:p-4">
-      <div className="fixed inset-0 overflow-hidden bg-gray-50 sm:relative sm:inset-auto sm:h-[874px] sm:w-[402px] sm:rounded-[44px] sm:shadow-dock">
+      <div id="phone-frame" className="fixed inset-0 overflow-hidden bg-gray-50 sm:relative sm:inset-auto sm:h-[874px] sm:w-[402px] sm:rounded-[44px] sm:shadow-dock">
         {children}
       </div>
     </div>

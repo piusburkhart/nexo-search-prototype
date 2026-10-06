@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Screen } from '../components/Chrome'
 import { EmptyState, SectionLabel } from '../components/Atoms'
 import { HitCard, RecordingCard } from '../components/Cards'
-import { DatePill, SearchBar, TagCard, type TagRow } from '../components/Dock'
+import { DatePill, SearchBar, TagCard, keepFocus, refocusSearch, type TagRow } from '../components/Dock'
 import { MicIcon, ChatIcon, SparkleIcon, WaveIcon } from '../components/Icons'
 import { data, folderName, recordings } from '../data'
 import { navigate, useRoute } from '../router'
@@ -41,6 +41,7 @@ export default function Search() {
     const partial = m && q.includes(' ') && LABEL[t].toLowerCase().startsWith(m[1].toLowerCase()) ? m[1] : null
     const base = partial ? q.slice(0, q.length - partial.length) : q + (q && !q.endsWith(' ') ? ' ' : '')
     set({ q: `${base}${t} `, tag: [...tags, t].join(',') })
+    refocusSearch()
   }
   const TAGS: (TagRow & { id: Tag })[] = [
     { id: 'meetings', label: 'Meetings', count: all.meetings.length, icon: <MicIcon /> },
@@ -52,9 +53,6 @@ export default function Search() {
   const rows = prefixed.length ? prefixed : TAGS.filter((t) => !tags.includes(t.id) && t.count > 0)
   const showDate = !!detected && !dateOn
   const idle = !q.trim()
-  const open = (kind: string, id: string) => navigate(`/${kind}/${id}`)
-  const openHit = (h: (typeof results.transcript)[number]) =>
-    navigate(`/transcript/${h.transcript.id}`, { seg: String(h.segment.start), q: query.terms.join(' ') })
 
   // AI synthesis: simulated "thinking" delay, then the result (Figma 72:2695 -> 72:2651)
   const [thinking, setThinking] = useState(false)
@@ -77,12 +75,12 @@ export default function Search() {
           {!idle && !ai && (showAiPill || showDate || rows.length > 0) && (
             <div className="flex flex-col items-start gap-2 px-5 pb-3">
               {showAiPill && (
-                <button onClick={() => set({ ai: '1' })} data-testid="ai-synthesis"
+                <button onClick={() => set({ ai: '1' })} onMouseDown={keepFocus} data-testid="ai-synthesis"
                   className="flex h-[46px] items-center gap-2 rounded-pill bg-white px-4 text-body-m shadow-pill">
                   <SparkleIcon />AI Synthesis
                 </button>
               )}
-              {showDate && <DatePill label={detected!.label} count={dCount} onClick={() => set({ date: detected!.key })} />}
+              {showDate && <DatePill label={detected!.label} count={dCount} onClick={() => { set({ date: detected!.key }); refocusSearch() }} />}
               {rows.length > 0 && <TagCard rows={rows} onPick={(id) => pickTag(id as Tag)} />}
             </div>
           )}
@@ -91,7 +89,8 @@ export default function Search() {
         </div>
       }
     >
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(190px+var(--kb,0px))]" data-testid="search-body">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(190px+var(--kb,0px))]" data-testid="search-body"
+        onPointerDown={() => { const a = document.activeElement; if (a instanceof HTMLInputElement) a.blur() }}>
         {ai ? (
           <section className="pt-4" aria-label="AI synthesis">
             {thinking ? (
@@ -111,8 +110,7 @@ export default function Search() {
               {synth && synth.hits.length > 0 && <SectionLabel>Content</SectionLabel>}
               {synth?.hits.map((h) => (
                 <HitCard key={h.transcript.id + h.segment.start} hit={h}
-                  terms={parseQuery(q.replace(/[?!.,]/g, ' ')).terms}
-                  onOpen={() => navigate(`/transcript/${h.transcript.id}`, { seg: String(h.segment.start) })} />
+                  terms={parseQuery(q.replace(/[?!.,]/g, ' ')).terms} />
               ))}
             </div>
           </section>
@@ -129,7 +127,7 @@ export default function Search() {
               <div className="h-[51px]" />
               <SectionLabel>Recordings</SectionLabel>
               {recordings.slice(0, 3).map((r) => (
-                <RecordingCard key={r.item.id} rec={r} onOpen={() => open(r.kind, r.item.id)} />
+                <RecordingCard key={r.item.id} rec={r} />
               ))}
             </div>
           </>
@@ -140,18 +138,18 @@ export default function Search() {
             {results.meetings.length > 0 && <section className="flex flex-col gap-2" data-testid="group-meetings">
               <SectionLabel>Meetings · {results.meetings.length}</SectionLabel>
               {results.meetings.map((m) => (
-                <RecordingCard key={m.id} rec={{ kind: 'meeting', item: m, date: m.startsAt }} terms={query.terms} withSnippet onOpen={() => open('meeting', m.id)} />
+                <RecordingCard key={m.id} rec={{ kind: 'meeting', item: m, date: m.startsAt }} terms={query.terms} withSnippet />
               ))}
             </section>}
             {results.memos.length > 0 && <section className="mt-4 flex flex-col gap-2" data-testid="group-memos">
               <SectionLabel>Memos · {results.memos.length}</SectionLabel>
               {results.memos.map((m) => (
-                <RecordingCard key={m.id} rec={{ kind: 'memo', item: m, date: m.createdAt }} terms={query.terms} withSnippet onOpen={() => open('memo', m.id)} />
+                <RecordingCard key={m.id} rec={{ kind: 'memo', item: m, date: m.createdAt }} terms={query.terms} withSnippet />
               ))}
             </section>}
             {results.transcript.length > 0 && <section className="mt-4 flex flex-col gap-2" data-testid="group-transcript">
               <SectionLabel>Transcript mentions · {results.transcript.length}</SectionLabel>
-              {results.transcript.map((h) => <HitCard key={h.transcript.id + h.segment.start} hit={h} terms={query.terms} onOpen={() => openHit(h)} />)}
+              {results.transcript.map((h) => <HitCard key={h.transcript.id + h.segment.start} hit={h} terms={query.terms} />)}
             </section>}
           </div>
         )}

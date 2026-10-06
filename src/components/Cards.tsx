@@ -5,6 +5,14 @@ import { firstName, folderName, formatDay, isNew, type Recording } from '../data
 import type { TranscriptHit } from '../search'
 import { snippet } from '../search'
 
+/** Button when the card navigates; plain block when it is display-only (search results, D26). */
+function Wrap({ onOpen, testId, id, time, className, children }: {
+  onOpen?: () => void; testId: string; id?: string; time?: string; className: string; children: React.ReactNode
+}) {
+  const props = { 'data-testid': testId, 'data-id': id, 'data-time': time, className }
+  return onOpen ? <button onClick={onOpen} {...props}>{children}</button> : <div {...props}>{children}</div>
+}
+
 const Meta = ({ rec }: { rec: Recording }) => {
   const folder = folderName(rec.item.projectId)
   return (
@@ -21,13 +29,13 @@ const Meta = ({ rec }: { rec: Recording }) => {
 
 /** Recording card: meetings show a sans title, memos show serif body (Figma 72:1609 / 72:1649). */
 export function RecordingCard({ rec, terms = [], onOpen, showNew = false, withSnippet = false }: {
-  rec: Recording; terms?: string[]; onOpen: () => void; showNew?: boolean; withSnippet?: boolean
+  rec: Recording; terms?: string[]; onOpen?: () => void; showNew?: boolean; withSnippet?: boolean
 }) {
   const isMeeting = rec.kind === 'meeting'
   const body = isMeeting ? rec.item.summary : rec.item.content
   return (
-    <button onClick={onOpen} data-testid={`${rec.kind}-card`} data-id={rec.item.id}
-      className="flex w-full flex-col gap-[19px] rounded-card bg-white px-6 pt-[30px] pb-6 shadow-card">
+    <Wrap onOpen={onOpen} testId={`${rec.kind}-card`} id={rec.item.id}
+      className="flex w-full flex-col gap-[19px] rounded-card bg-white px-6 pt-[30px] pb-6 text-left shadow-card">
       {showNew && isNew(rec.date) && <NewTag />}
       {isMeeting ? (
         <>
@@ -43,15 +51,15 @@ export function RecordingCard({ rec, terms = [], onOpen, showNew = false, withSn
         </>
       )}
       <Meta rec={rec} />
-    </button>
+    </Wrap>
   )
 }
 
 /** Transcript hit card (Figma "Content" card 72:1901). */
-export function HitCard({ hit, terms, onOpen }: { hit: TranscriptHit; terms: string[]; onOpen: () => void }) {
+export function HitCard({ hit, terms, onOpen }: { hit: TranscriptHit; terms: string[]; onOpen?: () => void }) {
   return (
-    <button onClick={onOpen} data-testid="transcript-hit" data-time={hit.segment.time}
-      className="relative flex w-full flex-col gap-3 rounded-hit border border-gray-200 bg-white px-[19px] pt-4 pb-4 pr-[60px]">
+    <Wrap onOpen={onOpen} testId="transcript-hit" time={hit.segment.time}
+      className={`relative flex w-full flex-col gap-3 rounded-hit border border-gray-200 bg-white px-[19px] pt-4 pb-4 text-left ${onOpen ? 'pr-[60px]' : ''}`}>
       <span className="text-body-s text-gray-700">{hit.meeting.title}</span>
       <span className="line-clamp-2 font-serif text-heading-xs leading-[1.2] tracking-heading text-gray-975">
         <Highlight text={hit.segment.text} terms={terms} />
@@ -59,9 +67,11 @@ export function HitCard({ hit, terms, onOpen }: { hit: TranscriptHit; terms: str
       <span className="flex gap-3 text-body-m leading-[1.2] tracking-heading text-gray-700">
         <span>{firstName(hit.segment.speakerId)}</span><span>{hit.segment.time}</span>
       </span>
-      <span className="absolute right-[15px] bottom-3 flex size-[30px] items-center justify-center rounded-pill bg-white">
-        <ArrowRightIcon />
-      </span>
-    </button>
+      {onOpen && (
+        <span className="absolute right-[15px] bottom-3 flex size-[30px] items-center justify-center rounded-pill bg-white">
+          <ArrowRightIcon />
+        </span>
+      )}
+    </Wrap>
   )
 }

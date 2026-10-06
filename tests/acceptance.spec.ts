@@ -16,13 +16,20 @@ test('1. "Lantern" returns meetings, memos and transcript hits', async ({ page }
   await expect(page.getByTestId('group-transcript').locator('mark').first()).toBeVisible()
 })
 
-test('2. "CSV" finds the discussion and opens the transcript at the segment', async ({ page }) => {
+test('2. "CSV" finds where it was discussed (speaker, time, text); results do not navigate', async ({ page }) => {
   await openSearch(page)
   await type(page, 'CSV')
   const hit = hits(page).filter({ hasText: 'worried about the CSV import step' })
   await expect(hit).toContainText('Jonas')
   await expect(hit).toContainText('00:48')
+  await expect(hit.locator('mark').first()).toHaveText('CSV')
   await hit.click()
+  await expect(page).toHaveURL(/#\/search/) // D26: no jump to the transcript
+  await expect(page.getByRole('button', { name: /CSV/ })).toHaveCount(0)
+})
+
+test('transcript opens at the right segment (direct link)', async ({ page }) => {
+  await page.goto('/#/transcript/t01?seg=48&q=csv')
   const active = page.locator('[data-seg-start][data-active]')
   await expect(active).toHaveCount(1)
   await expect(active).toContainText('worried about the CSV import step')
@@ -57,7 +64,7 @@ test('6. "swim" finds the personal swim pickup memo', async ({ page }) => {
   await expect(memo).toHaveCount(1)
   await expect(memo).toContainText('Astrid from swimming')
   await memo.click()
-  await expect(page.getByTestId('detail-title')).toHaveText('Groceries and swim')
+  await expect(page).toHaveURL(/#\/search/) // D26
 })
 
 test('7. "budget" shows the empty state', async ({ page }) => {
@@ -175,19 +182,39 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('date-tag')).toHaveCount(0)
   })
 
-  test('AI search: offer -> synthesizing -> result -> content card opens transcript', async ({ page }) => {
+  test('AI search: offer -> synthesizing -> result -> content cards', async ({ page }) => {
     await openSearch(page)
     await type(page, 'Decisions in project lantern?')
     await page.getByTestId('ai-synthesis').click()
     await expect(page.getByTestId('synthesizing')).toBeVisible()
     await expect(page.getByTestId('ai-result')).toBeVisible()
+    await expect(page.getByTestId('transcript-hit').first()).toBeVisible()
     await page.getByTestId('transcript-hit').first().click()
-    await expect(page.locator('[data-seg-start][data-active]')).toHaveCount(1)
+    await expect(page).toHaveURL(/#\/search/) // content cards do not navigate (D26)
   })
 
   test('memo detail links to related meeting', async ({ page }) => {
     await page.goto('/#/memo/memo06')
     await page.getByRole('button', { name: 'Vendor Call: Kestrel Analytics' }).click()
     await expect(page.getByTestId('detail-title')).toHaveText('Vendor Call: Kestrel Analytics')
+  })
+
+  test('picking a tag keeps the search field focused; tapping results blurs it', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'Lantern')
+    await page.getByTestId('tag-memos').click()
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toBeFocused()
+    await page.getByTestId('search-body').click({ position: { x: 5, y: 5 } })
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).not.toBeFocused()
+  })
+
+  test('tag highlight is not clipped by its container', async ({ page }) => {
+    await openSearch(page)
+    await type(page, 'Lantern')
+    await page.getByTestId('tag-memos').click()
+    const tag = await page.getByTestId('tag-word').boundingBox()
+    const box = await page.getByTestId('tag-word').locator('xpath=ancestor::span[contains(@class,"overflow-hidden")]').boundingBox()
+    expect(tag!.y - 3).toBeGreaterThanOrEqual(box!.y)
+    expect(tag!.y + tag!.height + 3).toBeLessThanOrEqual(box!.y + box!.height)
   })
 })

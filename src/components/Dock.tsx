@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { CalendarIcon, ChecklistIcon, CloseIcon, FilterIcon, RecordIcon, SearchIcon } from './Icons'
 
 /** Home bottom bar (Figma 72:1749): tabs pill + search button. */
@@ -21,6 +21,10 @@ export function TabBar({ onSearch }: { onSearch: () => void }) {
   )
 }
 
+/** Tapping a suggestion must not blur the search field (keeps the keyboard open). */
+export const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault()
+export const refocusSearch = () => document.querySelector<HTMLInputElement>('input[aria-label="Search"]')?.focus()
+
 const escRe = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
@@ -31,8 +35,8 @@ export function SearchBar({ value, onChange, onClose, tagWords = [], placeholder
   value: string; onChange: (v: string) => void; onClose: () => void
   tagWords?: string[]; placeholder?: string
 }) {
-  const mirror = useRef<HTMLDivElement>(null)
-  const sync = (el: HTMLInputElement) => { if (mirror.current) mirror.current.scrollLeft = el.scrollLeft }
+  const [scrollX, setScrollX] = useState(0)
+  const sync = (el: HTMLInputElement) => setScrollX(el.scrollLeft)
   const re = tagWords.length ? new RegExp(`(?<![\\p{L}\\p{N}])(${tagWords.map(escRe).join('|')})(?![\\p{L}\\p{N}])`, 'giu') : null
   const parts = re ? value.split(re) : [value]
   const text = 'text-heading-xs tracking-heading leading-[24px] whitespace-pre'
@@ -40,16 +44,19 @@ export function SearchBar({ value, onChange, onClose, tagWords = [], placeholder
     <div className="flex items-center gap-3 px-5 pb-[max(env(safe-area-inset-bottom),24px)] [html[data-kb=open]_&]:pb-2">
       <label className="flex h-12 min-w-0 flex-1 items-center rounded-pill bg-white px-[19px] shadow-pill">
         <SearchIcon className={`mr-2 size-4 shrink-0 text-gray-600 ${value ? 'hidden' : ''}`} />
-        <span className="relative h-6 min-w-0 flex-1">
-          <div ref={mirror} aria-hidden="true" className={`pointer-events-none absolute inset-0 overflow-hidden ${text}`}>
-            {parts.map((p, i) => i % 2
-              ? <mark key={i} data-testid="tag-word" className="rounded-tag bg-gray-200 text-gray-975 shadow-[0_0_0_3px_var(--color-gray-200)]">{p}</mark>
-              : <span key={i}>{p}</span>)}
+        {/* padded, clipping box: tag backgrounds may extend past the text without being cut off */}
+        <span className="relative -mx-1.5 -my-2 h-10 min-w-0 flex-1 overflow-hidden">
+          <div aria-hidden="true" className={`pointer-events-none absolute inset-x-1.5 top-2 h-6 ${text}`}>
+            <div style={{ transform: `translateX(${-scrollX}px)` }}>
+              {parts.map((p, i) => i % 2
+                ? <mark key={i} data-testid="tag-word" className="rounded-tag bg-gray-200 text-gray-975 shadow-[0_0_0_3px_var(--color-gray-200)]">{p}</mark>
+                : <span key={i}>{p}</span>)}
+            </div>
           </div>
           <input autoFocus value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
             aria-label="Search" type="search" enterKeyHint="search" onScroll={(e) => sync(e.currentTarget)}
             onKeyUp={(e) => sync(e.currentTarget)} onSelect={(e) => sync(e.currentTarget)}
-            className={`absolute inset-0 w-full bg-transparent p-0 outline-none placeholder:text-gray-600 [&::-webkit-search-cancel-button]:hidden ${text.replace('whitespace-pre', '')} ${value ? 'caret-gray-975' : ''}`}
+            className={`absolute inset-x-1.5 top-2 h-6 w-[calc(100%-12px)] bg-transparent p-0 outline-none placeholder:text-gray-600 [&::-webkit-search-cancel-button]:hidden ${text.replace('whitespace-pre', '')} ${value ? 'caret-gray-975' : ''}`}
             style={value ? { WebkitTextFillColor: 'transparent' } : undefined} />
           {/* typed text is always drawn by the mirror layer so tag words can carry a background */}
         </span>
@@ -69,7 +76,7 @@ export function TagCard({ rows, onPick }: { rows: TagRow[]; onPick: (id: string)
     <ul className="w-[145px] rounded-hit bg-white px-4 py-2 shadow-pill" aria-label="Filter tags">
       {rows.map((r) => (
         <li key={r.id}>
-          <button onClick={() => onPick(r.id)} data-testid={`tag-${r.id}`}
+          <button onClick={() => onPick(r.id)} onMouseDown={keepFocus} data-testid={`tag-${r.id}`}
             className="flex h-9 w-full items-center gap-2 text-body-m font-medium">
             {r.icon}<span>{r.label}</span><span className="ml-auto font-normal">{r.count}</span>
           </button>
@@ -82,7 +89,7 @@ export function TagCard({ rows, onPick }: { rows: TagRow[]; onPick: (id: string)
 /** Date suggestion pill (Figma 72:2345): calendar, date text, count. */
 export function DatePill({ label, count, onClick }: { label: string; count: number; onClick: () => void }) {
   return (
-    <button onClick={onClick} data-testid="date-tag"
+    <button onClick={onClick} onMouseDown={keepFocus} data-testid="date-tag"
       className="flex h-[46px] items-center gap-3 rounded-pill bg-white px-4 text-body-m shadow-pill">
       <CalendarIcon />{label}<span className="ml-2">{count}</span>
     </button>
