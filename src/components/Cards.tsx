@@ -8,10 +8,10 @@ import { snippet } from '../search'
 
 /* None of these cards open anything: the file pages were removed (D64). */
 
-const Meta = ({ rec }: { rec: Recording }) => {
+const Meta = ({ rec, tone = 'text-gray-900' }: { rec: Recording; tone?: string }) => {
   const folder = folderName(rec.item.projectId)
   return (
-    <div className="flex items-center gap-[9px] text-body-s leading-[1.2] text-gray-900">
+    <div className={`flex items-center gap-[9px] text-body-s leading-[1.2] ${tone}`}>
       <span className="flex items-center gap-1">
         {rec.kind === 'meeting' ? <MicIcon className="size-[15px]" /> : <ChatIcon className="size-[15px]" />}
         {formatDay(rec.date)}
@@ -50,9 +50,9 @@ export function RecordingCard({ rec, terms = [], showNew = false, withSnippet = 
 /** Meeting name and its metadata, shown on every transcript quote (Figma 77:4717 / 77:4751). */
 function MeetingHeader({ meeting }: { meeting: Meeting }) {
   return (
-    <div className="flex flex-col gap-2">
-      <span className="text-body-m leading-[1.24] tracking-heading text-gray-975">{meeting.title}</span>
-      <Meta rec={{ kind: 'meeting', item: meeting, date: meeting.startsAt }} />
+    <div className="flex flex-col gap-0.5 text-gray-700">
+      <span className="text-body-m leading-[1.24] tracking-heading">{meeting.title}</span>
+      <Meta rec={{ kind: 'meeting', item: meeting, date: meeting.startsAt }} tone="text-gray-700" />
     </div>
   )
 }
@@ -81,7 +81,7 @@ export function TranscriptCard({ group, terms }: { group: TranscriptGroup; terms
     <div data-testid="transcript-group" data-meeting={group.meeting.id}
       className="flex flex-col gap-4 rounded-hit border border-gray-200 bg-white p-[19px]">
       <MeetingHeader meeting={group.meeting} />
-      <div className={many ? 'flex flex-col gap-2 -mx-[11px] -mb-[11px]' : ''}>
+      <div className={many ? 'flex flex-col gap-4 -mx-[11px] -mb-[11px]' : ''}>
         {group.hits.map((h) => <Quote key={h.segment.start} hit={h} terms={terms} boxed={many} />)}
       </div>
     </div>

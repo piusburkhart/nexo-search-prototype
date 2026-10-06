@@ -171,12 +171,12 @@ test.describe('navigation flow', () => {
     await expect(page.getByTestId('memo-card')).toHaveCount(mock.memos.length)
   })
 
-  test('headline "Global search" is centred, black and bold; AI button is 56x40', async ({ page }) => {
+  test('headline "Global search" is centred, black and regular weight; AI button is 56x40', async ({ page }) => {
     await openSearch(page)
     const h = page.getByTestId('search-headline')
     await expect(h).toHaveText('Global search')
     await expect(h).toHaveCSS('color', 'rgb(0, 0, 0)')
-    await expect(h).toHaveCSS('font-weight', '600')
+    await expect(h).toHaveCSS('font-weight', '400')
     await expect(h).toHaveCSS('font-size', '16px')
     await expect(h).toHaveCSS('justify-content', 'center')
     const b = (await page.getByTestId('ai-synthesis').boundingBox())!

@@ -18,8 +18,8 @@
   --color-highlight: rgba(177, 255, 153, 0.5);
 
   /* Brown and Test Domaine Text are licensed; see docs/decisions.md D12 */
-  --font-sans: "Brown", "Avenir Next", "Helvetica Neue", system-ui, sans-serif;
-  --font-serif: "Test Domaine Text", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Brown", system-ui, sans-serif;
+  --font-serif: "Test Domaine Text", Georgia, serif;
 
   --text-body-s: 12px;
   --text-body-m: 14px;
