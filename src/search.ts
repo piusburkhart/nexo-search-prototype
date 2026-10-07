@@ -188,10 +188,11 @@ export function search(q: Query, applyDate = false): Results {
 }
 
 /** Count of date-matching recordings for the date tag. */
-export const dateCount = (q: Query) => {
+/** Count for the date tag: what picking it would show, within the type tag already picked, if any. */
+export const dateCount = (q: Query, type?: 'meetings' | 'memos' | 'folders' | 'actions' | 'transcript' | null) => {
   if (!q.date) return 0
   const r = search(q, true)
-  return r.meetings.length + r.memos.length + r.actions.length
+  return type ? r[type].length : r.meetings.length + r.memos.length + r.actions.length
 }
 
 /** Short excerpt around the first matching term, for result snippets. */

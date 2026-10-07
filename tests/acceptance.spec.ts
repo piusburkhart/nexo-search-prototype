@@ -432,6 +432,20 @@ test.describe('navigation flow', () => {
     }
   })
 
+  test('a picked type tag narrows the date count: meetings + 05.10.26 counts only that day\'s meetings', async ({ page }) => {
+    const day = '2026-10-05'
+    const meetings = mock.meetings.filter((m) => m.startsAt.startsWith(day)).length
+    await openSearch(page)
+    await type(page, 'meet')
+    await page.getByTestId('tag-meetings').click()
+    await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toHaveValue('meetings ')
+    await page.getByRole('searchbox', { name: 'Search', exact: true }).pressSequentially('05.10.26', { delay: 30 })
+    await expect(page).toHaveURL(/tag=meetings/)
+    await expect(page.getByTestId('tag-date')).toHaveText(new RegExp(`05\\.10\\.26\\s*${meetings}$`))
+    await page.getByTestId('tag-date').click()
+    await expect(page.getByTestId('meeting-card')).toHaveCount(meetings)
+  })
+
   test('the date suggestion keeps its count while the date is typed out', async ({ page }) => {
     const day = '2026-10-02'
     const n = mock.meetings.filter((m) => m.startsAt.startsWith(day)).length + mock.memos.filter((m) => m.createdAt.startsWith(day)).length

@@ -88,7 +88,7 @@ export default function Search() {
   })
   const dateRow = (d: NonNullable<typeof detected>, i: number, replacePartial: boolean): Row => ({
     id: i ? `date-${i}` : 'date', label: d.kind === 'day' ? d.text : d.label, icon: <CalendarIcon />, // a typed day keeps its dd.mm.yy format
-    count: dateCount({ raw: q, terms: query.terms, date: d }),
+    count: dateCount({ raw: q, terms: query.terms, date: d }, type),
     pick: () => set({ q: replacePartial ? `${before}${d.text} ` : q.endsWith(' ') ? q : `${q} `, date: d.key }),
   })
   let rows: Row[]
