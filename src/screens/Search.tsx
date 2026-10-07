@@ -10,6 +10,11 @@ import { synthesize } from '../ai'
 import { SECTION_ORDER, total, type Section, dateCompletions, dateCount, emptyResults, everything, groupByMeeting, parseQuery, recordingScore, search } from '../search'
 import { understand } from '../semantic'
 import type { Recording } from '../data'
+import { HandoffCard } from '../components/handoff/HandoffCard'
+import { classify } from '../lib/capability'
+import { openHandoff } from '../lib/handoff/store'
+import { sourcesForQuery } from '../lib/handoff/sources'
+import { useLongPress } from '../lib/useLongPress'
 
 type Tag = 'meetings' | 'memos' | 'folders' | 'actions' | 'transcript'
 const LABEL: Record<Tag, string> = { meetings: 'Meetings', memos: 'Memos', folders: 'Folders', actions: 'Actions', transcript: 'Transcript' }
@@ -134,6 +139,18 @@ export default function Search() {
   const answer = useMemo(() => (ai ? synthesize(shown, pool, q) : undefined), [ai, q, shown, pool])
   const aiState: AiState = ai ? (thinking ? 'thinking' : 'done') : sufficient ? 'ready' : 'disabled'
 
+  // Continue in Claude (D86): requests the on-device model can't handle get a handoff card, above the
+  // results, or in place of the empty state. A plain keyword miss ("budget") keeps the empty state.
+  const verdict = useMemo(() => (idle || !q.trim() ? null : classify(q, { resultCount: total(pool) })), [idle, q, pool])
+  const [dismissed, setDismissed] = useState<string | null>(null)
+  const showHandoff = !!verdict && !verdict.supported && dismissed !== q.trim()
+  const handoffSources = useMemo(() => (showHandoff ? sourcesForQuery(q) : []), [showHandoff, q])
+  const continueInClaude = () => {
+    blurSearch()
+    openHandoff({ request: q.trim(), category: verdict?.category, sources: handoffSources, origin: 'search' })
+  }
+  const toSettings = useLongPress(() => navigate('/settings'))
+
   // Sections in the Figma order, except that the one whose best item says the typed words most directly comes
   // first: "nexo design review" puts the Design Review meeting above the Nexo folder (D78).
   const SECTIONS: Record<Section, ReactNode> = {
@@ -177,14 +194,19 @@ export default function Search() {
     >
       {/* Fixed bottom padding: the content never reflows when the keyboard comes and goes; the keyboard,
           bar and suggestions simply hover over it (D44). */}
-      <h1 data-testid="search-headline" className="flex h-4 shrink-0 items-center justify-center text-heading-xs font-normal tracking-heading text-black">Global search</h1>
+      <h1 {...toSettings} data-testid="search-headline" className="select-none [-webkit-touch-callout:none] flex h-4 shrink-0 items-center justify-center text-heading-xs font-normal tracking-heading text-black">Global search</h1>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[380px]" data-testid="search-body"
         onPointerDown={() => blurSearch()}>
         <div className={`pt-6 ${aiState === 'done' ? 'pb-10' : 'pb-4'}`}>
           <AiSynthesis state={aiState} answer={answer}
             onRun={() => { blurSearch(); set({ ai: '1' }) }} onReset={() => set({ ai: undefined })} />
         </div>
-        {idle ? null : noResults ? (ai ? null : <EmptyState query={q.trim()} />) : (
+        {showHandoff && (
+          <div className="pb-6">
+            <HandoffCard verdict={verdict!} hasSources={handoffSources.length > 0} onContinue={continueInClaude} onDismiss={() => setDismissed(q.trim())} />
+          </div>
+        )}
+        {idle ? null : noResults ? (ai || showHandoff ? null : <EmptyState query={q.trim()} />) : (
           <div className="flex flex-col gap-6">
             {order.map((k) => <Fragment key={k}>{SECTIONS[k]}</Fragment>)}
           </div>

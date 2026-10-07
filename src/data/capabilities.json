@@ -5,8 +5,8 @@
   "topicStopWords": ["email", "e-mail", "mail", "message", "reply", "note", "letter", "follow-up", "follow", "up", "followup", "draft", "write", "compose", "prepare", "team", "translate", "translation", "rewrite", "reformat", "rephrase", "shorten", "simplify", "summary", "summarize", "summarise", "bullet", "points", "table", "list", "compare", "analyze", "analyse", "analysis", "across", "all", "every", "versus", "vs", "risks", "risk", "should", "recommend", "german", "french", "spanish", "swedish", "italian", "into", "make", "shorter", "longer", "turn", "me", "us", "help", "please", "two", "meetings", "memos", "calls", "call", "interviews", "changed", "change", "might", "fail"],
   "maxSources": 5,
   "longContentChars": 14000,
-  "grounding": "The attached transcript is the source of truth. Answer only from it, and say clearly when something isn't in it.",
-  "groundingClipboard": "The transcript is pasted below and is the source of truth. Answer only from it, and say clearly when something isn't in it.",
+  "grounding": "The attached {what} {is} the source of truth. Answer only from {it}, and say clearly when something isn't in {it}.",
+  "groundingClipboard": "The {what} {is} pasted below and {is} the source of truth. Answer only from {it}, and say clearly when something isn't in {it}.",
   "noSources": "I haven't attached any meeting material, so ask me for what you need instead of guessing.",
   "defaultTemplate": {
     "id": "ask",

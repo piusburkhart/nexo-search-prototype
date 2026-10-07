@@ -65,6 +65,14 @@ describe('prompt', () => {
     expect(p).toContain('source of truth')
     expect(p).toContain('say clearly when something isn\'t in it')
   })
+  it('names what is attached: one transcript, several, or a memo', () => {
+    expect(buildPrompt({ request: 'x', category: 'compare', sources: [kestrel, meeting('Design Review')], delivery: 'attached' }))
+      .toContain('The attached transcripts are the source of truth. Answer only from them')
+    expect(buildPrompt({ request: 'x', category: 'compare', sources: [kestrel, memo('Guided setup call')], delivery: 'attached' }))
+      .toContain('The attached transcript and memo are the source of truth')
+    expect(buildPrompt({ request: 'x', category: 'rewrite', sources: [memo('Guided setup call')], delivery: 'attached' }))
+      .toContain('The attached memo is the source of truth. Answer only from it')
+  })
   it('says the transcript is pasted in clipboard mode, and that nothing is attached without sources', () => {
     expect(buildPrompt({ request: 'x', category: 'drafting', sources: [kestrel], delivery: 'pasted' })).toContain('pasted below')
     expect(buildPrompt({ request: 'x', category: 'drafting', sources: [], delivery: 'attached' })).toContain('none attached')

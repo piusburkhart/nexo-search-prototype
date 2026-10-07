@@ -1,10 +1,13 @@
-import { CalendarIcon, CheckCircleIcon, ChatIcon, FolderIcon, MailIcon, MicIcon, WaveIcon } from './Icons'
+import { ArrowUpRightIcon, CalendarIcon, CheckCircleIcon, ChatIcon, FolderIcon, MailIcon, MicIcon, WaveIcon } from './Icons'
 import { AvatarStack, NewTag } from './Atoms'
 import { Highlight } from './Highlight'
 import { firstName, folderContents, folderName, formatDay, getMeeting, isNew, isNewAction, type Recording } from '../data'
 import type { Action, Folder, Meeting } from '../data/types'
 import type { TranscriptGroup, TranscriptHit } from '../search'
 import { snippet } from '../search'
+import { copy } from '../content/handoff-copy'
+import { openHandoff } from '../lib/handoff/store'
+import { meetingSource } from '../lib/handoff/sources'
 
 /* None of these cards open anything: the file pages were removed (D64). */
 
@@ -94,7 +97,15 @@ export function TranscriptCard({ group, terms }: { group: TranscriptGroup; terms
   return (
     <div data-testid="transcript-group" data-meeting={group.meeting.id}
       className="flex flex-col gap-4 rounded-hit border border-gray-200 bg-white p-[19px]">
-      <MeetingHeader meeting={group.meeting} />
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1"><MeetingHeader meeting={group.meeting} /></div>
+        {/* Continue in Claude from a transcript (D86): carries this meeting's transcript. */}
+        <button type="button" data-testid="ask-claude" aria-label={copy.askActionLabel(group.meeting.title)}
+          onClick={() => openHandoff({ request: '', sources: [meetingSource(group.meeting)], origin: 'transcript' })}
+          className="-mt-2.5 -mr-2 flex min-h-11 shrink-0 items-center gap-1 rounded-pill px-3 text-body-m text-gray-800">
+          {copy.askAction}<ArrowUpRightIcon className="size-4" />
+        </button>
+      </div>
       <div className={many ? 'flex flex-col gap-4 -mx-[11px] -mb-[11px]' : ''}>
         {group.hits.map((h) => <Quote key={h.segment.start} hit={h} terms={terms} boxed={many} />)}
       </div>

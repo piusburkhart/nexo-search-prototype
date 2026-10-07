@@ -75,6 +75,16 @@ export function describeSource(s: Source): string {
   return `“${m.title}” (meeting, ${longDate(m.startsAt)}, with ${list(m.participants.map(nameOf))}; source ${m.id})`
 }
 
+/** "{what} {is} … {it}" in a grounding line: "transcript is … it", "transcripts and memo are … them". */
+function fillGrounding(text: string, sources: Source[]) {
+  const meetings = sources.filter((s) => s.kind === 'meeting').length
+  const memos = sources.length - meetings
+  const word = (n: number, w: string) => (n === 1 ? w : `${w}s`)
+  const what = [meetings && word(meetings, 'transcript'), memos && word(memos, 'memo')].filter(Boolean).join(' and ')
+  const many = sources.length > 1
+  return text.replaceAll('{what}', what).replaceAll('{is}', many ? 'are' : 'is').replaceAll('{it}', many ? 'them' : 'it')
+}
+
 /** How the transcript reaches Claude: attached as a file (share, download, simulate) or pasted (clipboard). */
 export type Delivery = 'attached' | 'pasted'
 
@@ -89,7 +99,7 @@ export function buildPrompt({ request, category, sources, delivery }: {
   const named = sources.length === 0 ? 'none attached.'
     : sources.length === 1 ? describeSource(sources[0])
     : `\n${sources.map((s) => `- ${describeSource(s)}`).join('\n')}`
-  const grounding = sources.length === 0 ? CAPS.noSources : delivery === 'pasted' ? CAPS.groundingClipboard : CAPS.grounding
+  const grounding = sources.length === 0 ? CAPS.noSources : fillGrounding(delivery === 'pasted' ? CAPS.groundingClipboard : CAPS.grounding, sources)
   const prompt = template
     .replace('{request}', request.trim())
     .replace('{sources}', named)

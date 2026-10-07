@@ -1,3 +1,4 @@
+import type React from 'react'
 import type { ReactNode } from 'react'
 import { getPerson, initials } from '../data'
 
@@ -50,3 +51,15 @@ export function EmptyState({ query }: { query: string }) {
     </div>
   )
 }
+
+/**
+ * Buttons for the handoff (D86): primary is the black pill of AI Synthesis, secondary the outlined chip.
+ * At least 44px tall for touch.
+ */
+export function Button({ variant = 'primary', className = '', ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' }) {
+  return <button {...props} className={`${BUTTON[variant]} ${className}`} />
+}
+export const BUTTON = {
+  primary: 'inline-flex min-h-11 items-center justify-center gap-2 rounded-pill bg-gray-975 px-5 text-heading-xs leading-[1.2] tracking-heading text-gray-50 disabled:bg-gray-300 disabled:cursor-not-allowed',
+  secondary: 'inline-flex min-h-11 items-center justify-center gap-2 rounded-pill border border-gray-600 bg-transparent px-5 text-heading-xs leading-[1.2] tracking-heading text-gray-975',
+} as const

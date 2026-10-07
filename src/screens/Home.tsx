@@ -5,6 +5,7 @@ import { FolderCard, RecordingCard } from '../components/Cards'
 import { TabBar } from '../components/Dock'
 import { initials, data, isNew, recordings } from '../data'
 import { navigate } from '../router'
+import { useLongPress } from '../lib/useLongPress'
 
 type Filter = 'all' | 'meeting' | 'memo' | 'folders'
 const CHIPS: { id: Filter | 'people'; label: string }[] = [
@@ -13,6 +14,7 @@ const CHIPS: { id: Filter | 'people'; label: string }[] = [
 ]
 
 export default function Home() {
+  const toSettings = useLongPress(() => navigate('/settings'))
   const [filter, setFilter] = useState<Filter>('all')
   const list = recordings.filter((r) => filter === 'all' || r.kind === filter)
   const fresh = list.filter((r) => isNew(r.date))
@@ -22,7 +24,7 @@ export default function Home() {
     <Screen dock={<TabBar active="recordings" onSearch={() => { anticipateKeyboard(); document.getElementById('kb-proxy')?.focus(); navigate('/search') }} />}>
       <header className="flex flex-col gap-5 px-4 pt-[10px] pb-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-heading-xl leading-[1.2] tracking-heading">Recordings</h1>
+          <h1 {...toSettings} className="text-heading-xl leading-[1.2] tracking-heading select-none [-webkit-touch-callout:none]">Recordings</h1>
           <span className="flex size-[46px] items-center justify-center rounded-pill bg-gray-975 text-heading-s font-bold tracking-[0.06em] text-gray-50">
             {initials(data.user.id)}
           </span>
