@@ -65,10 +65,13 @@ export interface Results {
   period: DateFilter | null
   /** Per section, the share of typed words its best item contains literally: the most direct section goes first. */
   directness: Record<Section, number>
+  /** Relevance of each meeting and memo in this search (higher first). Kept per result, so a second search
+   *  (date counts, handoff sources) can't reorder the results on screen. */
+  scores: Map<object, number>
 }
 export type Section = 'folders' | 'recordings' | 'actions' | 'transcript'
 export const SECTION_ORDER: Section[] = ['folders', 'recordings', 'actions', 'transcript']
-export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [], folders: [], notes: [], summaryOf: null, highlight: [], period: null, directness: { folders: 0, recordings: 0, actions: 0, transcript: 0 } }
+export const emptyResults: Results = { meetings: [], memos: [], actions: [], transcript: [], folders: [], notes: [], summaryOf: null, highlight: [], period: null, directness: { folders: 0, recordings: 0, actions: 0, transcript: 0 }, scores: new Map() }
 export const total = (r: Pick<Results, 'meetings' | 'memos' | 'actions' | 'transcript' | 'folders'>) => r.meetings.length + r.memos.length + r.actions.length + r.transcript.length + r.folders.length
 
 /** Transcript hits grouped by meeting, the most relevant meetings first (Figma 77:4717). */
@@ -100,9 +103,8 @@ export const everything = (): Results => ({
 /** Weight of a literal hit: large enough that direct hits always rank above semantic ones. */
 const LITERAL = 100
 const meetingText = (m: Meeting) => `${m.title} ${m.summary}`
-const recScores = new WeakMap<object, number>()
-/** How relevant a recording was to the last search (higher first). */
-export const recordingScore = (rec: Recording) => recScores.get(rec.item) ?? 0
+/** How relevant a recording is in these results (higher first). */
+export const recordingScore = (rec: Recording, r: Pick<Results, 'scores'>) => r.scores.get(rec.item) ?? 0
 
 /**
  * Semantic search (D69). An item is found when it covers every query concept (synonyms, stems, typo
@@ -130,6 +132,7 @@ export function search(q: Query, applyDate = false): Results {
     }
   }
 
+  const scores = new Map<object, number>()
   const fits = (text: string, projectId: string | null, fullText = text) =>
     (!u.project || inProject(projectId, fullText)) && (!u.terms.length || coversAll(text, u))
   const notes = rankNotes(u, (m) => inDay(m.startsAt))
@@ -157,12 +160,12 @@ export function search(q: Query, applyDate = false): Results {
     const direct = fits(meetingText(m), m.projectId) && (u.terms.length > 0 || !u.asksKind || showsIntent(m.summary, u) || m.keyPoints.some((k) => noteFits(k, u)))
     if (!mine && !direct) return false
     // Direct hits first: the typed words in the title, then in the summary, then everything else.
-    recScores.set(m, LITERAL * (10 * literalHits(m.title, u) + literalHits(m.summary, u)) + mine * 4 + (direct ? 1 + matchText(m.title, u).score * 3 + matchText(m.summary, u).score : 0))
+    scores.set(m, LITERAL * (10 * literalHits(m.title, u) + literalHits(m.summary, u)) + mine * 4 + (direct ? 1 + matchText(m.title, u).score * 3 + matchText(m.summary, u).score : 0))
     return true
   })
   const memos = data.memos.filter((m) => {
     if (!inDay(m.createdAt) || !fits(m.content, m.projectId) || (u.asksKind && !showsIntent(m.content, u))) return false
-    recScores.set(m, LITERAL * literalHits(m.content, u) + 1 + matchText(m.content, u).score)
+    scores.set(m, LITERAL * literalHits(m.content, u) + 1 + matchText(m.content, u).score)
     return true
   })
   const actions = data.actions.filter((a) => {
@@ -184,7 +187,7 @@ export function search(q: Query, applyDate = false): Results {
     actions: best(actions.map((a) => a.title)),
     transcript: best(transcript.map((h) => h.segment.text)),
   }
-  return { meetings, memos, actions, transcript, folders, notes, summaryOf: namedMeeting(u), highlight: u.highlight, period: null, directness }
+  return { meetings, memos, actions, transcript, folders, notes, summaryOf: namedMeeting(u), highlight: u.highlight, period: null, directness, scores }
 }
 
 /** Count of date-matching recordings for the date tag. */

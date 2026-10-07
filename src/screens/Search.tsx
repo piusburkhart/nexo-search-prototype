@@ -70,7 +70,7 @@ export default function Search() {
   const recs: Recording[] = [
     ...shown.meetings.map((item): Recording => ({ kind: 'meeting', item, date: item.startsAt })),
     ...shown.memos.map((item): Recording => ({ kind: 'memo', item, date: item.createdAt })),
-  ].sort((a, b) => recordingScore(b) - recordingScore(a) || b.date.localeCompare(a.date))
+  ].sort((a, b) => recordingScore(b, pool) - recordingScore(a, pool) || b.date.localeCompare(a.date))
   const groups = groupByMeeting(shown.transcript)
   const hiddenHits = groups.slice(LIMIT).reduce((n, g) => n + g.hits.length, 0)
   const hasText = !!q.trim()
