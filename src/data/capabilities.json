@@ -1,0 +1,86 @@
+{
+  "_readme": "What the on-device model can and can't do. Read by src/lib/capability.ts. Patterns are case-insensitive regular expressions; keywords match whole words or phrases. Order matters: the first unsupported category that matches wins. Templates use {request}, {sources} and {grounding}.",
+  "requestWords": ["write", "draft", "compose", "compare", "summarize across", "summarise across", "why", "analyze", "analyse", "translate", "rewrite", "reformat", "rephrase", "explain", "suggest", "recommend", "prepare", "create", "make", "help me", "tell me", "give me", "can you", "could you", "please"],
+  "questionWords": ["what", "why", "how", "who", "when", "where", "which", "did", "does", "do", "is", "are", "was", "were", "can", "could", "should", "would", "will"],
+  "topicStopWords": ["email", "e-mail", "mail", "message", "reply", "note", "letter", "follow-up", "follow", "up", "followup", "draft", "write", "compose", "prepare", "team", "translate", "translation", "rewrite", "reformat", "rephrase", "shorten", "simplify", "summary", "summarize", "summarise", "bullet", "points", "table", "list", "compare", "analyze", "analyse", "analysis", "across", "all", "every", "versus", "vs", "risks", "risk", "should", "recommend", "german", "french", "spanish", "swedish", "italian", "into", "make", "shorter", "longer", "turn", "me", "us", "help", "please", "two", "meetings", "memos", "calls", "call", "interviews", "changed", "change", "might", "fail"],
+  "maxSources": 5,
+  "longContentChars": 14000,
+  "grounding": "The attached transcript is the source of truth. Answer only from it, and say clearly when something isn't in it.",
+  "groundingClipboard": "The transcript is pasted below and is the source of truth. Answer only from it, and say clearly when something isn't in it.",
+  "noSources": "I haven't attached any meeting material, so ask me for what you need instead of guessing.",
+  "defaultTemplate": {
+    "id": "ask",
+    "label": "Ask about a meeting",
+    "template": "I'd like help with a meeting I recorded in Nexo.\n\nSource: {sources}\n\n{grounding}\n\nMy request: {request}",
+    "simulatedReply": "I've read the transcript of {source}. Tell me what you'd like to do with it, for example a summary for someone who missed the meeting, open questions, or a follow-up message."
+  },
+  "supported": [
+    { "id": "keyword-search", "label": "Keyword search across meetings, memos and transcripts", "examples": ["kestrel", "CSV import", "pricing"], "patterns": [] },
+    { "id": "open-transcript", "label": "Open a transcript at a timestamp", "examples": ["open the Kestrel transcript at 01:20"], "patterns": ["\\b(open|show|go to|jump to)\\b.*\\btranscript\\b", "\\bat \\d{1,2}:\\d{2}\\b"] },
+    { "id": "show-summary", "label": "Show a meeting's existing summary", "examples": ["summary of the Kestrel call", "what happened in the design review"], "patterns": ["\\bsummary of\\b", "^summari[sz]e (the|my|our) [^,]*\\b(call|meeting|review|sync|interview|retro)\\b", "\\bwhat happened (in|at|during|on)\\b", "\\brecap of\\b"] },
+    { "id": "list-actions", "label": "List action items already in a summary", "examples": ["action items from the Kestrel call", "next steps"], "patterns": ["\\baction items?\\b", "\\bnext steps\\b", "\\bto-?dos?\\b"] },
+    { "id": "simple-lookup", "label": "Answer simple lookup questions", "examples": ["when is the Kestrel signing deadline?", "who is responsible for the CSV import?", "how much does Kestrel cost?"], "patterns": ["^(when|who|where|how much|how many|how long|what time|what date|which day)\\b", "^what (is|was|are|were) the [^?]*\\b(deadline|date|price|cost|target|baseline|name|number)s?\\b", "^(what|why) (did|do|does|was|were|is) (we|they|he|she|it)?\\b.*\\b(agree|decide|say|postpone|choose|pick)"] }
+  ],
+  "unsupported": [
+    {
+      "id": "drafting",
+      "label": "Drafting text",
+      "cantLocal": "Nexo can't write emails, messages or follow-ups on your device.",
+      "examples": ["write a follow-up email to Kestrel", "draft a message to the team about the launch date", "compose a reply to Brightside"],
+      "keywords": ["follow-up email", "follow up email", "write an email", "write a message", "draft an email", "draft a message"],
+      "patterns": ["^(please |can you |could you |help me )?(write|draft|compose|prepare)\\b", "\\b(write|draft|compose|prepare)\\b( me)? (a|an|the|my|our|some)\\b", "\\bfollow[- ]?up (email|message|mail|note)\\b"],
+      "template": "Help me draft this: {request}\n\nSource: {sources}\n\n{grounding} Keep the draft short and in a calm, professional tone.",
+      "simulatedReply": "Here is where a first draft would appear, based on {source}. In a real session, Claude writes it from the transcript and you can ask for changes before you send anything."
+    },
+    {
+      "id": "compare",
+      "label": "Comparing or analysing across meetings",
+      "cantLocal": "Nexo can't compare or analyse several meetings or memos on your device.",
+      "examples": ["compare the two customer interviews", "summarize across all Nexo meetings", "analyze how the launch plan changed"],
+      "keywords": ["compare", "comparison", "difference between", "differences between", "versus", "analyze", "analyse", "analysis", "summarize across", "summarise across", "across all", "trends"],
+      "patterns": ["\\bcompar(e|ing|ison)\\b", "\\bdifferences? between\\b", "\\b(vs\\.?|versus)\\b", "\\bsummari[sz]e (all|across|every|everything)\\b", "\\bacross (all|every|the|my|our)?\\s?(meetings|memos|calls|interviews|recordings)\\b", "\\banaly[sz](e|is|ing)\\b", "\\bhow (did|has) .* change\\b"],
+      "template": "Compare and analyse these for me: {request}\n\nSources: {sources}\n\n{grounding} Point out where the sources agree, where they differ, and what is missing.",
+      "simulatedReply": "Here is where a comparison of {source} would appear, organised by topic. In a real session, Claude works only from the attached transcripts and says what isn't in them."
+    },
+    {
+      "id": "reasoning",
+      "label": "Open-ended reasoning",
+      "cantLocal": "Nexo can find what was said, but it can't reason about it on your device.",
+      "examples": ["what were the risks of the launch?", "what should we do about the CSV import?", "why might the beta fail?"],
+      "keywords": ["pros and cons", "recommend", "recommendation", "evaluate", "assess", "implications", "what if", "should we", "should i"],
+      "patterns": ["\\bwhat (were|are) the (main |biggest |key )?risks?\\b", "\\bwhat should (we|i)\\b", "\\bhow (can|could|should) (we|i)\\b", "\\bpros and cons\\b", "\\b(recommend|evaluate|assess)\\w*\\b", "\\bwhat if\\b", "\\bimplications?\\b", "\\bwhy (might|would|could)\\b"],
+      "template": "Help me think this through: {request}\n\nSources: {sources}\n\n{grounding} Separate what the sources say from your own reasoning.",
+      "simulatedReply": "Here is where a reasoned answer would appear, based on {source}. In a real session, Claude separates what the transcript says from its own reasoning."
+    },
+    {
+      "id": "translate",
+      "label": "Translating",
+      "cantLocal": "Nexo can't translate on your device.",
+      "examples": ["translate the Kestrel summary into German", "the design review in Swedish"],
+      "keywords": ["translate", "translation", "in german", "in french", "in spanish", "in swedish", "in italian"],
+      "patterns": ["\\btranslat(e|ion|ing)\\b", "\\b(in|into) (german|french|spanish|swedish|italian|dutch|portuguese|danish|norwegian|finnish|polish|japanese|chinese)\\b"],
+      "template": "Translate this for me: {request}\n\nSource: {sources}\n\n{grounding} Keep names, numbers and dates exactly as they are.",
+      "simulatedReply": "Here is where the translation of {source} would appear. In a real session, Claude keeps names, numbers and dates exactly as in the transcript."
+    },
+    {
+      "id": "rewrite",
+      "label": "Rewriting or reformatting",
+      "cantLocal": "Nexo can't rewrite or reformat summaries on your device.",
+      "examples": ["rewrite the Kestrel summary as bullet points", "make the design review summary shorter", "turn the retro into a table"],
+      "keywords": ["rewrite", "reformat", "rephrase", "shorten", "simplify", "bullet points", "as a table", "tl;dr", "tldr"],
+      "patterns": ["\\b(rewrite|reformat|rephrase|shorten|simplify)\\b", "\\bturn .* into\\b", "\\bmake\\b.*\\b(shorter|longer|simpler|more formal|more casual|friendlier)\\b", "\\b(as|into) (bullet points|bullets|a table|a list)\\b", "\\btl;?dr\\b"],
+      "template": "Rewrite this for me: {request}\n\nSource: {sources}\n\n{grounding} Don't add anything that isn't in the source.",
+      "simulatedReply": "Here is where the rewritten version of {source} would appear. In a real session, Claude only uses what is in the transcript."
+    },
+    {
+      "id": "outside",
+      "label": "Knowledge outside your data",
+      "cantLocal": "Nexo only knows your own recordings, and this needs knowledge from outside them.",
+      "examples": ["what is the weather today?", "what are typical SaaS onboarding benchmarks?", "latest news about invoicing rules"],
+      "keywords": ["weather", "news", "benchmark", "benchmarks", "industry average", "stock price", "search the web", "google"],
+      "patterns": ["\\bweather\\b", "\\b(latest|recent) news\\b", "\\bbenchmarks?\\b", "\\bindustry (average|standard)s?\\b", "\\b(on|search) the (web|internet)\\b"],
+      "template": "Help me with this: {request}\n\nContext from my meetings: {sources}\n\n{grounding} If you use general knowledge beyond it, say so clearly.",
+      "simulatedReply": "Here is where an answer would appear. In a real session, Claude says clearly which parts come from {source} and which from general knowledge."
+    }
+  ]
+}
