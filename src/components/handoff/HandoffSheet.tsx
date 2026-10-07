@@ -79,7 +79,7 @@ export function HandoffSheet({ req }: { req: HandoffRequest }) {
       setOverride(strategy === 'clipboard' ? override : 'clipboard')
       setPhase('working')
       copied.then((ok) => {
-        if (ok) { setPhase('copied'); toast(copy.toast.copied); return }
+        if (ok) { setPhase('copied'); toast(files.length ? copy.toast.copied : copy.toast.promptCopied); return }
         setNotice(copy.fallback.clipboardFailed)
         setOfferDownload(true)
         setPhase('idle')
@@ -172,8 +172,12 @@ export function HandoffSheet({ req }: { req: HandoffRequest }) {
           {handedOver ? (
             <div data-testid="handoff-next" className="flex flex-col gap-3">
               <div role="status">
-                <p className="text-heading-xs leading-[1.3] tracking-heading text-gray-975">{phase === 'copied' ? copy.after.copiedTitle : copy.after.downloadedTitle}</p>
-                <p className="mt-1 text-body-m leading-[1.4] text-gray-800">{phase === 'copied' ? copy.after.copiedBody : copy.after.downloadedBody}</p>
+                <p className="text-heading-xs leading-[1.3] tracking-heading text-gray-975">
+                  {files.length === 0 ? copy.after.promptOnlyTitle : phase === 'copied' ? copy.after.copiedTitle : copy.after.downloadedTitle}
+                </p>
+                <p className="mt-1 text-body-m leading-[1.4] text-gray-800">
+                  {files.length === 0 ? copy.after.promptOnlyBody : phase === 'copied' ? copy.after.copiedBody : copy.after.downloadedBody}
+                </p>
                 {link.shortened && <p className="mt-1 text-body-m leading-[1.4] text-gray-800">{copy.after.copiedShortLink}</p>}
               </div>
               <a data-testid="open-claude" href={link.url} onClick={() => markLeft()} className={`${BUTTON.primary} w-full`}

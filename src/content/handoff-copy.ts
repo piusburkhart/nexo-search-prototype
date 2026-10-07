@@ -48,6 +48,8 @@ export const copy = {
     copiedTitle: 'Transcript copied. Paste it into Claude.',
     copiedBody: 'Claude opens with your request typed in. Paste the transcript under it, then send it when you’re ready.',
     copiedShortLink: 'Your prompt was long, so the link only carries a short request. Everything is in the clipboard.',
+    promptOnlyTitle: 'Ready to open Claude.',
+    promptOnlyBody: 'Claude opens with your request typed in. Nothing else is attached, so send it when you’re ready.',
     downloadedTitle: 'Transcript downloaded.',
     downloadedBody: 'Claude opens with your request typed in. Attach the file with the + button before you send. On iPhone the file is in the Files app, under Downloads.',
     openClaude: 'Open Claude',
@@ -72,6 +74,7 @@ export const copy = {
 
   toast: {
     copied: 'Transcript copied.',
+    promptCopied: 'Prompt copied.',
     downloaded: 'Transcript downloaded.',
     welcomeBack: 'Welcome back to Nexo.',
   },
