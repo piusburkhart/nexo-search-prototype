@@ -76,7 +76,7 @@ export function SimulatedChat({ payload }: { payload: ChatPayload }) {
         {sent && (
           <div data-testid="sim-sent" className="ml-8 rounded-hit border border-gray-200 bg-white p-4">
             <p className="text-body-m leading-[1.4] whitespace-pre-wrap text-gray-975">{sent}</p>
-            {payload.files.length > 0 && <ul className="mt-3 flex flex-col gap-1.5">{payload.files.map((f) => <FileChip key={f.name} file={f} compact />)}</ul>}
+            {payload.files.length > 0 && <ul className="mt-3 flex flex-col gap-1.5">{payload.files.map((f) => <FileChip key={f.name} file={f} />)}</ul>}
           </div>
         )}
         {stage === 'thinking' && <div className="mt-4 flex h-8 items-center"><Dots /></div>}
@@ -92,7 +92,7 @@ export function SimulatedChat({ payload }: { payload: ChatPayload }) {
         <form onSubmit={(e) => { e.preventDefault(); send() }} data-testid="sim-composer"
           style={{ marginBottom: 'var(--kb, 0px)' }}
           className="flex flex-col gap-2 border-t border-gray-200 bg-white px-4 pt-3 pb-[max(env(safe-area-inset-bottom),12px)]">
-          {payload.files.length > 0 && <ul className="flex max-h-28 flex-col gap-1.5 overflow-y-auto">{payload.files.map((f) => <FileChip key={f.name} file={f} compact />)}</ul>}
+          {payload.files.length > 0 && <ul className="flex max-h-28 flex-col gap-1.5 overflow-y-auto">{payload.files.map((f) => <FileChip key={f.name} file={f} />)}</ul>}
           <div className="flex items-end gap-2">
             <label htmlFor="sim-input" className="sr-only">{copy.simulated.composerLabel}</label>
             <textarea id="sim-input" data-testid="sim-input" value={text} onChange={(e) => setText(e.target.value)} rows={4}

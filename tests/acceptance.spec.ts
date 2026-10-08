@@ -97,7 +97,7 @@ test.describe('navigation flow', () => {
     await expect(page.getByRole('heading', { name: 'Recordings' })).toBeVisible()
     await page.getByTestId('meeting-card').first().click()
     await page.getByTestId('memo-card').first().click({ force: true })
-    await expect(page).toHaveURL(/localhost:5173\/(#\/)?$/) // nothing opened
+    await expect(page).toHaveURL(/localhost:\d+\/(#\/)?$/) // nothing opened
     await expect(page.getByRole('heading', { name: 'Recordings' })).toBeVisible()
   })
 
@@ -280,7 +280,7 @@ test.describe('navigation flow', () => {
     await type(page, 'budget')
     await page.getByTestId('ai-synthesis').click()
     await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).not.toBeFocused()
-    await expect(page.getByTestId('ai-result')).toHaveText('Can’t help you with that.')
+    await expect(page.getByTestId('ai-result')).toHaveText('Nexo can not help you with that.')
   })
 
   test('filter tags: one type at a time; picked tag becomes a highlighted word', async ({ page }) => {
@@ -639,7 +639,8 @@ test.describe('AI synthesis answers', () => {
     await openSearch(page)
     await type(page, 'What is the weather today?')
     await page.getByTestId('ai-synthesis').click()
-    await expect(page.getByTestId('ai-result')).toHaveText('Can’t help you with that.')
+    await expect(page.getByTestId('ai-result')).toHaveText('Nexo can not help you with that.')
+    await expect(page.getByTestId('claude-pill')).toHaveText('Continue working in Claude') // Figma 86:5100
   })
 
   test('every time chip points at a real transcript moment', async () => {

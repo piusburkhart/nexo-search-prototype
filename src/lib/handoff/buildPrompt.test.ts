@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { data, getPerson } from '../../data'
-import { buildPrompt, claudeLink, clipboardText, combinedText, exportFile, exportText, fileName, isLong, MAX_URL, sanitize, type Source } from './buildPrompt'
+import { buildPrompt, claudeLink, clipboardText, combinedText, exportFile, exportText, fileName, MAX_URL, sanitize, type Source } from './buildPrompt'
 
 const meeting = (title: string): Source => ({ kind: 'meeting', item: data.meetings.find((m) => m.title.includes(title))! })
 const memo = (title: string): Source => ({ kind: 'memo', item: data.memos.find((m) => m.title.includes(title))! })
 const kestrel = meeting('Vendor Call: Kestrel')
+const KESTREL_SEGMENTS = data.transcripts.find((t) => t.meetingId === kestrel.item.id)!.segments
 
 describe('transcript export', () => {
   it('has a header and one line per segment, matching the mock data', () => {
@@ -80,9 +81,28 @@ describe('prompt', () => {
   it('opened from a transcript, ends on the request for the user to type', () => {
     expect(buildPrompt({ request: '', sources: [kestrel], delivery: 'attached' }).endsWith('My request: ')).toBe(true)
   })
-  it('the clipboard text is the prompt followed by the transcript', () => {
+  it('the clipboard holds the transcript only when the link types the prompt, and both when the link was shortened', () => {
     const f = exportFile(kestrel)
-    expect(clipboardText('PROMPT', [f])).toBe(`PROMPT\n\n${f.text}`)
+    expect(clipboardText('PROMPT', [f], { linkCarriesPrompt: true })).toBe(f.text)
+    expect(clipboardText('PROMPT', [f], { linkCarriesPrompt: false })).toBe(`PROMPT\n\n${f.text}`)
+    expect(clipboardText('PROMPT', [], { linkCarriesPrompt: true })).toBe('PROMPT')
+  })
+  it('gives Claude everything: request, names, dates, participants, the transcript and the answer-only-from-it rule', () => {
+    const files = [exportFile(kestrel)]
+    const prompt = buildPrompt({ request: 'write a follow-up email to Kestrel', category: 'drafting', sources: [kestrel], delivery: 'pasted' })
+    const { url, shortened } = claudeLink({ prompt, request: 'write a follow-up email to Kestrel', delivery: 'pasted', hasSources: true })
+    expect(shortened).toBe(false)
+    const typed = decodeURIComponent(url.split('q=')[1])
+    expect(typed).toContain('write a follow-up email to Kestrel')
+    expect(typed).toContain('Vendor Call: Kestrel Analytics')
+    expect(typed).toContain('2 October 2026')
+    expect(typed).toContain('Elin Berg')
+    expect(typed).toContain('source of truth')
+    expect(typed).toContain('say clearly when something isn\'t in it')
+    expect(typed).toContain('in my clipboard')
+    const pasted = clipboardText(prompt, files, { linkCarriesPrompt: true })
+    for (const s of KESTREL_SEGMENTS) expect(pasted).toContain(s.text) // the full transcript text
+    expect(pasted).toContain('Participants: ')
   })
 })
 
@@ -100,16 +120,15 @@ describe('claude.ai link', () => {
     expect(shortened).toBe(true)
     expect(decodeURIComponent(url.split('q=')[1]).startsWith('My meeting transcript is in my clipboard. Paste it below and then help me with: ')).toBe(true)
   })
+  it('keeps the answer-only-from-it rule when the link is shortened', () => {
+    const { url, shortened } = claudeLink({ prompt: 'x '.repeat(3000), request: 'a very long request '.repeat(200), delivery: 'pasted', hasSources: true })
+    expect(shortened).toBe(true)
+    expect(url.length).toBeLessThanOrEqual(MAX_URL)
+    expect(decodeURIComponent(url.split('q=')[1])).toContain('Answer only from that material, and say clearly when something is missing from it.')
+  })
   it('never contains the transcript itself', () => {
     const f = exportFile(kestrel)
     const { url } = claudeLink({ prompt: 'P', request: 'r', delivery: 'attached', hasSources: true })
     expect(decodeURIComponent(url)).not.toContain(f.text.split('\n').find((l) => l.startsWith('[00:'))!)
-  })
-})
-
-describe('long content', () => {
-  it('warns above the threshold only', () => {
-    expect(isLong([exportFile(kestrel)])).toBe(false)
-    expect(isLong(data.meetings.map((item) => exportFile({ kind: 'meeting', item })))).toBe(true)
   })
 })

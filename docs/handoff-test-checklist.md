@@ -11,53 +11,53 @@ Run this on at least one iPhone (Safari) and one Android phone (Chrome). It take
   - `…/?handoff=simulate`
 - Or long-press the screen title ("Recordings" or "Global search") for 0.7 s to open the hidden settings. They show the current mode and **Debug info**. Write down "canShare({ files })", "Platform guess" and "Auto would use" for each phone.
 - Test twice per phone: once with the Claude app installed and signed in, and once without the app (or signed out).
-- Use the same path each time: search **kestrel**, tap **Ask Claude** on "Vendor Call: Kestrel Analytics", type a request after "My request:", tick the checkbox, and tap **Open in Claude**.
+- Use the same path each time: search **write a follow-up email to Kestrel**, tap the sparkle button (AI Synthesis), then tap **Continue working in Claude**. There is no sheet and no confirmation: that one tap is the whole handoff.
 
 ## Questions to answer
 
-### 1. Share sheet (`?handoff=share`)
-- [ ] Does the share sheet open straight away from the tap, with no error?
-- [ ] Is the **Claude** app listed? If not, is it under "More"?
-- [ ] After picking Claude: does the **file** (`Vendor-Call-Kestrel-Analytics_2026-10-02_transcript.txt`) arrive as an attachment?
-- [ ] Does the **text** (the prompt) arrive in the message field, or is it lost?
-- [ ] Do you still have to tap send in Claude? (Expected: yes.)
-- [ ] Cancel the share sheet: does Nexo stay calm, with no error and the sheet still open?
-
-### 2. Clipboard + link (`?handoff=clipboard`)
-- [ ] After "Open in Claude", does Nexo say "Transcript copied. Paste it into Claude."?
-- [ ] Tap **Open Claude**. Does it open the **Claude app** or **claude.ai in the browser**?
-- [ ] Does the prompt arrive **prefilled** in the message field?
-- [ ] Does pasting put the prompt and the transcript in, with all 11 lines from [00:00] to [03:05]?
+### 1. Default: one tap (Auto = clipboard + link; `?handoff=clipboard`)
+- [ ] After the tap, does Claude open straight away, with no extra step in Nexo?
+- [ ] Does it open the **Claude app** or **claude.ai in the browser**?
+- [ ] Does the request arrive **prefilled** in the message field, with the sources (names, dates, participants) and the line "answer only from the material"?
+- [ ] Does pasting put the transcripts in, each under its header, with all lines from the first to the last timestamp?
+- [ ] Did you see the toast "Transcript copied"? (On a phone the page leaves in the same tap, so it may only show when you come back.)
 - [ ] Do you have to tap send yourself? (Expected: yes.)
 
+### 2. Share sheet (`?handoff=share`)
+- [ ] Does the share sheet open straight away from the tap?
+- [ ] Is the **Claude** app listed? If not, is it under "More"?
+- [ ] After picking Claude: does the **file** (`Vendor-Call-Kestrel-Analytics_2026-10-02_transcript.txt`) arrive as an attachment, and the **text** (the prompt) in the message field?
+- [ ] Cancel the share sheet: does Nexo stay calm, with no error?
+- [ ] Is this slower than the default (one extra choice)? Count the taps.
+
 ### 3. Download + link (`?handoff=download`)
-- [ ] Where does the file go? (iPhone: Files › Downloads? Android: Downloads?) Does the browser ask first?
-- [ ] Tap **Open Claude**. Can you attach the downloaded file in Claude with "+"?
+- [ ] First tap: where does the file go? (iPhone: Files › Downloads? Android: Downloads?) Does the browser ask first?
+- [ ] Second tap ("Open Claude and attach the file"): can you attach the downloaded file in Claude with "+"?
 - [ ] Is the file readable after it's attached?
 
 ### 4. Without the Claude app, or signed out
 - [ ] Share sheet: what is listed instead of Claude?
-- [ ] Link: does claude.ai open in the browser? Does it ask you to sign in, and is the prompt still there after signing in?
+- [ ] Default flow: does claude.ai open in the browser? Does it ask you to sign in, and is the typed request still there after signing in?
+- [ ] Is the clipboard still filled when you get back to Claude after signing in?
 
 ### 5. Coming back
 - [ ] Switch back to Nexo (app switcher, or the browser's back button). Does it say "Welcome back to Nexo." without an error?
 - [ ] Is the search still there?
 
 ### 6. Phone basics
-- [ ] With the keyboard open on the prompt field, are the field and the buttons still reachable?
-- [ ] Nothing scrolls sideways; every button is easy to hit.
-- [ ] The swipe-back gesture (iPhone) or the back button (Android) closes the sheet rather than leaving the page.
+- [ ] The pill is easy to hit (at least 44 px) and nothing scrolls sideways.
+- [ ] Back from Claude (swipe back on iPhone, back button on Android): does Nexo show "Welcome back to Nexo." and your search?
 
 ## Results
 
 | Device and OS | Browser | Claude app installed and signed in? | Mode | Opens? (app / browser / nothing) | Prompt arrives? | File or transcript arrives? | Send is manual? | Notes |
 |---|---|---|---|---|---|---|---|---|
+| | | | Auto / Clipboard + link (default) | | | | | |
 | | | | Share sheet | | | | | |
-| | | | Clipboard + link | | | | | |
 | | | | Download + link | | | | | |
 | | | | Simulate | in app | | | | |
+| | | | Auto / Clipboard + link (default) | | | | | |
 | | | | Share sheet | | | | | |
-| | | | Clipboard + link | | | | | |
 | | | | Download + link | | | | | |
 | | | | Simulate | in app | | | | |
 

@@ -2,8 +2,10 @@ import { expect, test, type Page } from '@playwright/test'
 import { mock } from './data'
 
 /*
- * Continue in Claude, at phone sizes. Every test runs on an iPhone-sized and a Pixel-sized viewport with
- * touch and a phone user agent. Share and clipboard are mocked; claude.ai is intercepted, never loaded.
+ * Continue in Claude (D88), at phone sizes: Nexo tries first; when AI Synthesis can't help, it offers a
+ * "Continue working in Claude" pill (Figma 86:5100) that hands over in one tap. Every test runs on an
+ * iPhone-sized and a Pixel-sized viewport with touch and a phone user agent. Share and clipboard are
+ * mocked; claude.ai is intercepted, never loaded.
  */
 const DEVICES = [
   { name: 'iPhone 390x844', viewport: { width: 390, height: 844 }, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' },
@@ -13,22 +15,45 @@ const DEVICES = [
 const KESTREL = mock.meetings.find((m) => m.title === 'Vendor Call: Kestrel Analytics')!
 const KESTREL_FILE = `Vendor-Call-Kestrel-Analytics_${KESTREL.startsAt.slice(0, 10)}_transcript.txt`
 const KESTREL_SEGMENTS = mock.transcripts.find((t) => t.meetingId === KESTREL.id)!.segments
+const EMAIL = 'write a follow-up email to Kestrel'
 
 const unlock = (page: Page) => page.addInitScript(() => localStorage.setItem('nexo-auth', '88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527'))
 const searchFor = (page: Page, q: string, mode?: string) =>
   page.goto(`/${mode ? `?handoff=${mode}` : ''}#/search?q=${encodeURIComponent(q)}`)
-
-/** Search "kestrel" and tap "Ask Claude" on the Kestrel vendor call's transcript card. */
-async function askAboutKestrel(page: Page, mode?: string) {
-  await searchFor(page, 'kestrel', mode)
-  const group = page.locator(`[data-testid="transcript-group"][data-meeting="${KESTREL.id}"]`)
-  if (!(await group.count())) await page.getByTestId('group-transcript').getByTestId('unfold').tap()
-  await group.getByTestId('ask-claude').tap()
-  await expect(page.getByTestId('handoff-sheet')).toBeVisible()
+/** Search, then tap the AI Synthesis button: the first of the two taps. */
+async function askNexo(page: Page, q: string, mode?: string) {
+  await searchFor(page, q, mode)
+  await page.getByTestId('ai-synthesis').tap()
+  await expect(page.getByTestId('ai-result')).toHaveText('Nexo can not help you with that.')
+  await expect(page.getByTestId('claude-pill')).toBeVisible()
 }
-const confirmAndOpen = async (page: Page) => {
-  await page.getByTestId('handoff-consent').tap()
-  await page.getByTestId('handoff-open').tap()
+/** Mock the clipboard API and record what was copied on the test side, so it survives leaving for Claude. */
+async function mockClipboard(page: Page) {
+  const copied: string[] = []
+  await page.exposeFunction('__recordClip', (t: string) => { copied.push(t) })
+  await page.addInitScript(() => {
+    const w = window as unknown as { __recordClip: (t: string) => Promise<void> }
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: (t: string) => w.__recordClip(t) } })
+  })
+  return () => copied.at(-1) ?? ''
+}
+const interceptClaude = (page: Page) =>
+  page.route('https://claude.ai/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>claude.ai (intercepted in tests)</p>' }))
+/**
+ * The tap leaves Nexo for Claude in the same tab, so the toast can't be read from the page afterwards. This
+ * records every toast from inside the page as it appears, and reports it to the test.
+ */
+async function recordToasts(page: Page) {
+  const seen: string[] = []
+  await page.exposeFunction('__recordToast', (t: string) => { seen.push(t) })
+  await page.addInitScript(() => {
+    const report = (window as unknown as { __recordToast: (t: string) => void }).__recordToast
+    new MutationObserver(() => {
+      const t = document.querySelector('[data-testid="toast"]')?.textContent
+      if (t) report(t)
+    }).observe(document, { childList: true, subtree: true, characterData: true })
+  })
+  return seen
 }
 
 for (const device of DEVICES) {
@@ -36,74 +61,107 @@ for (const device of DEVICES) {
     test.use({ viewport: device.viewport, userAgent: device.userAgent, isMobile: true, hasTouch: true })
     test.beforeEach(async ({ page }) => { await unlock(page) })
 
-    test('1. "write a follow-up email to Kestrel" shows Continue in Claude, not the empty state', async ({ page }) => {
-      await searchFor(page, 'write a follow-up email to Kestrel')
-      await expect(page.getByTestId('handoff-card')).toBeVisible()
-      await expect(page.getByTestId('handoff-card')).toHaveAttribute('data-category', 'drafting')
+    test('1. no Claude suggestion in the search itself; AI Synthesis offers it when Nexo can’t help', async ({ page }) => {
+      await searchFor(page, EMAIL)
+      await expect(page.getByTestId('group-recordings')).toBeVisible() // Nexo searches as usual
+      await expect(page.getByTestId('claude-pill')).toHaveCount(0)
+      await page.getByTestId('ai-synthesis').tap()
+      await expect(page.getByTestId('ai-result')).toHaveText('Nexo can not help you with that.')
+      await expect(page.getByTestId('claude-pill')).toHaveText('Continue working in Claude')
       await expect(page.getByTestId('empty-state')).toHaveCount(0)
-      // A request search finds nothing for: the card takes the empty state's place.
-      await searchFor(page, 'what is the capital of australia?')
-      await expect(page.getByTestId('handoff-card')).toBeVisible()
-      await expect(page.getByTestId('empty-state')).toHaveCount(0)
-      // "Not now" hides it for this query.
-      await page.getByTestId('handoff-dismiss').tap()
-      await expect(page.getByTestId('handoff-card')).toHaveCount(0)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(device.viewport.width)
+      expect((await page.getByTestId('claude-pill').boundingBox())!.height).toBeGreaterThanOrEqual(44)
     })
 
-    test('2. "budget" still shows the plain empty state', async ({ page }) => {
+    test('2. "budget" shows the plain empty state; questions Nexo can answer get an answer, not Claude', async ({ page }) => {
       await searchFor(page, 'budget')
       await expect(page.getByTestId('empty-state')).toBeVisible()
-      await expect(page.getByTestId('handoff-card')).toHaveCount(0)
+      await expect(page.getByTestId('claude-pill')).toHaveCount(0)
+      await searchFor(page, 'Why was SSO postponed?')
+      await page.getByTestId('ai-synthesis').tap()
+      await expect(page.getByTestId('ai-result')).toContainText('SSO')
+      await expect(page.getByTestId('claude-pill')).toHaveCount(0)
+      // Open-ended questions get Nexo's own answer first; Claude is only offered when it has none.
+      await searchFor(page, 'What are the risks for the launch?')
+      await page.getByTestId('ai-synthesis').tap()
+      await expect(page.getByTestId('ai-result')).toContainText('biggest technical risk')
+      await expect(page.getByTestId('claude-pill')).toHaveCount(0)
     })
 
-    test('3. Ask Claude on the Kestrel transcript attaches that transcript with the right file name', async ({ page }) => {
-      await askAboutKestrel(page)
-      const chips = page.getByTestId('file-chip')
-      await expect(chips).toHaveCount(1)
-      await expect(chips.first()).toHaveAttribute('data-name', KESTREL_FILE)
-      await expect(chips.first().getByTestId('file-name')).toHaveText(KESTREL_FILE)
-      await expect(page.getByTestId('handoff-prompt')).toHaveValue(new RegExp(`“${KESTREL.title}” \\(meeting, 2 October 2026`))
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(device.viewport.width)
+    test('3. one tap after AI Synthesis: copies the transcripts, opens claude.ai/new?q= with the full prompt (under 2,000 characters) and shows a toast', async ({ page }) => {
+      const clipboard = await mockClipboard(page)
+      await interceptClaude(page)
+      const toasts = await recordToasts(page)
+      await askNexo(page, EMAIL)
+      await expect(page.getByTestId('claude-pill')).toHaveAttribute('data-strategy', 'clipboard') // auto = clipboard + link
+      const request = page.waitForRequest(/^https:\/\/claude\.ai\/new/)
+      await page.getByTestId('claude-pill').tap() // no sheet, no confirmation, no app picker
+      const url = (await request).url()
+      expect(url.startsWith('https://claude.ai/new?q=')).toBe(true)
+      expect(url.length).toBeLessThan(2000)
+      // The link types everything Claude needs to carry out the request: the request, the sources with dates and
+      // participants, the rule to answer only from the material, and where the transcript is.
+      const q = decodeURIComponent(url.split('q=')[1])
+      expect(q).toContain(`Help me draft this: ${EMAIL}`)
+      expect(q).toContain(KESTREL.title)
+      expect(q).toContain('2 October 2026')
+      expect(q).toContain('source of truth')
+      expect(q).toMatch(/say clearly when something isn't in (it|them)/)
+      expect(q).toContain('My meeting transcript is in my clipboard')
+      // The clipboard holds the transcripts, not the prompt a second time.
+      await expect.poll(clipboard).toContain(KESTREL_FILE)
+      const clip = clipboard()
+      expect(clip).toContain('===== ') // several sources, each under a header
+      expect(clip).toContain('Participants: ')
+      expect(clip).not.toContain(EMAIL)
+      for (const seg of KESTREL_SEGMENTS) expect(clip).toContain(seg.text) // the full transcript text
+      expect(toasts).toContain('Transcript copied') // a small toast, in the same tap
     })
 
-    test('4. the prompt is editable and the character count follows', async ({ page }) => {
-      await askAboutKestrel(page)
-      const prompt = page.getByTestId('handoff-prompt')
-      const before = (await prompt.inputValue()).length
-      await expect(page.getByTestId('handoff-count')).toHaveText(`${before.toLocaleString('en-US')} characters`)
-      const edited = 'Summarise the pricing for my manager.'
-      await prompt.fill(edited)
-      await expect(page.getByTestId('handoff-count')).toHaveText(`${edited.length} characters`)
+    test('4. the copied Kestrel transcript matches the mock data', async ({ page }) => {
+      const clipboard = await mockClipboard(page)
+      await interceptClaude(page)
+      await askNexo(page, EMAIL)
+      await page.getByTestId('claude-pill').tap()
+      await expect.poll(clipboard).toContain(KESTREL_FILE)
+      const text = clipboard()
+      const section = text.split(/^===== \d+ of \d+: /m).find((s) => s.startsWith(KESTREL_FILE)) ?? ''
+      const lines = section.split('\n').filter((l) => /^\[\d{2}:\d{2}\] /.test(l))
+      expect(lines).toHaveLength(KESTREL_SEGMENTS.length)
+      expect(lines[0].startsWith(`[${KESTREL_SEGMENTS[0].time}] `)).toBe(true)
+      expect(lines.at(-1)!.startsWith(`[${KESTREL_SEGMENTS.at(-1)!.time}] `)).toBe(true)
+      expect(section).toContain(`Source: Nexo meeting ${KESTREL.id}`)
     })
 
-    test('5. Open in Claude is disabled until the user confirms; controls are at least 44px', async ({ page }) => {
-      await askAboutKestrel(page)
-      const open = page.getByTestId('handoff-open')
-      await expect(open).toBeDisabled()
-      await page.getByTestId('handoff-consent').tap()
-      await expect(open).toBeEnabled()
-      for (const el of [open, page.getByTestId('remove-file'), page.locator('label:has([data-testid="handoff-consent"])')]) {
-        expect((await el.boundingBox())!.height).toBeGreaterThanOrEqual(44)
-      }
+    test('5. coming back from Claude shows a calm welcome', async ({ page }) => {
+      await mockClipboard(page)
+      await interceptClaude(page)
+      await askNexo(page, EMAIL)
+      await page.getByTestId('claude-pill').tap()
+      await page.waitForURL(/claude\.ai/)
+      await page.goBack().catch(() => { /* the restored page may report an aborted navigation */ })
+      await expect(page.getByTestId('toast')).toHaveText('Welcome back to Nexo.')
+      await expect(page.getByTestId('handoff-error')).toHaveCount(0)
     })
 
-    test('6. Simulate mode ends in the simulated chat; Back to Nexo returns', async ({ page }) => {
-      await askAboutKestrel(page, 'simulate')
-      await page.getByTestId('handoff-prompt').fill('Draft a short thank-you note to Kestrel.')
-      await confirmAndOpen(page)
+    test('6. Simulate mode: one tap opens the simulated chat with the prompt and files; Back to Nexo returns', async ({ page }) => {
+      await askNexo(page, EMAIL, 'simulate')
+      await page.getByTestId('claude-pill').tap()
       await expect(page.getByTestId('sim-opening')).toBeVisible()
       await expect(page.getByTestId('sim-chat')).toBeVisible()
-      await expect(page.getByTestId('sim-input')).toHaveValue('Draft a short thank-you note to Kestrel.')
-      await expect(page.getByTestId('sim-chat').getByTestId('file-chip')).toHaveAttribute('data-name', KESTREL_FILE)
+      await expect(page.getByTestId('sim-input')).toHaveValue(new RegExp(`^Help me draft this: ${EMAIL}`))
+      await expect(page.locator(`[data-testid="file-chip"][data-name="${KESTREL_FILE}"]`)).toBeVisible()
+      await page.getByTestId('sim-input').fill('Draft a short thank-you note to Kestrel.') // the prompt is editable there
       await page.getByTestId('sim-send').tap()
-      await expect(page.getByTestId('sim-reply')).toContainText(KESTREL.title)
+      await expect(page.getByTestId('sim-sent')).toContainText('Draft a short thank-you note to Kestrel.')
+      await expect(page.getByTestId('sim-reply')).toBeVisible()
       await page.getByTestId('sim-back').tap()
       await expect(page.getByTestId('sim-chat')).toHaveCount(0)
       await expect(page.getByTestId('toast')).toHaveText('Welcome back to Nexo.')
       await expect(page).toHaveURL(/#\/search/)
     })
 
-    test('7. Share mode calls navigator.share with the file and the prompt; a cancelled share keeps the sheet open quietly', async ({ page }) => {
+    test('7. Share mode calls navigator.share with the files and the prompt; a cancelled share is quiet', async ({ page }) => {
       await page.addInitScript(() => {
         const w = window as unknown as { __shares: unknown[]; __abort?: boolean }
         w.__shares = []
@@ -116,104 +174,56 @@ for (const device of DEVICES) {
           },
         })
       })
-      await askAboutKestrel(page, 'share')
-      await expect(page.getByTestId('handoff-sheet')).toHaveAttribute('data-strategy', 'share')
-      const prompt = await page.getByTestId('handoff-prompt').inputValue()
-      await confirmAndOpen(page)
+      await askNexo(page, EMAIL, 'share')
+      await expect(page.getByTestId('claude-pill')).toHaveAttribute('data-strategy', 'share')
+      await page.getByTestId('claude-pill').tap()
       await expect(page.getByTestId('toast')).toHaveText('Shared. Finish in Claude.')
       const shares = await page.evaluate(() => (window as unknown as { __shares: { text: string; files: { name: string; type: string; size: number }[] }[] }).__shares)
       expect(shares).toHaveLength(1)
-      expect(shares[0].text).toBe(prompt)
-      expect(shares[0].files).toEqual([expect.objectContaining({ name: KESTREL_FILE, type: 'text/plain' })])
-      expect(shares[0].files[0].size).toBeGreaterThan(0)
-      await expect(page.getByTestId('handoff-sheet')).toHaveCount(0) // closes after success
+      expect(shares[0].text).toContain(`Help me draft this: ${EMAIL}`)
+      expect(shares[0].files).toContainEqual(expect.objectContaining({ name: KESTREL_FILE, type: 'text/plain' }))
 
-      // Cancelled in the share sheet: nothing looks like an error, and the sheet stays.
       await page.evaluate(() => { (window as unknown as { __abort: boolean }).__abort = true })
-      await page.locator(`[data-testid="transcript-group"][data-meeting="${KESTREL.id}"]`).getByTestId('ask-claude').tap()
-      await confirmAndOpen(page)
-      await expect(page.getByTestId('handoff-sheet')).toHaveAttribute('data-phase', 'cancelled')
-      await expect(page.getByTestId('handoff-sheet')).toBeVisible()
+      await page.getByTestId('claude-pill').tap()
+      await expect.poll(() => page.evaluate(() => (window as unknown as { __shares: unknown[] }).__shares.length)).toBe(2)
       await expect(page.getByTestId('handoff-error')).toHaveCount(0)
-      await expect(page.getByTestId('handoff-sheet').getByRole('alert')).toHaveCount(0)
-      await expect(page.getByTestId('copy-instead')).toBeVisible()
+      await expect(page.getByRole('alert')).toHaveCount(0)
+      await expect(page).toHaveURL(/#\/search/)
     })
 
-    test('8. Clipboard mode copies prompt + transcript and opens claude.ai/new?q= under 2,000 characters', async ({ page }) => {
-      await page.addInitScript(() => {
-        Object.defineProperty(navigator, 'clipboard', {
-          configurable: true,
-          value: { writeText: async (t: string) => { (window as unknown as { __clip: string }).__clip = t } },
-        })
-      })
-      await page.route('https://claude.ai/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>claude.ai (intercepted in tests)</p>' }))
-      await askAboutKestrel(page, 'clipboard')
-      await page.getByTestId('handoff-prompt').fill('Write a follow-up email to Kestrel. '.repeat(70)) // long: forces the short link
-      const prompt = await page.getByTestId('handoff-prompt').inputValue()
-      await confirmAndOpen(page)
-      await expect(page.getByTestId('handoff-next')).toContainText('Transcript copied. Paste it into Claude.')
-      await expect(page.getByTestId('toast')).toHaveText('Transcript copied.')
-      const clip = await page.evaluate(() => (window as unknown as { __clip: string }).__clip)
-      expect(clip.startsWith(prompt)).toBe(true)
-      expect(clip).toContain(`[${KESTREL_SEGMENTS[0].time}] `)
-      expect(clip).toContain(`[${KESTREL_SEGMENTS.at(-1)!.time}] `)
-
+    test('8. Download mode: the first tap downloads the transcript, the second opens Claude', async ({ page }) => {
+      await interceptClaude(page)
+      await askNexo(page, EMAIL, 'download')
+      const download = page.waitForEvent('download')
+      await page.getByTestId('claude-pill').tap()
+      expect((await download).suggestedFilename()).toMatch(/^Nexo_\d-sources_\d{4}-\d{2}-\d{2}\.txt$/)
+      await expect(page.getByTestId('claude-pill')).toHaveText('Open Claude and attach the file')
       const request = page.waitForRequest(/^https:\/\/claude\.ai\/new/)
-      await page.getByTestId('open-claude').tap()
-      const url = (await request).url()
-      expect(url.startsWith('https://claude.ai/new?q=')).toBe(true)
-      expect(url.length).toBeLessThan(2000)
-      expect(decodeURIComponent(url)).toContain('My meeting transcript is in my clipboard')
-
-      // Back from Claude: a calm welcome, not an error.
-      await page.waitForURL(/claude\.ai/)
-      await page.goBack().catch(() => { /* the restored page may report an aborted navigation */ })
-      await expect(page.getByTestId('toast')).toHaveText('Welcome back to Nexo.')
-      await expect(page.getByTestId('handoff-error')).toHaveCount(0)
+      await page.getByTestId('claude-pill').tap()
+      expect(decodeURIComponent((await request).url())).toContain('See the attached transcript')
     })
 
-    test('9. the transcript export matches the mock data', async ({ page }) => {
-      await askAboutKestrel(page)
-      await page.getByTestId('file-chip').first().getByRole('button', { name: /^Preview/ }).tap()
-      const text = await page.getByTestId('file-preview').innerText()
-      const lines = text.split('\n').filter((l) => /^\[\d{2}:\d{2}\] /.test(l))
-      expect(lines).toHaveLength(KESTREL_SEGMENTS.length)
-      expect(lines[0].startsWith(`[${KESTREL_SEGMENTS[0].time}] `)).toBe(true)
-      expect(lines.at(-1)!.startsWith(`[${KESTREL_SEGMENTS.at(-1)!.time}] `)).toBe(true)
-      expect(text).toContain(`Source: Nexo meeting ${KESTREL.id}`)
+    test('9. a request with nothing to attach still opens Claude with the request', async ({ page }) => {
+      await mockClipboard(page)
+      await interceptClaude(page)
+      await askNexo(page, 'what is the capital of australia?')
+      const request = page.waitForRequest(/^https:\/\/claude\.ai\/new/)
+      await page.getByTestId('claude-pill').tap()
+      const q = decodeURIComponent((await request).url().split('q=')[1])
+      expect(q).toContain('what is the capital of australia?')
+      expect(q).not.toContain('clipboard') // nothing was copied, so the prompt doesn't say so
     })
 
-    test('10. removing every attachment is allowed and says Claude gets no context', async ({ page }) => {
-      await askAboutKestrel(page)
-      await page.getByTestId('remove-file').tap()
-      await expect(page.getByTestId('file-chip')).toHaveCount(0)
-      await expect(page.getByTestId('no-attachments')).toContainText('Claude won’t know anything about your meetings')
-      await page.getByTestId('handoff-consent').tap()
-      await expect(page.getByTestId('handoff-open')).toBeEnabled()
-    })
-
-    test('11. offline shows an error with Try again, and the sheet stays usable', async ({ page, context }) => {
-      await askAboutKestrel(page, 'clipboard')
+    test('10. offline: the tap stays in Nexo and says why', async ({ page, context }) => {
+      await askNexo(page, EMAIL)
       await context.setOffline(true)
-      await confirmAndOpen(page)
+      await page.getByTestId('claude-pill').tap()
       await expect(page.getByTestId('handoff-error')).toContainText('You’re offline')
+      await expect(page).toHaveURL(/#\/search/)
       await context.setOffline(false)
-      await page.getByTestId('handoff-error').getByRole('button', { name: 'Try again' }).tap()
-      await expect(page.getByTestId('handoff-error')).toHaveCount(0)
     })
 
-    test('12. Escape and the back gesture close the sheet', async ({ page }) => {
-      await askAboutKestrel(page)
-      await page.keyboard.press('Escape')
-      await expect(page.getByTestId('handoff-sheet')).toHaveCount(0)
-      await page.locator(`[data-testid="transcript-group"][data-meeting="${KESTREL.id}"]`).getByTestId('ask-claude').tap()
-      await expect(page.getByTestId('handoff-sheet')).toBeVisible()
-      await page.goBack()
-      await expect(page.getByTestId('handoff-sheet')).toHaveCount(0)
-      await expect(page).toHaveURL(/#\/search\?q=kestrel/)
-    })
-
-    test('13. settings: a long-press on the title opens them, the mode persists, ?handoff= presets it', async ({ page }) => {
+    test('11. settings: a long-press on the title opens them, the mode persists, ?handoff= presets it', async ({ page }) => {
       await page.goto('/#/search')
       const title = page.getByTestId('search-headline')
       const box = (await title.boundingBox())!

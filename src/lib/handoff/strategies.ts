@@ -1,8 +1,8 @@
 /*
  * The handoff ladder (D83). Four strategies; a tap handler calls `run…` functions synchronously, because
  * mobile browsers only allow share, clipboard and downloads inside the tap itself.
- *   share     A. native share sheet with the transcript file(s)       (auto on phones that can share files)
- *   clipboard B. copy prompt + transcript, then open claude.ai/new?q=  (auto everywhere else)
+ *   share     A. native share sheet with the transcript file(s)       (manual: the user has to pick Claude)
+ *   clipboard B. copy prompt + transcript and open claude.ai/new?q=   (auto: one tap, no picker; D88)
  *   download  C. download the .txt, then open claude.ai/new?q=         (manual only)
  *   simulate  D. simulated chat inside the app                         (manual only)
  */
@@ -46,9 +46,12 @@ export function detectEnv(): HandoffEnv {
 
 export interface Resolved { id: StrategyId; fellBack?: 'share-unavailable' }
 
-/** The strategy for a mode. Auto: share on a phone that can share files, else clipboard. Never auto C or D. */
+/**
+ * The strategy for a mode. Auto is clipboard + link everywhere: one tap, no app picker (D88). The share
+ * sheet makes the user find Claude among the apps, so it is manual only, as are download and simulate.
+ */
 export function resolveStrategy(mode: Mode, env: HandoffEnv): Resolved {
-  if (mode === 'auto') return { id: env.mobile && env.canShareFiles ? 'share' : 'clipboard' }
+  if (mode === 'auto') return { id: 'clipboard' }
   if (mode === 'share' && !env.canShareFiles) return { id: 'clipboard', fellBack: 'share-unavailable' }
   return { id: mode }
 }
@@ -85,12 +88,16 @@ function legacyCopy(text: string): boolean {
   return ok
 }
 
-/** B. Copy to the clipboard. Starts synchronously in the tap; resolves whether it worked. */
-export function runCopy(text: string): Promise<boolean> {
+/**
+ * B. Copy to the clipboard, synchronously, so the same tap can go on to open Claude: the hidden-textarea
+ * copy finishes before the page leaves, and the clipboard API is started too where it exists.
+ */
+export function copyNow(text: string): boolean {
+  let started = false
   if (typeof navigator.clipboard?.writeText === 'function') {
-    try { return navigator.clipboard.writeText(text).then(() => true, () => legacyCopy(text)) } catch { /* fall through */ }
+    try { navigator.clipboard.writeText(text).catch(() => {}); started = true } catch { /* fall through */ }
   }
-  return Promise.resolve(legacyCopy(text))
+  return legacyCopy(text) || started
 }
 
 /** C. Download a file through a Blob URL and an <a download>. Synchronous. */

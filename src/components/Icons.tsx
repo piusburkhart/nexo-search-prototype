@@ -30,8 +30,6 @@ export const MailIcon = (p: P) => <Svg {...p}><rect x="3" y="5" width="18" heigh
 export const CheckCircleIcon = (p: P) => <Svg {...p}><circle cx="12" cy="12" r="9" /><path d="m8 12.5 2.8 2.8L16.5 9.5" /></Svg>
 export const WaveIcon = (p: P) => <Svg {...p}><path d="M4 10v4M8 6v12M12 3v18M16 8v8M20 11v2" /></Svg>
 /* Continue in Claude (D86): drawn in the same 24px, 1.8 stroke style as the icons above. */
-export const ArrowUpRightIcon = (p: P) => <Svg {...p}><path d="M7 17 17 7M9 7h8v8" /></Svg>
 export const ArrowUpIcon = (p: P) => <Svg {...p}><path d="M12 19V5M6 11l6-6 6 6" /></Svg>
-export const ChevronDownIcon = (p: P) => <Svg {...p}><path d="m6 9 6 6 6-6" /></Svg>
 export const ChevronLeftIcon = (p: P) => <Svg {...p}><path d="m15 6-6 6 6 6" /></Svg>
 export const FileIcon = (p: P) => <Svg {...p}><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4M10 12h5M10 16h5" /></Svg>

@@ -12,11 +12,13 @@ import caps from '../data/capabilities.json'
 
 export interface Category {
   id: string; label: string; cantLocal: string; examples: string[]
+  /** Nexo's own answer wins if AI Synthesis has one (open-ended questions); otherwise this category goes to Claude. */
+  tryLocalFirst?: boolean
   keywords: string[]; patterns: string[]; template: string; simulatedReply: string
 }
 export interface Capabilities {
   requestWords: string[]; questionWords: string[]; topicStopWords: string[]
-  maxSources: number; longContentChars: number
+  maxSources: number
   grounding: string; groundingClipboard: string; noSources: string
   defaultTemplate: { id: string; label: string; template: string; simulatedReply: string }
   supported: { id: string; label: string; examples: string[]; patterns: string[] }[]

@@ -42,56 +42,10 @@ Actions (a third file type, with an Actions tab), three-item sections with unfol
 Search and AI Synthesis share one reading of the query (`src/semantic.ts`): synonyms, typo correction, the project as membership, and question intent. Search decides the results; AI Synthesis only summarises what is on screen and never adds sources.
 
 ## Update: Continue in Claude
-When a request goes beyond what Nexo's small on-device model can do, the app offers to hand it to Claude, with a ready-made prompt and the relevant transcripts. Nothing is sent until the user sends it in Claude. Plan: `docs/handoff-feature.md`. Decisions: D79 to D87.
+When a request goes beyond Nexo's small on-device model, **AI Synthesis** says "Nexo can not help you with that." and offers one tap, "Continue working in Claude" (Figma 86:5100). The tap copies the transcripts, shows the toast "Transcript copied" and opens `claude.ai/new?q=` with the request, the sources (title, date, participants) and the rule to answer only from the material. No sheet, no confirmation, no app picker. Search itself never suggests Claude. Full description: `docs/handoff-feature.md`. Decisions: D79 to D88.
 
-**Where it shows up**
-- **Search:** a "Continue in Claude" card. It sits above the results for clear requests ("write a follow-up email to Kestrel", "compare the two customer interviews", "translate…", "rewrite… as bullet points", "what were the risks of the launch?"). It replaces the empty state when a question finds nothing ("what is the capital of australia?"). Plain keyword misses ("budget") keep the regular empty state.
-- **Transcript cards:** each card in "Summary & Transcription" has an "Ask Claude" action. It carries that meeting's transcript.
-
-**How it decides.** `src/data/capabilities.json` lists what runs on the device and what doesn't. Each unsupported category has its words, patterns, prompt template and simulated reply. `src/lib/capability.ts` reads it with fixed rules (D80), and the JSON can be edited without code changes. Run `npm run test:unit` after editing: every category's examples must still classify as that category.
-
-**The sheet.**
-- **Contents:** the editable prompt with a character count, the attachments as file chips (preview, remove), a privacy line, and a consent checkbox that enables "Open in Claude".
-- **States:** default, editing, no attachments, long content, opening, copied/downloaded with an "Open Claude" link, shared, cancelled share, fallback notices, offline error with "Try again", and "Welcome back" after returning.
-- **Copy:** all of it is in `src/content/handoff-copy.ts`.
-
-**Modes.**
-
-| Mode | What happens |
-|---|---|
-| Auto (default) | Share sheet on a phone that can share files, otherwise clipboard + link |
-| Share sheet | `navigator.share` with one .txt per source and the prompt as text |
-| Clipboard + link | Copies prompt + transcripts, then "Open Claude" goes to `https://claude.ai/new?q=<prompt>` (under 2,000 characters) |
-| Download + link | Downloads the .txt, then the same link with "see the attached transcript" |
-| Simulate | Stays in the app: "Opening Claude…", then a simulated chat with the prompt, the files and a neutral canned reply |
-
-**Switching modes**
-- **Hidden settings:** long-press the screen title ("Recordings" or "Global search") for 0.7 s, or go to `#/settings`. They also show debug info: share and file-share support, clipboard, platform, and what Auto picks.
-- **Facilitator link:** `?handoff=simulate` (or `share`, `clipboard`, `download`) presets the mode on that device, e.g. `https://nexosearchprototype.vercel.app/?handoff=simulate`.
-- **Saved per device:** the mode is stored in localStorage.
-
-**Files**
-- **Model and classifier:** `src/data/capabilities.json`, `src/lib/capability.ts`.
-- **Handoff logic:**
-  - `src/lib/handoff/buildPrompt.ts`: prompt, export, file name, link.
-  - `strategies.ts`: the ladder and the share/copy/download calls.
-  - `settings.ts`, `sources.ts`, `store.ts`.
-- **UI:** `src/components/handoff/` (card, sheet, file chip, simulated chat, host), `src/screens/Settings.tsx`, `src/components/Toast.tsx`.
-- **Untouched:** `mock-data.json`.
-
-**Tests**
-- **Unit:** `npm run test:unit` (Vitest, 40 tests) covers the classifier, the export and prompt, and the ladder.
-- **Browser:** `tests/handoff.spec.ts` (Playwright) runs 13 tests each at 390×844 (iPhone) and 360×800 (Pixel), with touch and a phone user agent. `npm test` runs these together with the acceptance tests.
-
-**Assumptions**
-- **Entry point:** there are no meeting or transcript pages (D64), so "Ask Claude" lives on the transcript cards.
-- **Sources for a search handoff:** the request without its request words is searched again; up to 5 sources are attached, meetings first.
-- **The card above results:** it shows even when search found results, if the request is clearly something the device can't do. The results and AI Synthesis stay.
-- **Two taps in clipboard and download mode:** the first copies or downloads and shows the hint, the second opens Claude through a real link. Both are direct taps, which mobile browsers require.
-- **Long content:** the mock transcripts are short (at most about 1,100 characters), so the long-content warning (over 14,000 characters) only appears with many attachments.
-- **The simulated chat:** it uses Nexo's own look with no Claude branding, and its replies say they are simulated.
-
-**To verify on a real phone:** `docs/handoff-test-checklist.md`. The main open questions:
-- Does the iOS and Android share sheet list the Claude app and deliver the file and the text?
-- Does `claude.ai/new?q=` open the app or the browser, and does the prompt arrive prefilled?
-- Where does a downloaded file land, and can it be attached?
+- **Rules:** `src/data/capabilities.json` (what runs on the device; edit it without code changes) read by `src/lib/capability.ts`. Run `npm run test:unit` after editing.
+- **Wording:** `src/content/handoff-copy.ts`.
+- **Modes:** hidden settings (long-press a screen title, 0.7 s) or `?handoff=simulate|share|clipboard|download`; Auto is clipboard + link. The mode is saved per device.
+- **Tests:** `npm run test:unit` (Vitest, 40) and `npm test` (Playwright, 81, including the handoff flow at 390x844 and 360x800). Set `PW_PORT=5181` to run the tests on a fresh dev server next to one that is already running.
+- **To verify on a real phone:** `docs/handoff-test-checklist.md`.

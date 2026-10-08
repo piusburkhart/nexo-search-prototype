@@ -7,16 +7,9 @@ const env = (o: Partial<HandoffEnv>): HandoffEnv => ({
 })
 
 describe('handoff ladder', () => {
-  it('auto: share sheet on a phone that can share files', () => {
-    expect(resolveStrategy('auto', env({ mobile: true, platform: 'ios', hasShare: true, canShareFiles: true }))).toEqual({ id: 'share' })
-  })
-  it('auto: clipboard on a phone without file sharing and on desktop, even if desktop can share', () => {
-    expect(resolveStrategy('auto', env({ mobile: true, hasShare: true }))).toEqual({ id: 'clipboard' })
-    expect(resolveStrategy('auto', env({ hasShare: true, canShareFiles: true }))).toEqual({ id: 'clipboard' })
-  })
-  it('auto never picks download or simulate', () => {
-    for (const e of [env({}), env({ mobile: true }), env({ mobile: true, canShareFiles: true })]) {
-      expect(['share', 'clipboard']).toContain(resolveStrategy('auto', e).id)
+  it('auto is clipboard + link everywhere: one tap, no app picker, even where files can be shared', () => {
+    for (const e of [env({}), env({ mobile: true }), env({ mobile: true, platform: 'ios', hasShare: true, canShareFiles: true })]) {
+      expect(resolveStrategy('auto', e)).toEqual({ id: 'clipboard' })
     }
   })
   it('manual share falls back to clipboard when files cannot be shared', () => {

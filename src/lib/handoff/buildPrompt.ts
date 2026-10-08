@@ -110,9 +110,16 @@ export function buildPrompt({ request, category, sources, delivery }: {
   return request.trim() || category ? prompt : `${prompt} `
 }
 
-/** The full clipboard text: the prompt, then the sources under it. */
-export const clipboardText = (prompt: string, files: ExportFile[]) =>
-  files.length ? `${prompt}\n\n${combinedText(files)}` : prompt
+/**
+ * What goes to the clipboard (D88): the transcripts, each under its header with title, date and participants.
+ * The prompt is not repeated, because the link already types it into Claude; only when the link had to be
+ * shortened does the clipboard carry the full prompt as well, so nothing Claude needs is lost.
+ */
+export const clipboardText = (prompt: string, files: ExportFile[], { linkCarriesPrompt }: { linkCarriesPrompt: boolean }) =>
+  !files.length ? prompt : linkCarriesPrompt ? combinedText(files) : `${prompt}\n\n${combinedText(files)}`
+
+/** The rule every handoff states: answer from the material, and say what is missing. */
+const GROUND_RULE = 'Answer only from that material, and say clearly when something is missing from it.'
 
 export const MAX_URL = 2000
 const NEW_CHAT = 'https://claude.ai/new?q='
@@ -130,12 +137,10 @@ export function claudeLink({ prompt, request, delivery, hasSources }: {
   const full = linkFor(prompt + note)
   if (full.length <= MAX_URL) return { url: full, shortened: false }
   const lead = !hasSources ? 'Help me with: '
-    : delivery === 'pasted' ? 'My meeting transcript is in my clipboard. Paste it below and then help me with: '
+    : delivery === 'pasted' ? `My meeting transcript is in my clipboard. Paste it below and then help me with: `
     : 'See the attached transcript and then help me with: '
+  const tail = hasSources ? ` (${GROUND_RULE})` : ''
   let ask = request.trim() || 'the request I’ll describe below.'
-  while (linkFor(lead + ask).length > MAX_URL && ask.length > 20) ask = `${ask.slice(0, Math.floor(ask.length * 0.8)).trimEnd()}…`
-  return { url: linkFor(lead + ask), shortened: true }
+  while (linkFor(lead + ask + tail).length > MAX_URL && ask.length > 20) ask = `${ask.slice(0, Math.floor(ask.length * 0.8)).trimEnd()}…`
+  return { url: linkFor(lead + ask + tail), shortened: true }
 }
-
-/** Over this many characters of attachments, the sheet warns that the link carries only the request. */
-export const isLong = (files: ExportFile[]) => files.reduce((n, f) => n + f.text.length, 0) > CAPS.longContentChars

@@ -1,10 +1,9 @@
 {
-  "_readme": "What the on-device model can and can't do. Read by src/lib/capability.ts. Patterns are case-insensitive regular expressions; keywords match whole words or phrases. Order matters: the first unsupported category that matches wins. Templates use {request}, {sources} and {grounding}.",
+  "_readme": "What the on-device model can and can't do. Read by src/lib/capability.ts. A category with tryLocalFirst still gets Nexo's own answer when AI Synthesis has one; the others (drafting, comparing, translating, rewriting, outside knowledge) go to Claude straight away. Patterns are case-insensitive regular expressions; keywords match whole words or phrases. Order matters: the first unsupported category that matches wins. Templates use {request}, {sources} and {grounding}.",
   "requestWords": ["write", "draft", "compose", "compare", "summarize across", "summarise across", "why", "analyze", "analyse", "translate", "rewrite", "reformat", "rephrase", "explain", "suggest", "recommend", "prepare", "create", "make", "help me", "tell me", "give me", "can you", "could you", "please"],
   "questionWords": ["what", "why", "how", "who", "when", "where", "which", "did", "does", "do", "is", "are", "was", "were", "can", "could", "should", "would", "will"],
   "topicStopWords": ["email", "e-mail", "mail", "message", "reply", "note", "letter", "follow-up", "follow", "up", "followup", "draft", "write", "compose", "prepare", "team", "translate", "translation", "rewrite", "reformat", "rephrase", "shorten", "simplify", "summary", "summarize", "summarise", "bullet", "points", "table", "list", "compare", "analyze", "analyse", "analysis", "across", "all", "every", "versus", "vs", "risks", "risk", "should", "recommend", "german", "french", "spanish", "swedish", "italian", "into", "make", "shorter", "longer", "turn", "me", "us", "help", "please", "two", "meetings", "memos", "calls", "call", "interviews", "changed", "change", "might", "fail"],
   "maxSources": 5,
-  "longContentChars": 14000,
   "grounding": "The attached {what} {is} the source of truth. Answer only from {it}, and say clearly when something isn't in {it}.",
   "groundingClipboard": "The {what} {is} pasted below and {is} the source of truth. Answer only from {it}, and say clearly when something isn't in {it}.",
   "noSources": "I haven't attached any meeting material, so ask me for what you need instead of guessing.",
@@ -44,6 +43,7 @@
     },
     {
       "id": "reasoning",
+      "tryLocalFirst": true,
       "label": "Open-ended reasoning",
       "cantLocal": "Nexo can find what was said, but it can't reason about it on your device.",
       "examples": ["what were the risks of the launch?", "what should we do about the CSV import?", "why might the beta fail?"],

@@ -19,5 +19,3 @@ export function sourcesForQuery(query: string): Source[] {
     ...r.memos.map((item): Source => ({ kind: 'memo', item })),
   ].slice(0, CAPS.maxSources)
 }
-
-export const meetingSource = (item: Meeting): Source => ({ kind: 'meeting', item })

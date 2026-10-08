@@ -1,6 +1,7 @@
-import { Fragment } from 'react'
+import { Fragment, type ReactNode } from 'react'
 import { MicIcon, SparkleCenteredIcon } from './Icons'
 import type { Answer } from '../ai'
+import { copy } from '../content/handoff-copy'
 
 export type AiState = 'disabled' | 'ready' | 'thinking' | 'done'
 
@@ -17,8 +18,10 @@ export const TimeChip = ({ time }: { time: string }) => (
  * disabled until enough is typed, turns into three thinking dots while working, and then lets the answer
  * grow out of it, pushing the results down.
  */
-export function AiSynthesis({ state, answer, onRun, onReset }: {
+export function AiSynthesis({ state, answer, handoff, onRun, onReset }: {
   state: AiState; answer: Answer | null | undefined; onRun: () => void; onReset: () => void
+  /** Beyond the device (D88): instead of an answer, "Nexo can not help you with that." and this (Figma 86:5100). */
+  handoff?: ReactNode
 }) {
   const dark = state !== 'disabled'
   return (
@@ -41,11 +44,12 @@ export function AiSynthesis({ state, answer, onRun, onReset }: {
       </div>
       {state === 'done' && (
         <p data-testid="ai-result" className="mt-[15px] px-0 text-heading-s leading-[1.4] tracking-heading text-gray-975">
-          {answer
+          {answer && !handoff
             ? answer.parts.map((p, i) => <Fragment key={i}>{p.text}{p.time && <TimeChip time={p.time} />} </Fragment>)
-            : 'Can’t help you with that.'}
+            : copy.cantHelp}
         </p>
       )}
+      {state === 'done' && handoff}
     </section>
   )
 }

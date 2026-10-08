@@ -10,9 +10,8 @@ import { synthesize } from '../ai'
 import { SECTION_ORDER, total, type Section, dateCompletions, dateCount, emptyResults, everything, groupByMeeting, parseQuery, recordingScore, search } from '../search'
 import { understand } from '../semantic'
 import type { Recording } from '../data'
-import { HandoffCard } from '../components/handoff/HandoffCard'
-import { classify } from '../lib/capability'
-import { openHandoff } from '../lib/handoff/store'
+import { ClaudePill } from '../components/handoff/ClaudePill'
+import { categoryById, classify } from '../lib/capability'
 import { sourcesForQuery } from '../lib/handoff/sources'
 import { useLongPress } from '../lib/useLongPress'
 
@@ -139,16 +138,12 @@ export default function Search() {
   const answer = useMemo(() => (ai ? synthesize(shown, pool, q) : undefined), [ai, q, shown, pool])
   const aiState: AiState = ai ? (thinking ? 'thinking' : 'done') : sufficient ? 'ready' : 'disabled'
 
-  // Continue in Claude (D86): requests the on-device model can't handle get a handoff card, above the
-  // results, or in place of the empty state. A plain keyword miss ("budget") keeps the empty state.
-  const verdict = useMemo(() => (idle || !q.trim() ? null : classify(q, { resultCount: total(pool) })), [idle, q, pool])
-  const [dismissed, setDismissed] = useState<string | null>(null)
-  const showHandoff = !!verdict && !verdict.supported && dismissed !== q.trim()
-  const handoffSources = useMemo(() => (showHandoff ? sourcesForQuery(q) : []), [showHandoff, q])
-  const continueInClaude = () => {
-    blurSearch()
-    openHandoff({ request: q.trim(), category: verdict?.category, sources: handoffSources, origin: 'search' })
-  }
+  // Continue in Claude (D88): Nexo always tries first. Only when AI Synthesis has no answer, or the request is
+  // something the on-device model can't do (drafting, comparing, translating…), it says so and offers Claude.
+  const verdict = useMemo(() => (ai && q.trim() ? classify(q, { resultCount: total(pool) }) : null), [ai, q, pool])
+  const goesToClaude = !!verdict && !verdict.supported && !categoryById(verdict.category)?.tryLocalFirst
+  const beyond = ai && !thinking && (answer === null || goesToClaude)
+  const handoffSources = useMemo(() => (beyond ? sourcesForQuery(q) : []), [beyond, q])
   const toSettings = useLongPress(() => navigate('/settings'))
 
   // Sections in the Figma order, except that the one whose best item says the typed words most directly comes
@@ -199,14 +194,10 @@ export default function Search() {
         onPointerDown={() => blurSearch()}>
         <div className={`pt-6 ${aiState === 'done' ? 'pb-10' : 'pb-4'}`}>
           <AiSynthesis state={aiState} answer={answer}
+            handoff={beyond ? <ClaudePill key={q} request={q.trim()} category={verdict && !verdict.supported ? verdict.category : 'outside'} sources={handoffSources} /> : undefined}
             onRun={() => { blurSearch(); set({ ai: '1' }) }} onReset={() => set({ ai: undefined })} />
         </div>
-        {showHandoff && (
-          <div className="pb-6">
-            <HandoffCard verdict={verdict!} hasSources={handoffSources.length > 0} onContinue={continueInClaude} onDismiss={() => setDismissed(q.trim())} />
-          </div>
-        )}
-        {idle ? null : noResults ? (ai || showHandoff ? null : <EmptyState query={q.trim()} />) : (
+        {idle ? null : noResults ? (ai ? null : <EmptyState query={q.trim()} />) : (
           <div className="flex flex-col gap-6">
             {order.map((k) => <Fragment key={k}>{SECTIONS[k]}</Fragment>)}
           </div>

@@ -61,6 +61,10 @@ describe('capability classifier', () => {
     expect(topicOf('translate the Kestrel summary into German')).toBe('kestrel')
   })
 
+  it('only open-ended reasoning lets Nexo try its own answer first', () => {
+    expect(CAPS.unsupported.filter((c) => c.tryLocalFirst).map((c) => c.id)).toEqual(['reasoning'])
+  })
+
   it('every unsupported category is complete and its examples classify as itself', () => {
     for (const c of CAPS.unsupported) {
       for (const k of ['id', 'label', 'cantLocal', 'template', 'simulatedReply'] as const) expect(c[k], `${c.id}.${k}`).toBeTruthy()
